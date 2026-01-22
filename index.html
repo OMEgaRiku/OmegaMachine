@@ -238,6 +238,19 @@
   .t-conclusion {
     border-top: 1px dashed #444; margin-top: 10px; padding-top: 10px; font-weight: bold; color: var(--accent-color);
   }
+  /* 嘘つきの石碑を強調するスタイル */
+  .stone.is-liar {
+    border: 2px solid #e74c3c;
+    background: linear-gradient(to right, rgba(231, 76, 60, 0.2), rgba(0,0,0,0.8));
+  }
+  .stone.is-liar::after { background: #e74c3c; }
+  .stone.is-liar .stone-title::after {
+    content: " (嘘つき)"; color: #e74c3c; font-weight: bold; margin-left: 5px;
+  }
+  
+  /* リザルト詳細のリスト */
+  .res-row { font-size: 0.8rem; border-bottom: 1px solid #444; padding: 5px 0; color: #ccc; }
+  .res-liar-txt { color: #e74c3c; font-weight:bold; }
 
 </style>
 </head>
@@ -256,10 +269,12 @@
 
   <div id="game-screen">
     <div class="hud">
-      <div class="hud-left">
+       <div class="hud-left">
         <div class="hud-btn" onclick="location.reload()">MENU</div>
         <div class="hud-btn btn-guide" onclick="showHelp()">GUIDE ?</div>
+        <div id="btn-show-result" class="hud-btn" style="display:none; border-color:#2ecc71; color:#2ecc71; font-weight:bold;" onclick="showResult()">★ RESULT</div>
       </div>
+
       <div class="mana-bar"><span style="font-size:0.8rem; color:#888;">MANA</span> <span id="ui-mana" class="en-font">0/3</span></div>
     </div>
 
@@ -416,106 +431,116 @@
 
   <div id="result-modal" class="modal-overlay">
     <div class="seal-broken">封印解除</div>
+    
     <div style="color:#ccc; margin-top:10px;">真実のルーン:</div>
     <div class="answer-reveal" id="final-code"></div>
-    <div style="color:#fff; margin-bottom:30px;">到達ラウンド: <span id="final-round" class="en-font"></span></div>
-    <button class="btn btn-std" style="justify-content:center;" onclick="location.reload()">次の遺跡へ</button>
-  </div>
-  <script>
-// --- LOGIC ENGINE v5.1 (Cryptic Names) ---
+    
+    <div id="result-details" style="width:90%; max-width:400px; background:#222; padding:10px; border-radius:8px; margin-bottom:20px; text-align:left; max-height:30vh; overflow-y:auto; border:1px solid #444;">
+      </div>
 
+    <div style="color:#fff; margin-bottom:20px;">到達ラウンド: <span id="final-round" class="en-font"></span></div>
+    
+    <div style="display:flex; gap:10px; width:90%; max-width:350px;">
+      <button class="btn btn-std" style="justify-content:center; flex:1;" onclick="reviewBoard()">盤面を見る</button>
+      <button class="btn btn-std" style="justify-content:center; flex:1; background:#d4af37; color:#000; border-color:#fff;" onclick="location.reload()">次の遺跡へ</button>
+    </div>
+  </div>
+
+  <script>
+// --- LOGIC ENGINE v5.4 (Full Features) ---
+
+// desc: そのルールが「具体的に何を求めていたか」の正解条件
 const POOL = [
   // Parity
-  { name:"炎の偶奇 (偶数, 奇数)", f:(i,a,v)=>i%2==0 }, 
-  { name:"炎の偶奇 (偶数, 奇数)", f:(i,a,v)=>i%2!=0 }, 
-  { name:"水の偶奇 (偶数, 奇数)", f:(i,a,v)=>a%2==0 },
-  { name:"水の偶奇 (偶数, 奇数)", f:(i,a,v)=>a%2!=0 },
-  { name:"風の偶奇 (偶数, 奇数)", f:(i,a,v)=>v%2==0 },
-  { name:"風の偶奇 (偶数, 奇数)", f:(i,a,v)=>v%2!=0 },
+  { name:"炎の偶奇 (偶数, 奇数)", desc:"炎 = 偶数", f:(i,a,v)=>i%2==0 }, 
+  { name:"炎の偶奇 (偶数, 奇数)", desc:"炎 = 奇数", f:(i,a,v)=>i%2!=0 }, 
+  { name:"水の偶奇 (偶数, 奇数)", desc:"水 = 偶数", f:(i,a,v)=>a%2==0 }, 
+  { name:"水の偶奇 (偶数, 奇数)", desc:"水 = 奇数", f:(i,a,v)=>a%2!=0 }, 
+  { name:"風の偶奇 (偶数, 奇数)", desc:"風 = 偶数", f:(i,a,v)=>v%2==0 }, 
+  { name:"風の偶奇 (偶数, 奇数)", desc:"風 = 奇数", f:(i,a,v)=>v%2!=0 },
 
   // Values (vs 1)
-  { name:"炎と1の関係 (=, >)", f:(i,a,v)=>i==1 },
-  { name:"炎と1の関係 (=, >)", f:(i,a,v)=>i>1 },
-  { name:"水と1の関係 (=, >)", f:(i,a,v)=>a==1 },
-  { name:"水と1の関係 (=, >)", f:(i,a,v)=>a>1 },
-  { name:"風と1の関係 (=, >)", f:(i,a,v)=>v==1 },
-  { name:"風と1の関係 (=, >)", f:(i,a,v)=>v>1 },
+  { name:"炎と1の関係 (=, >)", desc:"炎 = 1", f:(i,a,v)=>i==1 },
+  { name:"炎と1の関係 (=, >)", desc:"炎 > 1", f:(i,a,v)=>i>1 },
+  { name:"水と1の関係 (=, >)", desc:"水 = 1", f:(i,a,v)=>a==1 },
+  { name:"水と1の関係 (=, >)", desc:"水 > 1", f:(i,a,v)=>a>1 },
+  { name:"風と1の関係 (=, >)", desc:"風 = 1", f:(i,a,v)=>v==1 },
+  { name:"風と1の関係 (=, >)", desc:"風 > 1", f:(i,a,v)=>v>1 },
 
   // Values (vs 3)
-  { name:"炎と3の関係 (=, >)", f:(i,a,v)=>i==3 },
-  { name:"炎と3の関係 (=, >)", f:(i,a,v)=>i>3 },
-  { name:"水と3の関係 (=, >)", f:(i,a,v)=>a==3 },
-  { name:"水と3の関係 (=, >)", f:(i,a,v)=>a>3 },
-  { name:"風と3の関係 (=, >)", f:(i,a,v)=>v==3 },
-  { name:"風と3の関係 (=, >)", f:(i,a,v)=>v>3 },
+  { name:"炎と3の関係 (=, >)", desc:"炎 = 3", f:(i,a,v)=>i==3 },
+  { name:"炎と3の関係 (=, >)", desc:"炎 > 3", f:(i,a,v)=>i>3 },
+  { name:"水と3の関係 (=, >)", desc:"水 = 3", f:(i,a,v)=>a==3 },
+  { name:"水と3の関係 (=, >)", desc:"水 > 3", f:(i,a,v)=>a>3 },
+  { name:"風と3の関係 (=, >)", desc:"風 = 3", f:(i,a,v)=>v==3 },
+  { name:"風と3の関係 (=, >)", desc:"風 > 3", f:(i,a,v)=>v>3 },
 
-  // Comparison (Element vs Element) - Now Cryptic
-  { name:"炎と水の比較 (<, =, >)", f:(i,a,v)=>i>a }, 
-  { name:"炎と水の比較 (<, =, >)", f:(i,a,v)=>i<a }, 
-  { name:"炎と水の比較 (<, =, >)", f:(i,a,v)=>i==a },
+  // Comparison
+  { name:"炎と水の比較 (<, =, >)", desc:"炎 > 水", f:(i,a,v)=>i>a }, 
+  { name:"炎と水の比較 (<, =, >)", desc:"炎 < 水", f:(i,a,v)=>i<a }, 
+  { name:"炎と水の比較 (<, =, >)", desc:"炎 = 水", f:(i,a,v)=>i==a },
   
-  { name:"水と風の比較 (<, =, >)", f:(i,a,v)=>a>v }, 
-  { name:"水と風の比較 (<, =, >)", f:(i,a,v)=>a<v }, 
-  { name:"水と風の比較 (<, =, >)", f:(i,a,v)=>a==v },
+  { name:"水と風の比較 (<, =, >)", desc:"水 > 風", f:(i,a,v)=>a>v }, 
+  { name:"水と風の比較 (<, =, >)", desc:"水 < 風", f:(i,a,v)=>a<v }, 
+  { name:"水と風の比較 (<, =, >)", desc:"水 = 風", f:(i,a,v)=>a==v },
   
-  { name:"炎と風の比較 (<, =, >)", f:(i,a,v)=>i>v }, 
-  { name:"炎と風の比較 (<, =, >)", f:(i,a,v)=>i<v }, 
-  { name:"炎と風の比較 (<, =, >)", f:(i,a,v)=>i==v },
+  { name:"炎と風の比較 (<, =, >)", desc:"炎 > 風", f:(i,a,v)=>i>v }, 
+  { name:"炎と風の比較 (<, =, >)", desc:"炎 < 風", f:(i,a,v)=>i<v }, 
+  { name:"炎と風の比較 (<, =, >)", desc:"炎 = 風", f:(i,a,v)=>i==v },
 
   // Extremes
-  { name:"最大値の所在 (≧)", f:(i,a,v)=>i>=a && i>=v }, 
-  { name:"最大値の所在 (≧)", f:(i,a,v)=>a>=i && a>=v }, 
-  { name:"最大値の所在 (≧)", f:(i,a,v)=>v>=i && v>=a }, 
+  { name:"最大値の所在 (≧)", desc:"炎が最大 (他以上)", f:(i,a,v)=>i>=a && i>=v }, 
+  { name:"最大値の所在 (≧)", desc:"水が最大 (他以上)", f:(i,a,v)=>a>=i && a>=v }, 
+  { name:"最大値の所在 (≧)", desc:"風が最大 (他以上)", f:(i,a,v)=>v>=i && v>=a }, 
   
-  { name:"最小値の所在 (≦)", f:(i,a,v)=>i<=a && i<=v }, 
-  { name:"最小値の所在 (≦)", f:(i,a,v)=>a<=i && a<=v }, 
-  { name:"最小値の所在 (≦)", f:(i,a,v)=>v<=i && v<=a }, 
+  { name:"最小値の所在 (≦)", desc:"炎が最小 (他以下)", f:(i,a,v)=>i<=a && i<=v }, 
+  { name:"最小値の所在 (≦)", desc:"水が最小 (他以下)", f:(i,a,v)=>a<=i && a<=v }, 
+  { name:"最小値の所在 (≦)", desc:"風が最小 (他以下)", f:(i,a,v)=>v<=i && v<=a }, 
 
-  // Sums (Total)
-  { name:"合計の偶奇 (偶数, 奇数)", f:(i,a,v)=>(i+a+v)%2==0 },
-  { name:"合計の偶奇 (偶数, 奇数)", f:(i,a,v)=>(i+a+v)%2!=0 },
-  { name:"合計と6の関係 (<, ≧)", f:(i,a,v)=>(i+a+v)<6 },
-  { name:"合計と6の関係 (<, ≧)", f:(i,a,v)=>(i+a+v)>=6 },
-  { name:"合計と10の関係 (<, ≧)", f:(i,a,v)=>(i+a+v)<10 },
-  { name:"合計と10の関係 (<, ≧)", f:(i,a,v)=>(i+a+v)>=10 },
+  // Sums
+  { name:"合計の偶奇 (偶数, 奇数)", desc:"合計 = 偶数", f:(i,a,v)=>(i+a+v)%2==0 },
+  { name:"合計の偶奇 (偶数, 奇数)", desc:"合計 = 奇数", f:(i,a,v)=>(i+a+v)%2!=0 },
+  { name:"合計と6の関係 (<, ≧)", desc:"合計 < 6", f:(i,a,v)=>(i+a+v)<6 },
+  { name:"合計と6の関係 (<, ≧)", desc:"合計 ≧ 6", f:(i,a,v)=>(i+a+v)>=6 },
+  { name:"合計と10の関係 (<, ≧)", desc:"合計 < 10", f:(i,a,v)=>(i+a+v)<10 },
+  { name:"合計と10の関係 (<, ≧)", desc:"合計 ≧ 10", f:(i,a,v)=>(i+a+v)>=10 },
 
   // Primes
-  { name:"素数の有無 (あり, なし)", f:(i,a,v)=>[i,a,v].some(n=>[2,3,5].includes(n)) },
-  { name:"素数の有無 (あり, なし)", f:(i,a,v)=>![i,a,v].some(n=>[2,3,5].includes(n)) },
+  { name:"素数の有無 (あり, なし)", desc:"素数を含む", f:(i,a,v)=>[i,a,v].some(n=>[2,3,5].includes(n)) },
+  { name:"素数の有無 (あり, なし)", desc:"素数を含まない", f:(i,a,v)=>![i,a,v].some(n=>[2,3,5].includes(n)) },
 
-  // Pair Sums (vs 5) - Now Cryptic
-  { name:"炎+水と5の関係 (<, =, >)", f:(i,a,v)=>(i+a)>5 },
-  { name:"炎+水と5の関係 (<, =, >)", f:(i,a,v)=>(i+a)<5 },
-  { name:"炎+水と5の関係 (<, =, >)", f:(i,a,v)=>(i+a)==5 },
+  // Pair Sums
+  { name:"炎+水と5の関係 (<, =, >)", desc:"炎+水 > 5", f:(i,a,v)=>(i+a)>5 },
+  { name:"炎+水と5の関係 (<, =, >)", desc:"炎+水 < 5", f:(i,a,v)=>(i+a)<5 },
+  { name:"炎+水と5の関係 (<, =, >)", desc:"炎+水 = 5", f:(i,a,v)=>(i+a)==5 },
   
-  { name:"水+風と5の関係 (<, =, >)", f:(i,a,v)=>(a+v)>5 },
-  { name:"水+風と5の関係 (<, =, >)", f:(i,a,v)=>(a+v)<5 },
-  { name:"水+風と5の関係 (<, =, >)", f:(i,a,v)=>(a+v)==5 },
+  { name:"水+風と5の関係 (<, =, >)", desc:"水+風 > 5", f:(i,a,v)=>(a+v)>5 },
+  { name:"水+風と5の関係 (<, =, >)", desc:"水+風 < 5", f:(i,a,v)=>(a+v)<5 },
+  { name:"水+風と5の関係 (<, =, >)", desc:"水+風 = 5", f:(i,a,v)=>(a+v)==5 },
   
-  { name:"炎+風と5の関係 (<, =, >)", f:(i,a,v)=>(i+v)>5 },
-  { name:"炎+風と5の関係 (<, =, >)", f:(i,a,v)=>(i+v)<5 },
-  { name:"炎+風と5の関係 (<, =, >)", f:(i,a,v)=>(i+v)==5 },
+  { name:"炎+風と5の関係 (<, =, >)", desc:"炎+風 > 5", f:(i,a,v)=>(i+v)>5 },
+  { name:"炎+風と5の関係 (<, =, >)", desc:"炎+風 < 5", f:(i,a,v)=>(i+v)<5 },
+  { name:"炎+風と5の関係 (<, =, >)", desc:"炎+風 = 5", f:(i,a,v)=>(i+v)==5 },
   
   // Counts
-  { name:"偶数の数 (1, 2)", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==1 },
-  { name:"偶数の数 (1, 2)", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==2 },
-  { name:"1の数 (0, 1)", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==0 },
-  { name:"1の数 (0, 1)", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==1 },
+  { name:"偶数の数 (1, 2)", desc:"偶数が1個", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==1 },
+  { name:"偶数の数 (1, 2)", desc:"偶数が2個", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==2 },
+  { name:"1の数 (0, 1)", desc:"1を含まない", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==0 },
+  { name:"1の数 (0, 1)", desc:"1が1個", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==1 },
   
   // Patterns
-  { name:"並びの法則 (全異, ペア, 昇順)", f:(i,a,v)=>i!=a && a!=v && i!=v }, 
-  { name:"並びの法則 (全異, ペア, 昇順)", f:(i,a,v)=>i==a || a==v || i==v }, 
-  { name:"並びの法則 (全異, ペア, 昇順)", f:(i,a,v)=>i<a && a<v }
+  { name:"並びの法則 (全異, ペア, 昇順)", desc:"すべて異なる", f:(i,a,v)=>i!=a && a!=v && i!=v }, 
+  { name:"並びの法則 (全異, ペア, 昇順)", desc:"ペアあり(2つ同じ)", f:(i,a,v)=>i==a || a==v || i==v }, 
+  { name:"並びの法則 (全異, ペア, 昇順)", desc:"昇順 (炎<水<風)", f:(i,a,v)=>i<a && a<v }
 ];
 
-let state = { ans:{i:0,a:0,v:0}, rules:[], round:1, mana:0, maxMana:3, liarIndex:-1 };
+let state = { ans:{i:0,a:0,v:0}, rules:[], round:1, mana:0, maxMana:3, liarIndex:-1, stoneCount:5 };
 
 function limitInput(el) {
   if(el.value < 1) el.value = 1;
   if(el.value > 5) el.value = 5;
 }
 
-// Matrix & Memo
 function initMatrix() {
   const grid = document.getElementById('logic-matrix');
   grid.innerHTML = '';
@@ -601,10 +626,16 @@ function initGame(mode) {
   state.round = 1;
   state.mana = 0;
   state.maxMana = (mode === 'nightmare') ? 2 : 3;
+  // ★Standardなら石碑は4つ、それ以外は5つ
+  state.stoneCount = (mode === 'standard') ? 4 : 5;
+
+  // ★リザルトボタンを隠す
+  const resultBtn = document.getElementById('btn-show-result');
+  if(resultBtn) resultBtn.style.display = 'none';
   
   let success = false;
   let attempts = 0;
-  const maxAttempts = 10000; 
+  const maxAttempts = 20000; 
   
   while(!success && attempts < maxAttempts) {
     attempts++;
@@ -615,19 +646,20 @@ function initGame(mode) {
     };
     
     let validRules = POOL.filter(r => r.f(state.ans.i, state.ans.a, state.ans.v) === true);
-    if(validRules.length < 5) continue;
+    if(validRules.length < state.stoneCount) continue;
 
     let picked = [];
     let temp = [...validRules];
+    // Fisher-Yates shuffle
     for (let i = temp.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [temp[i], temp[j]] = [temp[j], temp[i]];
     }
     for(let r of temp) {
       if(!picked.some(p => p.name === r.name)) picked.push(r);
-      if(picked.length === 5) break;
+      if(picked.length === state.stoneCount) break;
     }
-    if(picked.length < 5) continue;
+    if(picked.length < state.stoneCount) continue;
 
     let matches = 0;
     for(let i=1; i<=5; i++) {
@@ -640,7 +672,7 @@ function initGame(mode) {
 
     if(matches === 1) {
       if(mode === 'chaos') {
-        const tempLiar = Math.floor(Math.random()*5);
+        const tempLiar = Math.floor(Math.random()*state.stoneCount);
         let chaosSolutions = 0;
         for(let i=1; i<=5; i++) {
           for(let a=1; a<=5; a++) {
@@ -651,7 +683,7 @@ function initGame(mode) {
                  if(idx === tempLiar) res = !res;
                  if(res) trueCount++;
                });
-               if(trueCount === 4) chaosSolutions++;
+               if(trueCount === state.stoneCount) chaosSolutions++;
             }
           }
         }
@@ -671,7 +703,7 @@ function initGame(mode) {
   document.getElementById('loading-indicator').style.display = 'none';
 
   if(!success) {
-    alert("生成失敗: 条件に合うパズルが見つかりませんでした。");
+    alert("生成失敗: 条件に合うパズルが見つかりませんでした。もう一度試してください。");
   } else {
     document.getElementById('title-screen').style.display = 'none';
     document.getElementById('game-screen').style.display = 'block';
@@ -691,6 +723,7 @@ function renderProphecies() {
   state.rules.forEach((r, idx) => {
     let div = document.createElement('div');
     div.className = 'stone';
+    div.id = `stone-${idx}`;
     div.innerHTML = `
       <div class="stone-content">
         <div class="stone-title">予言 ${names[idx]}</div>
@@ -724,9 +757,10 @@ function checkProphecy(idx, rule, el) {
   
   const log = document.getElementById('log-container');
   const entry = document.createElement('div');
+  const names = ["α", "β", "γ", "δ", "ε"];
   entry.className = isTrue ? 'log-entry log-true' : 'log-entry log-false';
   entry.innerHTML = `
-    <span>R${state.round} 予言${["α","β","γ","δ","ε"][idx]} <span class="log-nums">${i}-${a}-${v}</span></span>
+    <span>R${state.round} 予言${names[idx]} <span class="log-nums">${i}-${a}-${v}</span></span>
     <strong>${isTrue ? "TRUE" : "FALSE"}</strong>
   `;
   log.prepend(entry);
@@ -757,16 +791,60 @@ function attemptUnlock() {
   
   const isCorrect = (i === state.ans.i && a === state.ans.a && v === state.ans.v);
   
+  const title = document.querySelector('.seal-broken');
   if(isCorrect) {
-    document.querySelector('.seal-broken').innerText = "封印解除";
-    document.querySelector('.seal-broken').style.color = "#fff";
+    title.innerText = "封印解除";
+    title.style.color = "#fff";
   } else {
-    document.querySelector('.seal-broken').innerText = "解除失敗";
-    document.querySelector('.seal-broken').style.color = "#c0392b";
+    title.innerText = "解除失敗";
+    title.style.color = "#c0392b";
   }
   
   document.getElementById('final-code').innerText = `${state.ans.i} ${state.ans.a} ${state.ans.v}`;
   document.getElementById('final-round').innerText = state.round;
+
+  // --- 答え合わせ情報の生成 ---
+  const detailBox = document.getElementById('result-details');
+  let html = '';
+  const names = ["α", "β", "γ", "δ", "ε"];
+  
+  state.rules.forEach((r, idx) => {
+      const isLiar = (idx === state.liarIndex);
+      const liarTag = isLiar ? '<span class="res-liar-txt">[嘘つき]</span> ' : '';
+      
+      html += `<div class="res-row">
+        <div><strong>予言${names[idx]}</strong>: ${liarTag}${r.name}</div>
+        <div style="color:#d4af37; padding-left:10px; font-size:0.85rem;">
+           👉 正解の法則: <strong>${r.desc}</strong>
+        </div>
+      </div>`;
+  });
+  detailBox.innerHTML = html;
+}
+
+// ★振り返りモード
+function reviewBoard() {
+  document.getElementById('result-modal').style.display = 'none';
+  
+  // ★いつでもリザルトを見れるボタンを表示
+  const resultBtn = document.getElementById('btn-show-result');
+  if(resultBtn) resultBtn.style.display = 'flex';
+  
+  document.getElementById('r1').disabled = true;
+  document.getElementById('r2').disabled = true;
+  document.getElementById('r3').disabled = true;
+  document.querySelectorAll('.stone').forEach(s => s.classList.add('disabled'));
+  document.querySelectorAll('.btn-action').forEach(b => b.style.display = 'none');
+
+  if(state.liarIndex !== -1) {
+      const liarStone = document.getElementById(`stone-${state.liarIndex}`);
+      if(liarStone) liarStone.classList.add('is-liar');
+  }
+}
+
+// ★リザルト再表示
+function showResult() {
+  document.getElementById('result-modal').style.display = 'flex';
 }
 
 function updateHUD() {
@@ -776,6 +854,7 @@ function updateHUD() {
 
 function showHelp() { document.getElementById('help-modal').style.display = 'flex'; }
 function closeHelp() { document.getElementById('help-modal').style.display = 'none'; }
+
 </script>
 </body>
 </html>
