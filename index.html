@@ -201,6 +201,43 @@
 
   #loading-indicator { font-size: 1.2rem; color: #d4af37; margin-top: 20px; display: none; }
   @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  /* --- チュートリアル用追加スタイル --- */
+  .t-container {
+    display: flex; flex-direction: column; gap: 15px;
+  }
+  .t-step {
+    background: #1a1a1a; border: 1px solid #444; border-radius: 8px; padding: 15px;
+    position: relative; text-align: left;
+  }
+  .t-step-num {
+    background: var(--accent-color); color: #000; font-weight: bold;
+    display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; margin-bottom: 8px;
+  }
+  .t-row {
+    display: flex; align-items: center; justify-content: space-around; margin: 10px 0;
+    background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;
+  }
+  .t-input-mock {
+    font-family: 'Cinzel', serif; font-size: 1.2rem; border-bottom: 2px solid #666; padding: 0 10px; color: #fff;
+  }
+  .t-arrow { color: #888; font-size: 1.2rem; }
+  .t-stone-mock {
+    border: 1px solid #666; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; color: #ccc; background: #222;
+  }
+  .t-result-mock {
+    font-weight: bold; font-family: 'Cinzel', serif; padding: 5px 10px; border-radius: 4px;
+  }
+  .t-res-true { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+  .t-res-false { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
+  
+  .t-logic-text {
+    font-size: 0.9rem; line-height: 1.6; color: #ddd; margin-top: 5px;
+  }
+  .t-highlight { color: #ff9999; font-weight: bold; }
+  .t-highlight-b { color: #99ccff; font-weight: bold; }
+  .t-conclusion {
+    border-top: 1px dashed #444; margin-top: 10px; padding-top: 10px; font-weight: bold; color: var(--accent-color);
+  }
 
 </style>
 </head>
@@ -284,40 +321,97 @@
   </div>
 
   <div id="help-modal" class="modal-overlay">
-    <div id="help-content">
-      <div class="close-help" onclick="closeHelp()">×</div>
-      <h2 style="text-align:center; margin-top:0; color:#fff;">解析の手引き</h2>
-      <div class="help-section">
-        <div class="help-title">1. 目的</div>
-        <div class="help-text">
-          遺跡の封印を解くため、<strong style="color:#ff9999">炎</strong>・<strong style="color:#99ccff">水</strong>・<strong style="color:#99ffcc">風</strong>のルーンに隠された<strong>1〜5の数字</strong>を特定してください。
-        </div>
+     <div id="help-content">
+    <div class="close-help" onclick="closeHelp()">×</div>
+    <h2 style="text-align:center; margin-top:0; color:#fff; border-bottom:1px solid #333; padding-bottom:15px;">遺跡解析ガイド</h2>
+
+    <div class="help-section">
+      <div class="help-title">1. このゲームの目的</div>
+      <div class="help-text">
+        あなたの目的は、3つのルーン（<span class="t-highlight">炎</span>・<span class="t-highlight-b">水</span>・<span style="color:#99ffcc; font-weight:bold;">風</span>）に設定された<strong>「正解の数字 (1〜5)」</strong>を特定することです。<br><br>
+        しかし、いきなり数字を当てることはできません。<br>
+        まずは石碑に質問をして<strong>「隠されたルール」</strong>を暴く必要があります。
       </div>
-      <div class="help-section">
-        <div class="help-title">2. 予言の確認（重要）</div>
-        <div class="help-text">
-          石碑には<strong>「テーマ」</strong>だけが書かれています。<br>
-          <span style="color:#d4af37">「炎と水 (<, =, >)」</span>という石碑の場合、内部で設定されたルールが「炎 > 水」なのか「炎 = 水」なのかは、<strong>自分で数字を入力して判定しないと分かりません。</strong>
-        </div>
-        <div class="diagram-box">
-          <div class="d-stone">
-             <span>予言: 炎と水 (<, =, >)</span>
-          </div>
-          <div class="d-arrow">↓ 3-1-1 で判定</div>
-          <div class="d-result d-true">TRUE</div>
-          <div style="font-size:0.7rem; color:#aaa; margin-top:5px;">
-            3>1でTRUEなら、この石碑の中身は<br>「炎 > 水」で確定！
-          </div>
-        </div>
-      </div>
-      <div class="help-section">
-        <div class="help-title">3. マトリックスとメモ</div>
-        <div class="help-text">
-          クリックで <span style="color:#55ff55">○</span> <span style="color:#ff5555">×</span> を切り替え。メモボタンはタップで表示/非表示を切り替えられます。
-        </div>
-      </div>
-      <button class="btn btn-std" style="width:100%; box-sizing:border-box;" onclick="closeHelp()">理解した</button>
     </div>
+
+    <div class="help-section">
+      <div class="help-title">2. 例題でわかる「解析」の流れ</div>
+      <div class="help-text" style="margin-bottom:15px;">
+        ある石碑に<strong>「炎と水の比較 (<, =, >)」</strong>と書いてあります。<br>
+        これは、「炎が大きい」のか「同じ」なのか「水が大きい」のか、<strong>ルールがまだ不明</strong>な状態です。<br>
+        これを特定するために、数字を入力して石碑の反応を見ます。
+      </div>
+
+      <div class="t-container">
+        <div class="t-step">
+          <div class="t-step-num">STEP 1 : 試しに入力してみる</div>
+          <div class="t-logic-text">
+            あなたは「炎のほうが大きい数字(4)」と「水のほうが小さい数字(1)」をセットしました。
+          </div>
+          <div class="t-row">
+            <div style="text-align:center;">
+              <span class="t-highlight">炎:4</span> <span class="t-arrow">></span> <span class="t-highlight-b">水:1</span>
+            </div>
+          </div>
+          <div class="t-logic-text" style="font-size:0.8rem; color:#aaa;">
+            (この時点では、これが正解かどうかはわかりません)
+          </div>
+        </div>
+
+        <div class="t-step">
+          <div class="t-step-num">STEP 2 : 石碑に問う</div>
+          <div class="t-logic-text">
+            石碑ボタンを押して判定します。<br>
+            もし、結果が <span class="t-result-mock t-res-true">TRUE</span> だったら…？
+          </div>
+          <div class="t-row">
+            <div class="t-stone-mock">石碑: 炎と水</div>
+            <div class="t-arrow">→</div>
+            <div class="t-result-mock t-res-true">TRUE (真実)</div>
+          </div>
+          <div class="t-logic-text">
+            石碑は<strong>「お前の入力した『炎 > 水』という関係性は正しいぞ」</strong>と言っています。
+          </div>
+        </div>
+
+        <div class="t-step" style="border-color: #d4af37;">
+          <div class="t-step-num" style="background:#d4af37; color:#000;">STEP 3 : ルール確定！</div>
+          <div class="t-logic-text">
+            入力した関係性(4>1)が肯定されたので、この石碑の正体は<strong>「炎 > 水」のルール</strong>だと確定します！
+          </div>
+          <div class="t-conclusion">
+            ★推理完了<br>
+            正解のコードも必ず「炎 > 水」になっています。<br>
+            「炎が水より小さい」組み合わせは全て不正解なので、×をつけましょう。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-title">3. もし FALSE (偽) が出たら？</div>
+      <div class="help-text">
+        上記の例で <span class="t-result-mock t-res-false">FALSE</span> が出た場合、<br>
+        あなたが入力した<strong>「炎 > 水」という関係性は間違い</strong>だということになります。<br>
+        つまり、正解のルールは残りの「炎 < 水」か「炎 = 水」のどちらかです。
+      </div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-title">4. メモの使い方</div>
+      <div class="help-text">
+        画面下のマトリックス（表）を使って、可能性の消えた数字を消去していきましょう。<br>
+        <ul>
+          <li>クリックで <span style="color:#55ff55">○</span> (確定)</li>
+          <li>クリックで <span style="color:#ff5555">×</span> (除外)</li>
+        </ul>
+        すべての石碑のルールと矛盾しない、たった一つの「3つの数字」を見つけ出してください。
+      </div>
+    </div>
+
+    <button class="btn btn-std" style="width:100%; box-sizing:border-box;" onclick="closeHelp()">挑戦する</button>
+  </div>
+
   </div>
 
   <div id="result-modal" class="modal-overlay">
