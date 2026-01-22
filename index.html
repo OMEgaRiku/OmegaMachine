@@ -251,6 +251,37 @@
   /* リザルト詳細のリスト */
   .res-row { font-size: 0.8rem; border-bottom: 1px solid #444; padding: 5px 0; color: #ccc; }
   .res-liar-txt { color: #e74c3c; font-weight:bold; }
+    /* オメガモード用: 禍々しいボタン */
+  .btn-omega { 
+    border-color: #fff; color: #fff; background: #000; 
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); font-family: 'Cinzel', serif;
+  }
+  
+  /* 謎の石碑 */
+  .stone.is-mystery {
+    color: #fff; background: #000; border: 1px solid #555;
+    display: flex; justify-content: center; align-items: center;
+  }
+  .stone.is-mystery .stone-title { display: none; }
+  .stone.is-mystery .stone-text { 
+    font-family: 'Cinzel', serif; font-size: 1.5rem; letter-spacing: 5px; color: #888; 
+  }
+
+  /* ルール推理リスト（オメガ用メモ） */
+  #omega-rule-area {
+    margin-top: 15px; padding: 10px; border: 1px solid #444; border-radius: 8px;
+    background: rgba(0,0,0,0.8); display: none; text-align: left;
+  }
+  .omega-label { color: #fff; font-size: 0.9rem; margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+  .omega-list-item {
+    padding: 6px; font-size: 0.85rem; color: #ccc; cursor: pointer; border-bottom: 1px dashed #333; transition: 0.2s;
+  }
+  .omega-list-item:hover { color: #fff; background: rgba(255,255,255,0.1); }
+  /* クリックで除外するためのスタイル */
+  .omega-list-item.excluded {
+    text-decoration: line-through; color: #555; opacity: 0.6;
+  }
+
 
 </style>
 </head>
@@ -264,6 +295,7 @@
     <div class="btn btn-hard" onclick="startGame('hard')"><span>高難度 (Hard)</span><span class="en-font">II</span></div>
     <div class="btn btn-night" onclick="startGame('nightmare')"><span>悪夢 (Nightmare)</span><span class="en-font">III</span></div>
     <div class="btn btn-chaos" onclick="startGame('chaos')"><span>混沌 (Chaos)</span><span class="en-font">∞</span></div>
+    <div class="btn btn-omega" onclick="startGame('omega')"><span>Ω (Omega)</span><span class="en-font">?</span></div>
     <div id="loading-indicator">生成中...</div>
   </div>
 
@@ -324,6 +356,12 @@
     </div>
 
     <div id="prophecy-container" class="prophecy-list"></div>
+        <div id="omega-rule-area">
+      <div class="omega-label">DETECTED LAWS (Search & Destroy)</div>
+      <div style="font-size:0.7rem; color:#888; margin-bottom:5px;">※クリックで取り消し線 (メモ)</div>
+      <div id="omega-list"></div>
+    </div>
+
 
     <div class="action-bar">
       <button class="btn-action btn-next" onclick="nextRound()">次のラウンドへ</button>
@@ -447,9 +485,8 @@
   </div>
 
   <script>
-// --- LOGIC ENGINE v5.4 (Full Features) ---
+// --- LOGIC ENGINE v6.0 (Omega Mode) ---
 
-// desc: そのルールが「具体的に何を求めていたか」の正解条件
 const POOL = [
   // Parity
   { name:"炎の偶奇 (偶数, 奇数)", desc:"炎 = 偶数", f:(i,a,v)=>i%2==0 }, 
@@ -534,7 +571,7 @@ const POOL = [
   { name:"並びの法則 (全異, ペア, 昇順)", desc:"昇順 (炎<水<風)", f:(i,a,v)=>i<a && a<v }
 ];
 
-let state = { ans:{i:0,a:0,v:0}, rules:[], round:1, mana:0, maxMana:3, liarIndex:-1, stoneCount:5 };
+let state = { ans:{i:0,a:0,v:0}, rules:[], round:1, mana:0, maxMana:3, liarIndex:-1, stoneCount:5, isOmega:false };
 
 function limitInput(el) {
   if(el.value < 1) el.value = 1;
@@ -612,6 +649,9 @@ function setBackground(mode) {
         case 'chaos':
             body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #333 0%, #000 100%)";
             break;
+        case 'omega':
+            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #000 0%, #111 100%)";
+            break;
     }
 }
 
@@ -625,11 +665,10 @@ function startGame(mode) {
 function initGame(mode) {
   state.round = 1;
   state.mana = 0;
-  state.maxMana = (mode === 'nightmare') ? 2 : 3;
-  // ★Standardなら石碑は4つ、それ以外は5つ
+  state.maxMana = (mode === 'nightmare' || mode === 'omega') ? 2 : 3;
   state.stoneCount = (mode === 'standard') ? 4 : 5;
+  state.isOmega = (mode === 'omega'); // オメガモードフラグ
 
-  // ★リザルトボタンを隠す
   const resultBtn = document.getElementById('btn-show-result');
   if(resultBtn) resultBtn.style.display = 'none';
   
@@ -711,6 +750,10 @@ function initGame(mode) {
     updateHUD();
     document.getElementById('log-container').innerHTML = '';
     document.getElementById('chaos-warning').style.display = (mode === 'chaos') ? 'block' : 'none';
+    
+    // オメガモードならリストを表示、それ以外は非表示
+    document.getElementById('omega-rule-area').style.display = state.isOmega ? 'block' : 'none';
+
     initMatrix();
     renderProphecies();
   }
@@ -720,17 +763,53 @@ function renderProphecies() {
   const c = document.getElementById('prophecy-container');
   c.innerHTML = '';
   const names = ["α", "β", "γ", "δ", "ε"];
+  
+  // オメガモード用の「シャッフルされたルールリスト」を作成
+  if (state.isOmega) {
+    const listContainer = document.getElementById('omega-list');
+    listContainer.innerHTML = '';
+    
+    // state.rulesをコピーしてシャッフル
+    let shuffledRules = [...state.rules];
+    for (let i = shuffledRules.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledRules[i], shuffledRules[j]] = [shuffledRules[j], shuffledRules[i]];
+    }
+
+    shuffledRules.forEach(r => {
+      const item = document.createElement('div');
+      item.className = 'omega-list-item';
+      item.innerText = r.name;
+      item.onclick = () => {
+        item.classList.toggle('excluded'); // 取り消し線トグル
+      };
+      listContainer.appendChild(item);
+    });
+  }
+
   state.rules.forEach((r, idx) => {
     let div = document.createElement('div');
-    div.className = 'stone';
-    div.id = `stone-${idx}`;
-    div.innerHTML = `
-      <div class="stone-content">
-        <div class="stone-title">予言 ${names[idx]}</div>
-        <div class="stone-text">${r.name}</div>
-      </div>
-      <div class="stone-id">${names[idx]}</div>
-    `;
+    
+    // オメガモードの表示分岐
+    if (state.isOmega) {
+      div.className = 'stone is-mystery';
+      div.id = `stone-${idx}`;
+      div.innerHTML = `
+        <div class="stone-text" style="font-size:1.8rem;">???</div>
+        <div class="stone-id" style="display:none;">${names[idx]}</div>
+      `;
+    } else {
+      div.className = 'stone';
+      div.id = `stone-${idx}`;
+      div.innerHTML = `
+        <div class="stone-content">
+          <div class="stone-title">予言 ${names[idx]}</div>
+          <div class="stone-text">${r.name}</div>
+        </div>
+        <div class="stone-id">${names[idx]}</div>
+      `;
+    }
+    
     div.onclick = () => checkProphecy(idx, r, div);
     c.appendChild(div);
   });
@@ -758,6 +837,8 @@ function checkProphecy(idx, rule, el) {
   const log = document.getElementById('log-container');
   const entry = document.createElement('div');
   const names = ["α", "β", "γ", "δ", "ε"];
+  
+  // オメガモードでもログには「予言α」と出るが、内容は書かない
   entry.className = isTrue ? 'log-entry log-true' : 'log-entry log-false';
   entry.innerHTML = `
     <span>R${state.round} 予言${names[idx]} <span class="log-nums">${i}-${a}-${v}</span></span>
@@ -803,7 +884,6 @@ function attemptUnlock() {
   document.getElementById('final-code').innerText = `${state.ans.i} ${state.ans.a} ${state.ans.v}`;
   document.getElementById('final-round').innerText = state.round;
 
-  // --- 答え合わせ情報の生成 ---
   const detailBox = document.getElementById('result-details');
   let html = '';
   const names = ["α", "β", "γ", "δ", "ε"];
@@ -822,11 +902,9 @@ function attemptUnlock() {
   detailBox.innerHTML = html;
 }
 
-// ★振り返りモード
 function reviewBoard() {
   document.getElementById('result-modal').style.display = 'none';
   
-  // ★いつでもリザルトを見れるボタンを表示
   const resultBtn = document.getElementById('btn-show-result');
   if(resultBtn) resultBtn.style.display = 'flex';
   
@@ -840,9 +918,24 @@ function reviewBoard() {
       const liarStone = document.getElementById(`stone-${state.liarIndex}`);
       if(liarStone) liarStone.classList.add('is-liar');
   }
+  
+  // オメガモード: 振り返り時は石碑の正体を表示してあげる
+  if(state.isOmega) {
+      const names = ["α", "β", "γ", "δ", "ε"];
+      state.rules.forEach((r, idx) => {
+          const s = document.getElementById(`stone-${idx}`);
+          if(s) {
+              s.innerHTML = `
+                <div style="font-size:0.7rem; color:#aaa;">${names[idx]}</div>
+                <div style="font-size:0.9rem; color:#fff;">${r.name}</div>
+              `;
+              s.style.background = "#222";
+              s.style.border = "1px solid #777";
+          }
+      });
+  }
 }
 
-// ★リザルト再表示
 function showResult() {
   document.getElementById('result-modal').style.display = 'flex';
 }
