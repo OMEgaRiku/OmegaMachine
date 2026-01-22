@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>OMEGA MACHINE</title>
+<title>OMEGA STONE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
@@ -52,6 +52,12 @@
   .btn-hard { border-color: #e74c3c; color: #f5b7b1; box-shadow: 0 0 10px rgba(231, 76, 60, 0.2); }
   .btn-night { border-color: #9b59b6; color: #d7bde2; box-shadow: 0 0 10px rgba(155, 89, 182, 0.2); }
   .btn-chaos { border-color: #95a5a6; color: #d0d0d0; box-shadow: 0 0 10px rgba(255, 255, 255, 0.1); border-style: dashed;}
+  
+  /* Omega Mode Styles */
+  .btn-omega { 
+    border-color: #fff; color: #fff; background: #000; 
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); font-family: 'Cinzel', serif;
+  }
 
   /* Game Screen */
   #game-screen { display: none; max-width: 600px; margin: 0 auto; animation: slideIn 0.5s ease-out; }
@@ -147,6 +153,16 @@
   .stone-title { font-size: 0.75rem; color: #888; margin-bottom: 2px; }
   .stone-text { font-size: 1rem; color: #fff; font-weight: bold; letter-spacing: 0.5px; }
   .stone-id { font-family: 'Cinzel', serif; font-size: 1.4rem; color: #444; margin-left: 10px;}
+  
+  /* Mystery Stone (Omega) */
+  .stone.is-mystery {
+    color: #fff; background: #000; border: 1px solid #555;
+    display: flex; justify-content: center; align-items: center;
+  }
+  .stone.is-mystery .stone-title { display: none; }
+  .stone.is-mystery .stone-text { 
+    font-family: 'Cinzel', serif; font-size: 1.5rem; letter-spacing: 5px; color: #888; 
+  }
 
   /* Log */
   .log-area {
@@ -175,7 +191,8 @@
   .seal-broken { font-size: 2.5rem; color: #fff; text-shadow: 0 0 30px #fff; font-weight: bold; }
   .answer-reveal { font-size: 4rem; letter-spacing: 15px; margin: 20px; color: #fff; font-family: 'Cinzel', serif; }
 
-  #help-content {
+  /* Help & History Styles */
+  #help-content, #history-content {
     background: #111; border: 1px solid #444; padding: 20px; border-radius: 10px; width: 85%; max-width: 500px;
     max-height: 80vh; overflow-y: auto; text-align: left; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.8);
   }
@@ -196,49 +213,7 @@
   .d-true { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
   .d-false { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
   
-  .d-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; width: 140px; margin: 0 auto;}
-  .d-cell { width: 100%; aspect-ratio: 1; border: 1px solid #555; display: flex; justify-content: center; align-items: center; font-size: 0.8rem;}
-
-  #loading-indicator { font-size: 1.2rem; color: #d4af37; margin-top: 20px; display: none; }
-  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-  /* --- チュートリアル用追加スタイル --- */
-  .t-container {
-    display: flex; flex-direction: column; gap: 15px;
-  }
-  .t-step {
-    background: #1a1a1a; border: 1px solid #444; border-radius: 8px; padding: 15px;
-    position: relative; text-align: left;
-  }
-  .t-step-num {
-    background: var(--accent-color); color: #000; font-weight: bold;
-    display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; margin-bottom: 8px;
-  }
-  .t-row {
-    display: flex; align-items: center; justify-content: space-around; margin: 10px 0;
-    background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;
-  }
-  .t-input-mock {
-    font-family: 'Cinzel', serif; font-size: 1.2rem; border-bottom: 2px solid #666; padding: 0 10px; color: #fff;
-  }
-  .t-arrow { color: #888; font-size: 1.2rem; }
-  .t-stone-mock {
-    border: 1px solid #666; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; color: #ccc; background: #222;
-  }
-  .t-result-mock {
-    font-weight: bold; font-family: 'Cinzel', serif; padding: 5px 10px; border-radius: 4px;
-  }
-  .t-res-true { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
-  .t-res-false { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
-  
-  .t-logic-text {
-    font-size: 0.9rem; line-height: 1.6; color: #ddd; margin-top: 5px;
-  }
-  .t-highlight { color: #ff9999; font-weight: bold; }
-  .t-highlight-b { color: #99ccff; font-weight: bold; }
-  .t-conclusion {
-    border-top: 1px dashed #444; margin-top: 10px; padding-top: 10px; font-weight: bold; color: var(--accent-color);
-  }
-  /* 嘘つきの石碑を強調するスタイル */
+  /* Liar Styles */
   .stone.is-liar {
     border: 2px solid #e74c3c;
     background: linear-gradient(to right, rgba(231, 76, 60, 0.2), rgba(0,0,0,0.8));
@@ -247,27 +222,10 @@
   .stone.is-liar .stone-title::after {
     content: " (嘘つき)"; color: #e74c3c; font-weight: bold; margin-left: 5px;
   }
-  
-  /* リザルト詳細のリスト */
   .res-row { font-size: 0.8rem; border-bottom: 1px solid #444; padding: 5px 0; color: #ccc; }
   .res-liar-txt { color: #e74c3c; font-weight:bold; }
-    /* オメガモード用: 禍々しいボタン */
-  .btn-omega { 
-    border-color: #fff; color: #fff; background: #000; 
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); font-family: 'Cinzel', serif;
-  }
-  
-  /* 謎の石碑 */
-  .stone.is-mystery {
-    color: #fff; background: #000; border: 1px solid #555;
-    display: flex; justify-content: center; align-items: center;
-  }
-  .stone.is-mystery .stone-title { display: none; }
-  .stone.is-mystery .stone-text { 
-    font-family: 'Cinzel', serif; font-size: 1.5rem; letter-spacing: 5px; color: #888; 
-  }
 
-  /* ルール推理リスト（オメガ用メモ） */
+  /* Omega Rule List */
   #omega-rule-area {
     margin-top: 15px; padding: 10px; border: 1px solid #444; border-radius: 8px;
     background: rgba(0,0,0,0.8); display: none; text-align: left;
@@ -277,36 +235,80 @@
     padding: 6px; font-size: 0.85rem; color: #ccc; cursor: pointer; border-bottom: 1px dashed #333; transition: 0.2s;
   }
   .omega-list-item:hover { color: #fff; background: rgba(255,255,255,0.1); }
-  /* クリックで除外するためのスタイル */
   .omega-list-item.excluded {
     text-decoration: line-through; color: #555; opacity: 0.6;
   }
 
+  /* History List Styles */
+  .hist-item {
+    background: #1a1a1a; border: 1px solid #333; border-radius: 6px; padding: 10px;
+    margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .hist-left { text-align: left; }
+  .hist-mode { font-size: 0.7rem; padding: 2px 6px; border-radius: 3px; margin-right: 5px; font-weight: bold; }
+  .mode-standard { background: #1c4e8a; color: #aed6f1; }
+  .mode-hard { background: #8a1c1c; color: #f5b7b1; }
+  .mode-nightmare { background: #4a1c8a; color: #d7bde2; }
+  .mode-chaos { background: #555; color: #ccc; }
+  .mode-omega { background: #000; color: #fff; border: 1px solid #fff; }
+
+  .hist-id { font-family: 'Cinzel', serif; color: #d4af37; font-weight: bold; letter-spacing: 1px; }
+  .hist-date { font-size: 0.7rem; color: #666; margin-top: 2px; }
+  .hist-result { font-weight: bold; font-size: 0.9rem; }
+  .res-win { color: #2ecc71; }
+  .res-lose { color: #e74c3c; }
+
+  .btn-replay {
+    background: transparent; border: 1px solid #555; color: #aaa; cursor: pointer;
+    padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; margin-left: 10px; transition: 0.2s;
+  }
+  .btn-replay:hover { background: #333; color: #fff; border-color: #fff; }
+  
+  /* Tutorial Styles */
+  .t-container { display: flex; flex-direction: column; gap: 15px; }
+  .t-step { background: #1a1a1a; border: 1px solid #444; border-radius: 8px; padding: 15px; position: relative; text-align: left; }
+  .t-step-num { background: var(--accent-color); color: #000; font-weight: bold; display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; margin-bottom: 8px; }
+  .t-row { display: flex; align-items: center; justify-content: space-around; margin: 10px 0; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; }
+  .t-stone-mock { border: 1px solid #666; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; color: #ccc; background: #222; }
+  .t-result-mock { font-weight: bold; font-family: 'Cinzel', serif; padding: 5px 10px; border-radius: 4px; }
+  .t-res-true { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+  .t-res-false { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
+  .t-logic-text { font-size: 0.9rem; line-height: 1.6; color: #ddd; margin-top: 5px; }
+  .t-highlight { color: #ff9999; font-weight: bold; }
+  .t-highlight-b { color: #99ccff; font-weight: bold; }
+  .t-conclusion { border-top: 1px dashed #444; margin-top: 10px; padding-top: 10px; font-weight: bold; color: var(--accent-color); }
+
+  #loading-indicator { font-size: 1.2rem; color: #d4af37; margin-top: 20px; display: none; }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
 
 </style>
 </head>
 <body>
-
   <div id="title-screen">
-    <div class="game-title">OMEGA MACHINE</div>
-    <div style="color:#aaa; margin-bottom:40px; letter-spacing:2px; font-size:0.9rem;">logical Thinking</div>
+    <div class="game-title">OMEGA STONE</div>
+    <div style="color:#aaa; margin-bottom:40px; letter-spacing:2px; font-size:0.9rem;">Logical Deduction RPG</div>
     
     <div class="btn btn-std" onclick="startGame('standard')"><span>基本 (Standard)</span><span class="en-font">I</span></div>
     <div class="btn btn-hard" onclick="startGame('hard')"><span>高難度 (Hard)</span><span class="en-font">II</span></div>
     <div class="btn btn-night" onclick="startGame('nightmare')"><span>悪夢 (Nightmare)</span><span class="en-font">III</span></div>
     <div class="btn btn-chaos" onclick="startGame('chaos')"><span>混沌 (Chaos)</span><span class="en-font">∞</span></div>
     <div class="btn btn-omega" onclick="startGame('omega')"><span>Ω (Omega)</span><span class="en-font">?</span></div>
+
+    <div style="display:flex; gap:10px; width:90%; max-width:350px; margin-top:10px;">
+      <div class="btn btn-std" style="font-size:0.9rem; padding:12px;" onclick="showHistory()">📜 履歴</div>
+      <div class="btn btn-std" style="font-size:0.9rem; padding:12px; border-color:#aaa; color:#eee;" onclick="showInputId()">🔑 ID入力</div>
+    </div>
+    
     <div id="loading-indicator">生成中...</div>
   </div>
 
   <div id="game-screen">
     <div class="hud">
-       <div class="hud-left">
+      <div class="hud-left">
         <div class="hud-btn" onclick="location.reload()">MENU</div>
         <div class="hud-btn btn-guide" onclick="showHelp()">GUIDE ?</div>
         <div id="btn-show-result" class="hud-btn" style="display:none; border-color:#2ecc71; color:#2ecc71; font-weight:bold;" onclick="showResult()">★ RESULT</div>
       </div>
-
       <div class="mana-bar"><span style="font-size:0.8rem; color:#888;">MANA</span> <span id="ui-mana" class="en-font">0/3</span></div>
     </div>
 
@@ -354,14 +356,13 @@
         <div class="memo-btn" onclick="toggleMemo(this)">Min<span style="color:#99ffcc">風</span></div>
       </div>
     </div>
-
     <div id="prophecy-container" class="prophecy-list"></div>
-        <div id="omega-rule-area">
+
+    <div id="omega-rule-area">
       <div class="omega-label">DETECTED LAWS (Search & Destroy)</div>
       <div style="font-size:0.7rem; color:#888; margin-bottom:5px;">※クリックで取り消し線 (メモ)</div>
       <div id="omega-list"></div>
     </div>
-
 
     <div class="action-bar">
       <button class="btn-action btn-next" onclick="nextRound()">次のラウンドへ</button>
@@ -374,121 +375,126 @@
   </div>
 
   <div id="help-modal" class="modal-overlay">
-     <div id="help-content">
-    <div class="close-help" onclick="closeHelp()">×</div>
-    <h2 style="text-align:center; margin-top:0; color:#fff; border-bottom:1px solid #333; padding-bottom:15px;">遺跡解析ガイド</h2>
-
-    <div class="help-section">
-      <div class="help-title">1. このゲームの目的</div>
-      <div class="help-text">
-        あなたの目的は、3つのルーン（<span class="t-highlight">炎</span>・<span class="t-highlight-b">水</span>・<span style="color:#99ffcc; font-weight:bold;">風</span>）に設定された<strong>「正解の数字 (1〜5)」</strong>を特定することです。<br><br>
-        しかし、いきなり数字を当てることはできません。<br>
-        まずは石碑に質問をして<strong>「隠されたルール」</strong>を暴く必要があります。
+    <div id="help-content">
+      <div class="close-help" onclick="closeHelp()">×</div>
+      <h2 style="text-align:center; margin-top:0; color:#fff; border-bottom:1px solid #333; padding-bottom:15px;">遺跡解析ガイド</h2>
+      <div class="help-section">
+        <div class="help-title">1. このゲームの目的</div>
+        <div class="help-text">
+          あなたの目的は、3つのルーン（<span class="t-highlight">炎</span>・<span class="t-highlight-b">水</span>・<span style="color:#99ffcc; font-weight:bold;">風</span>）に設定された<strong>「正解の数字 (1〜5)」</strong>を特定することです。<br><br>
+          しかし、いきなり数字を当てることはできません。<br>
+          まずは石碑に質問をして<strong>「隠されたルール」</strong>を暴く必要があります。
+        </div>
       </div>
-    </div>
-
-    <div class="help-section">
-      <div class="help-title">2. 例題でわかる「解析」の流れ</div>
-      <div class="help-text" style="margin-bottom:15px;">
-        ある石碑に<strong>「炎と水の比較 (<, =, >)」</strong>と書いてあります。<br>
-        これは、「炎が大きい」のか「同じ」なのか「水が大きい」のか、<strong>ルールがまだ不明</strong>な状態です。<br>
-        これを特定するために、数字を入力して石碑の反応を見ます。
-      </div>
-
-      <div class="t-container">
-        <div class="t-step">
-          <div class="t-step-num">STEP 1 : 試しに入力してみる</div>
-          <div class="t-logic-text">
-            あなたは「炎のほうが大きい数字(4)」と「水のほうが小さい数字(1)」をセットしました。
-          </div>
-          <div class="t-row">
-            <div style="text-align:center;">
-              <span class="t-highlight">炎:4</span> <span class="t-arrow">></span> <span class="t-highlight-b">水:1</span>
+      <div class="help-section">
+        <div class="help-title">2. 例題でわかる「解析」の流れ</div>
+        <div class="help-text" style="margin-bottom:15px;">
+          ある石碑に<strong>「炎と水の比較 (<, =, >)」</strong>と書いてあります。<br>
+          これは、「炎が大きい」のか「同じ」なのか「水が大きい」のか、<strong>ルールがまだ不明</strong>な状態です。<br>
+          これを特定するために、数字を入力して石碑の反応を見ます。
+        </div>
+        <div class="t-container">
+          <div class="t-step">
+            <div class="t-step-num">STEP 1 : 試しに入力してみる</div>
+            <div class="t-logic-text">
+              あなたは「炎(4)」と「水(1)」をセットしました。
+            </div>
+            <div class="t-row">
+              <div style="text-align:center;">
+                <span class="t-highlight">炎:4</span> <span class="t-arrow">></span> <span class="t-highlight-b">水:1</span>
+              </div>
             </div>
           </div>
-          <div class="t-logic-text" style="font-size:0.8rem; color:#aaa;">
-            (この時点では、これが正解かどうかはわかりません)
+          <div class="t-step">
+            <div class="t-step-num">STEP 2 : 石碑に問う</div>
+            <div class="t-logic-text">
+              石碑ボタンを押して判定します。<br>
+              もし、結果が <span class="t-result-mock t-res-true">TRUE</span> だったら…？
+            </div>
+            <div class="t-row">
+              <div class="t-stone-mock">石碑: 炎と水</div>
+              <div class="t-arrow">→</div>
+              <div class="t-result-mock t-res-true">TRUE (真実)</div>
+            </div>
+            <div class="t-logic-text">
+              石碑は<strong>「お前の入力した『炎 > 水』という関係性は正しいぞ」</strong>と言っています。
+            </div>
           </div>
-        </div>
-
-        <div class="t-step">
-          <div class="t-step-num">STEP 2 : 石碑に問う</div>
-          <div class="t-logic-text">
-            石碑ボタンを押して判定します。<br>
-            もし、結果が <span class="t-result-mock t-res-true">TRUE</span> だったら…？
-          </div>
-          <div class="t-row">
-            <div class="t-stone-mock">石碑: 炎と水</div>
-            <div class="t-arrow">→</div>
-            <div class="t-result-mock t-res-true">TRUE (真実)</div>
-          </div>
-          <div class="t-logic-text">
-            石碑は<strong>「お前の入力した『炎 > 水』という関係性は正しいぞ」</strong>と言っています。
-          </div>
-        </div>
-
-        <div class="t-step" style="border-color: #d4af37;">
-          <div class="t-step-num" style="background:#d4af37; color:#000;">STEP 3 : ルール確定！</div>
-          <div class="t-logic-text">
-            入力した関係性(4>1)が肯定されたので、この石碑の正体は<strong>「炎 > 水」のルール</strong>だと確定します！
-          </div>
-          <div class="t-conclusion">
-            ★推理完了<br>
-            正解のコードも必ず「炎 > 水」になっています。<br>
-            「炎が水より小さい」組み合わせは全て不正解なので、×をつけましょう。
+          <div class="t-step" style="border-color: #d4af37;">
+            <div class="t-step-num" style="background:#d4af37; color:#000;">STEP 3 : ルール確定！</div>
+            <div class="t-logic-text">
+              入力した関係性(4>1)が肯定されたので、この石碑の正体は<strong>「炎 > 水」のルール</strong>だと確定します！
+            </div>
+            <div class="t-conclusion">
+              ★推理完了<br>
+              正解のコードも必ず「炎 > 水」になっています。<br>
+              「炎が水より小さい」組み合わせは全て不正解なので、×をつけましょう。
+            </div>
           </div>
         </div>
       </div>
+      <button class="btn btn-std" style="width:100%; box-sizing:border-box;" onclick="closeHelp()">理解した</button>
     </div>
-
-    <div class="help-section">
-      <div class="help-title">3. もし FALSE (偽) が出たら？</div>
-      <div class="help-text">
-        上記の例で <span class="t-result-mock t-res-false">FALSE</span> が出た場合、<br>
-        あなたが入力した<strong>「炎 > 水」という関係性は間違い</strong>だということになります。<br>
-        つまり、正解のルールは残りの「炎 < 水」か「炎 = 水」のどちらかです。
-      </div>
-    </div>
-
-    <div class="help-section">
-      <div class="help-title">4. メモの使い方</div>
-      <div class="help-text">
-        画面下のマトリックス（表）を使って、可能性の消えた数字を消去していきましょう。<br>
-        <ul>
-          <li>クリックで <span style="color:#55ff55">○</span> (確定)</li>
-          <li>クリックで <span style="color:#ff5555">×</span> (除外)</li>
-        </ul>
-        すべての石碑のルールと矛盾しない、たった一つの「3つの数字」を見つけ出してください。
-      </div>
-    </div>
-
-    <button class="btn btn-std" style="width:100%; box-sizing:border-box;" onclick="closeHelp()">挑戦する</button>
-  </div>
-
   </div>
 
   <div id="result-modal" class="modal-overlay">
     <div class="seal-broken">封印解除</div>
-    
     <div style="color:#ccc; margin-top:10px;">真実のルーン:</div>
     <div class="answer-reveal" id="final-code"></div>
-    
-    <div id="result-details" style="width:90%; max-width:400px; background:#222; padding:10px; border-radius:8px; margin-bottom:20px; text-align:left; max-height:30vh; overflow-y:auto; border:1px solid #444;">
-      </div>
-
+    <div id="result-details" style="width:90%; max-width:400px; background:#222; padding:10px; border-radius:8px; margin-bottom:20px; text-align:left; max-height:30vh; overflow-y:auto; border:1px solid #444;"></div>
     <div style="color:#fff; margin-bottom:20px;">到達ラウンド: <span id="final-round" class="en-font"></span></div>
-    
     <div style="display:flex; gap:10px; width:90%; max-width:350px;">
       <button class="btn btn-std" style="justify-content:center; flex:1;" onclick="reviewBoard()">盤面を見る</button>
       <button class="btn btn-std" style="justify-content:center; flex:1; background:#d4af37; color:#000; border-color:#fff;" onclick="location.reload()">次の遺跡へ</button>
     </div>
   </div>
 
-  <script>
-// --- LOGIC ENGINE v6.0 (Omega Mode) ---
+  <div id="id-modal" class="modal-overlay">
+    <div style="background:#111; padding:20px; border:1px solid #444; border-radius:10px; width:80%; max-width:300px;">
+      <h3 style="color:#fff; margin-top:0;">石碑IDを入力</h3>
+      <input type="text" id="input-seed" placeholder="例: A1B2C" style="width:100%; padding:10px; font-size:1.2rem; text-align:center; margin-bottom:15px; background:#222; border:1px solid #555; color:#fff; font-family:'Cinzel', serif; text-transform:uppercase;">
+      <div style="color:#aaa; font-size:0.8rem; margin-bottom:10px;">難易度を選択して開始:</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+        <button class="btn btn-std" style="width:auto; padding:10px; font-size:0.8rem; margin:0;" onclick="startFromId('standard')">基本</button>
+        <button class="btn btn-hard" style="width:auto; padding:10px; font-size:0.8rem; margin:0;" onclick="startFromId('hard')">高難度</button>
+        <button class="btn btn-night" style="width:auto; padding:10px; font-size:0.8rem; margin:0;" onclick="startFromId('nightmare')">悪夢</button>
+        <button class="btn btn-omega" style="width:auto; padding:10px; font-size:0.8rem; margin:0; border:1px solid #fff;" onclick="startFromId('omega')">Ω</button>
+      </div>
+      <button class="btn btn-std" style="margin-top:15px; width:100%; border-color:#555; color:#aaa;" onclick="closeIdModal()">閉じる</button>
+    </div>
+  </div>
+
+  <div id="history-modal" class="modal-overlay">
+    <div id="history-content">
+      <div class="close-help" onclick="closeHistory()">×</div>
+      <h3 style="color:#fff; margin-top:0; border-bottom:1px solid #333; padding-bottom:10px;">探査の記録</h3>
+      <div id="history-list"></div>
+    </div>
+  </div>
+<script>
+// --- LOGIC ENGINE v7.1 (Fixed RNG & Full Features) ---
+
+// 高性能乱数生成器 (Mulberry32)
+// これにより、IDから常に同じ問題が生成され、かつ生成失敗が激減します
+class SeededRandom {
+  constructor(seedStr) {
+    // 文字列を32bitシード値に変換 (MurmurHash3の簡易版)
+    let h = 2166136261 >>> 0;
+    for (let i = 0; i < seedStr.length; i++) {
+      h = Math.imul(h ^ seedStr.charCodeAt(i), 16777619);
+    }
+    this.a = h >>> 0;
+  }
+  next() {
+    let t = this.a += 0x6D2B79F5;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+}
+let rng = null;
 
 const POOL = [
-  // Parity
   { name:"炎の偶奇 (偶数, 奇数)", desc:"炎 = 偶数", f:(i,a,v)=>i%2==0 }, 
   { name:"炎の偶奇 (偶数, 奇数)", desc:"炎 = 奇数", f:(i,a,v)=>i%2!=0 }, 
   { name:"水の偶奇 (偶数, 奇数)", desc:"水 = 偶数", f:(i,a,v)=>a%2==0 }, 
@@ -496,7 +502,6 @@ const POOL = [
   { name:"風の偶奇 (偶数, 奇数)", desc:"風 = 偶数", f:(i,a,v)=>v%2==0 }, 
   { name:"風の偶奇 (偶数, 奇数)", desc:"風 = 奇数", f:(i,a,v)=>v%2!=0 },
 
-  // Values (vs 1)
   { name:"炎と1の関係 (=, >)", desc:"炎 = 1", f:(i,a,v)=>i==1 },
   { name:"炎と1の関係 (=, >)", desc:"炎 > 1", f:(i,a,v)=>i>1 },
   { name:"水と1の関係 (=, >)", desc:"水 = 1", f:(i,a,v)=>a==1 },
@@ -504,7 +509,6 @@ const POOL = [
   { name:"風と1の関係 (=, >)", desc:"風 = 1", f:(i,a,v)=>v==1 },
   { name:"風と1の関係 (=, >)", desc:"風 > 1", f:(i,a,v)=>v>1 },
 
-  // Values (vs 3)
   { name:"炎と3の関係 (=, >)", desc:"炎 = 3", f:(i,a,v)=>i==3 },
   { name:"炎と3の関係 (=, >)", desc:"炎 > 3", f:(i,a,v)=>i>3 },
   { name:"水と3の関係 (=, >)", desc:"水 = 3", f:(i,a,v)=>a==3 },
@@ -512,29 +516,23 @@ const POOL = [
   { name:"風と3の関係 (=, >)", desc:"風 = 3", f:(i,a,v)=>v==3 },
   { name:"風と3の関係 (=, >)", desc:"風 > 3", f:(i,a,v)=>v>3 },
 
-  // Comparison
   { name:"炎と水の比較 (<, =, >)", desc:"炎 > 水", f:(i,a,v)=>i>a }, 
   { name:"炎と水の比較 (<, =, >)", desc:"炎 < 水", f:(i,a,v)=>i<a }, 
   { name:"炎と水の比較 (<, =, >)", desc:"炎 = 水", f:(i,a,v)=>i==a },
-  
   { name:"水と風の比較 (<, =, >)", desc:"水 > 風", f:(i,a,v)=>a>v }, 
   { name:"水と風の比較 (<, =, >)", desc:"水 < 風", f:(i,a,v)=>a<v }, 
   { name:"水と風の比較 (<, =, >)", desc:"水 = 風", f:(i,a,v)=>a==v },
-  
   { name:"炎と風の比較 (<, =, >)", desc:"炎 > 風", f:(i,a,v)=>i>v }, 
   { name:"炎と風の比較 (<, =, >)", desc:"炎 < 風", f:(i,a,v)=>i<v }, 
   { name:"炎と風の比較 (<, =, >)", desc:"炎 = 風", f:(i,a,v)=>i==v },
 
-  // Extremes
   { name:"最大値の所在 (≧)", desc:"炎が最大 (他以上)", f:(i,a,v)=>i>=a && i>=v }, 
   { name:"最大値の所在 (≧)", desc:"水が最大 (他以上)", f:(i,a,v)=>a>=i && a>=v }, 
   { name:"最大値の所在 (≧)", desc:"風が最大 (他以上)", f:(i,a,v)=>v>=i && v>=a }, 
-  
   { name:"最小値の所在 (≦)", desc:"炎が最小 (他以下)", f:(i,a,v)=>i<=a && i<=v }, 
   { name:"最小値の所在 (≦)", desc:"水が最小 (他以下)", f:(i,a,v)=>a<=i && a<=v }, 
   { name:"最小値の所在 (≦)", desc:"風が最小 (他以下)", f:(i,a,v)=>v<=i && v<=a }, 
 
-  // Sums
   { name:"合計の偶奇 (偶数, 奇数)", desc:"合計 = 偶数", f:(i,a,v)=>(i+a+v)%2==0 },
   { name:"合計の偶奇 (偶数, 奇数)", desc:"合計 = 奇数", f:(i,a,v)=>(i+a+v)%2!=0 },
   { name:"合計と6の関係 (<, ≧)", desc:"合計 < 6", f:(i,a,v)=>(i+a+v)<6 },
@@ -542,36 +540,43 @@ const POOL = [
   { name:"合計と10の関係 (<, ≧)", desc:"合計 < 10", f:(i,a,v)=>(i+a+v)<10 },
   { name:"合計と10の関係 (<, ≧)", desc:"合計 ≧ 10", f:(i,a,v)=>(i+a+v)>=10 },
 
-  // Primes
   { name:"素数の有無 (あり, なし)", desc:"素数を含む", f:(i,a,v)=>[i,a,v].some(n=>[2,3,5].includes(n)) },
   { name:"素数の有無 (あり, なし)", desc:"素数を含まない", f:(i,a,v)=>![i,a,v].some(n=>[2,3,5].includes(n)) },
 
-  // Pair Sums
   { name:"炎+水と5の関係 (<, =, >)", desc:"炎+水 > 5", f:(i,a,v)=>(i+a)>5 },
   { name:"炎+水と5の関係 (<, =, >)", desc:"炎+水 < 5", f:(i,a,v)=>(i+a)<5 },
   { name:"炎+水と5の関係 (<, =, >)", desc:"炎+水 = 5", f:(i,a,v)=>(i+a)==5 },
-  
   { name:"水+風と5の関係 (<, =, >)", desc:"水+風 > 5", f:(i,a,v)=>(a+v)>5 },
   { name:"水+風と5の関係 (<, =, >)", desc:"水+風 < 5", f:(i,a,v)=>(a+v)<5 },
   { name:"水+風と5の関係 (<, =, >)", desc:"水+風 = 5", f:(i,a,v)=>(a+v)==5 },
-  
   { name:"炎+風と5の関係 (<, =, >)", desc:"炎+風 > 5", f:(i,a,v)=>(i+v)>5 },
   { name:"炎+風と5の関係 (<, =, >)", desc:"炎+風 < 5", f:(i,a,v)=>(i+v)<5 },
   { name:"炎+風と5の関係 (<, =, >)", desc:"炎+風 = 5", f:(i,a,v)=>(i+v)==5 },
-  
-  // Counts
+
   { name:"偶数の数 (1, 2)", desc:"偶数が1個", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==1 },
   { name:"偶数の数 (1, 2)", desc:"偶数が2個", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==2 },
   { name:"1の数 (0, 1)", desc:"1を含まない", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==0 },
   { name:"1の数 (0, 1)", desc:"1が1個", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==1 },
   
-  // Patterns
   { name:"並びの法則 (全異, ペア, 昇順)", desc:"すべて異なる", f:(i,a,v)=>i!=a && a!=v && i!=v }, 
   { name:"並びの法則 (全異, ペア, 昇順)", desc:"ペアあり(2つ同じ)", f:(i,a,v)=>i==a || a==v || i==v }, 
   { name:"並びの法則 (全異, ペア, 昇順)", desc:"昇順 (炎<水<風)", f:(i,a,v)=>i<a && a<v }
 ];
 
-let state = { ans:{i:0,a:0,v:0}, rules:[], round:1, mana:0, maxMana:3, liarIndex:-1, stoneCount:5, isOmega:false };
+let state = { 
+  ans:{i:0,a:0,v:0}, rules:[], round:1, mana:0, maxMana:3, 
+  liarIndex:-1, stoneCount:5, isOmega:false,
+  currentSeed: "", currentMode: ""
+};
+
+function generateSeed(length) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
 
 function limitInput(el) {
   if(el.value < 1) el.value = 1;
@@ -580,183 +585,177 @@ function limitInput(el) {
 
 function initMatrix() {
   const grid = document.getElementById('logic-matrix');
-  grid.innerHTML = '';
-  grid.innerHTML += '<div></div>'; 
+  grid.innerHTML = '<div></div>'; 
   for(let n=1; n<=5; n++) grid.innerHTML += `<div class="grid-header">${n}</div>`;
-
   const rows = [
     {label:"炎", color:"#ff9999", id:"m-i"},
     {label:"水", color:"#99ccff", id:"m-a"},
     {label:"風", color:"#99ffcc", id:"m-v"}
   ];
-
   rows.forEach(r => {
     grid.innerHTML += `<div class="grid-row-label" style="color:${r.color}">${r.label}</div>`;
     for(let n=1; n<=5; n++) {
       grid.innerHTML += `<div class="grid-cell" id="${r.id}-${n}" onclick="toggleCell(this)"></div>`;
     }
   });
-
   document.querySelectorAll('.memo-btn').forEach(btn => {
     btn.classList.remove('is-o');
     btn.classList.remove('is-x');
   });
 }
-
 function toggleCell(el) {
   if(el.classList.contains('cell-x')) {
-    el.classList.remove('cell-x');
-    el.classList.add('cell-o');
+    el.classList.remove('cell-x'); el.classList.add('cell-o');
   } else if(el.classList.contains('cell-o')) {
     el.classList.remove('cell-o');
-  } else {
-    el.classList.add('cell-x');
-  }
+  } else { el.classList.add('cell-x'); }
 }
-
 function toggleMemo(el) {
   if(el.classList.contains('is-x')) {
     el.classList.remove('is-x');
   } else if(el.classList.contains('is-o')) {
-    el.classList.remove('is-o');
-    el.classList.add('is-x');
-  } else {
-    el.classList.add('is-o');
-  }
+    el.classList.remove('is-o'); el.classList.add('is-x');
+  } else { el.classList.add('is-o'); }
 }
-
 function toggleMemoArea() {
-  const area = document.getElementById('memo-pad');
-  if(area.classList.contains('closed')) {
-    area.classList.remove('closed');
-  } else {
-    area.classList.add('closed');
-  }
+  document.getElementById('memo-pad').classList.toggle('closed');
 }
 
 function setBackground(mode) {
     const body = document.body;
     switch(mode) {
-        case 'standard':
-            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #1a252e 0%, #05080a 100%)";
-            break;
-        case 'hard':
-            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #3e1a1a 0%, #0a0505 100%)";
-            break;
-        case 'nightmare':
-            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #2c1a3e 0%, #08050a 100%)";
-            break;
-        case 'chaos':
-            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #333 0%, #000 100%)";
-            break;
-        case 'omega':
-            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #000 0%, #111 100%)";
-            break;
+        case 'standard': body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #1a252e 0%, #05080a 100%)"; break;
+        case 'hard': body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #3e1a1a 0%, #0a0505 100%)"; break;
+        case 'nightmare': body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #2c1a3e 0%, #08050a 100%)"; break;
+        case 'chaos': body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #333 0%, #000 100%)"; break;
+        case 'omega': body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #000 0%, #111 100%)"; break;
     }
 }
 
 function startGame(mode) {
-  document.getElementById('loading-indicator').style.display = 'block';
-  setTimeout(() => {
-    initGame(mode);
-  }, 100);
+  const newSeed = generateSeed(5);
+  initGame(mode, newSeed);
 }
 
-function initGame(mode) {
-  state.round = 1;
-  state.mana = 0;
-  state.maxMana = (mode === 'nightmare' || mode === 'omega') ? 2 : 3;
-  state.stoneCount = (mode === 'standard') ? 4 : 5;
-  state.isOmega = (mode === 'omega'); // オメガモードフラグ
+function startFromId(mode) {
+  const input = document.getElementById('input-seed');
+  const seed = input.value.trim().toUpperCase();
+  if(!seed) { alert("IDを入力してください"); return; }
+  closeIdModal();
+  initGame(mode, seed);
+}
 
-  const resultBtn = document.getElementById('btn-show-result');
-  if(resultBtn) resultBtn.style.display = 'none';
+function initGame(mode, seed) {
+  document.getElementById('loading-indicator').style.display = 'block';
   
-  let success = false;
-  let attempts = 0;
-  const maxAttempts = 20000; 
+  rng = new SeededRandom(seed);
+  state.currentSeed = seed;
+  state.currentMode = mode;
   
-  while(!success && attempts < maxAttempts) {
-    attempts++;
-    state.ans = {
-      i: Math.floor(Math.random()*5)+1,
-      a: Math.floor(Math.random()*5)+1,
-      v: Math.floor(Math.random()*5)+1
-    };
+  setTimeout(() => {
+    state.round = 1;
+    state.mana = 0;
+    state.maxMana = (mode === 'nightmare' || mode === 'omega') ? 2 : 3;
+    state.stoneCount = (mode === 'standard') ? 4 : 5;
+    state.isOmega = (mode === 'omega');
+
+    const resultBtn = document.getElementById('btn-show-result');
+    if(resultBtn) resultBtn.style.display = 'none';
     
-    let validRules = POOL.filter(r => r.f(state.ans.i, state.ans.a, state.ans.v) === true);
-    if(validRules.length < state.stoneCount) continue;
+    let success = false;
+    let attempts = 0;
+    const maxAttempts = 50000; 
+    
+    while(!success && attempts < maxAttempts) {
+      attempts++;
+      state.ans = {
+        i: Math.floor(rng.next()*5)+1,
+        a: Math.floor(rng.next()*5)+1,
+        v: Math.floor(rng.next()*5)+1
+      };
+      
+      let validRules = POOL.filter(r => r.f(state.ans.i, state.ans.a, state.ans.v) === true);
+      if(validRules.length < state.stoneCount) continue;
 
-    let picked = [];
-    let temp = [...validRules];
-    // Fisher-Yates shuffle
-    for (let i = temp.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [temp[i], temp[j]] = [temp[j], temp[i]];
-    }
-    for(let r of temp) {
-      if(!picked.some(p => p.name === r.name)) picked.push(r);
-      if(picked.length === state.stoneCount) break;
-    }
-    if(picked.length < state.stoneCount) continue;
-
-    let matches = 0;
-    for(let i=1; i<=5; i++) {
-      for(let a=1; a<=5; a++) {
-        for(let v=1; v<=5; v++) {
-           if(picked.every(rule => rule.f(i,a,v))) matches++;
-        }
+      let picked = [];
+      let temp = [...validRules];
+      
+      for (let i = temp.length - 1; i > 0; i--) {
+          const j = Math.floor(rng.next() * (i + 1));
+          [temp[i], temp[j]] = [temp[j], temp[i]];
       }
-    }
+      for(let r of temp) {
+        if(!picked.some(p => p.name === r.name)) picked.push(r);
+        if(picked.length === state.stoneCount) break;
+      }
+      if(picked.length < state.stoneCount) continue;
 
-    if(matches === 1) {
-      if(mode === 'chaos') {
-        const tempLiar = Math.floor(Math.random()*state.stoneCount);
-        let chaosSolutions = 0;
-        for(let i=1; i<=5; i++) {
-          for(let a=1; a<=5; a++) {
-            for(let v=1; v<=5; v++) {
-               let trueCount = 0;
-               picked.forEach((r, idx) => {
-                 let res = r.f(i, a, v);
-                 if(idx === tempLiar) res = !res;
-                 if(res) trueCount++;
-               });
-               if(trueCount === state.stoneCount) chaosSolutions++;
-            }
+      let matches = 0;
+      for(let i=1; i<=5; i++) {
+        for(let a=1; a<=5; a++) {
+          for(let v=1; v<=5; v++) {
+             if(picked.every(rule => rule.f(i,a,v))) matches++;
           }
         }
-        if(chaosSolutions === 1) {
+      }
+
+      if(matches === 1) {
+        if(mode === 'chaos') {
+          const tempLiar = Math.floor(rng.next()*state.stoneCount);
+          let chaosSolutions = 0;
+          for(let i=1; i<=5; i++) {
+            for(let a=1; a<=5; a++) {
+              for(let v=1; v<=5; v++) {
+                 let trueCount = 0;
+                 picked.forEach((r, idx) => {
+                   let res = r.f(i, a, v);
+                   if(idx === tempLiar) res = !res;
+                   if(res) trueCount++;
+                 });
+                 if(trueCount === state.stoneCount) chaosSolutions++;
+              }
+            }
+          }
+          if(chaosSolutions === 1) {
+            state.rules = picked;
+            state.liarIndex = tempLiar;
+            success = true;
+          }
+        } else {
           state.rules = picked;
-          state.liarIndex = tempLiar;
+          state.liarIndex = -1;
           success = true;
         }
-      } else {
-        state.rules = picked;
-        state.liarIndex = -1;
-        success = true;
       }
     }
-  }
 
-  document.getElementById('loading-indicator').style.display = 'none';
+    document.getElementById('loading-indicator').style.display = 'none';
 
-  if(!success) {
-    alert("生成失敗: 条件に合うパズルが見つかりませんでした。もう一度試してください。");
-  } else {
-    document.getElementById('title-screen').style.display = 'none';
-    document.getElementById('game-screen').style.display = 'block';
-    setBackground(mode);
-    updateHUD();
-    document.getElementById('log-container').innerHTML = '';
-    document.getElementById('chaos-warning').style.display = (mode === 'chaos') ? 'block' : 'none';
-    
-    // オメガモードならリストを表示、それ以外は非表示
-    document.getElementById('omega-rule-area').style.display = state.isOmega ? 'block' : 'none';
+    if(!success) {
+      alert("生成失敗: 条件に合うパズルが見つかりませんでした。別のIDを試すか、もう一度やり直してください。");
+      rng = new SeededRandom(generateSeed(5)); 
+    } else {
+      document.getElementById('title-screen').style.display = 'none';
+      document.getElementById('game-screen').style.display = 'block';
+      setBackground(mode);
+      updateHUD();
+      document.getElementById('log-container').innerHTML = '';
+      document.getElementById('chaos-warning').style.display = (mode === 'chaos') ? 'block' : 'none';
+      
+      const hud = document.querySelector('.hud');
+      // 古いID表示があれば消す
+      const oldId = document.getElementById('current-id-display');
+      if(oldId) oldId.remove();
+      
+      hud.insertAdjacentHTML('afterend', 
+        `<div id="current-id-display" style="text-align:center; color:#555; font-size:0.7rem; margin-top:-10px;">ID: <span style="font-family:'Cinzel',serif; color:#777;">${state.currentSeed}</span></div>`
+      );
 
-    initMatrix();
-    renderProphecies();
-  }
+      document.getElementById('omega-rule-area').style.display = state.isOmega ? 'block' : 'none';
+      initMatrix();
+      renderProphecies();
+    }
+  }, 100);
 }
 
 function renderProphecies() {
@@ -764,40 +763,29 @@ function renderProphecies() {
   c.innerHTML = '';
   const names = ["α", "β", "γ", "δ", "ε"];
   
-  // オメガモード用の「シャッフルされたルールリスト」を作成
   if (state.isOmega) {
     const listContainer = document.getElementById('omega-list');
     listContainer.innerHTML = '';
-    
-    // state.rulesをコピーしてシャッフル
     let shuffledRules = [...state.rules];
     for (let i = shuffledRules.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = Math.floor(rng.next() * (i + 1));
         [shuffledRules[i], shuffledRules[j]] = [shuffledRules[j], shuffledRules[i]];
     }
-
     shuffledRules.forEach(r => {
       const item = document.createElement('div');
       item.className = 'omega-list-item';
       item.innerText = r.name;
-      item.onclick = () => {
-        item.classList.toggle('excluded'); // 取り消し線トグル
-      };
+      item.onclick = () => { item.classList.toggle('excluded'); };
       listContainer.appendChild(item);
     });
   }
 
   state.rules.forEach((r, idx) => {
     let div = document.createElement('div');
-    
-    // オメガモードの表示分岐
     if (state.isOmega) {
       div.className = 'stone is-mystery';
       div.id = `stone-${idx}`;
-      div.innerHTML = `
-        <div class="stone-text" style="font-size:1.8rem;">???</div>
-        <div class="stone-id" style="display:none;">${names[idx]}</div>
-      `;
+      div.innerHTML = `<div class="stone-text" style="font-size:1.8rem;">???</div>`;
     } else {
       div.className = 'stone';
       div.id = `stone-${idx}`;
@@ -809,7 +797,6 @@ function renderProphecies() {
         <div class="stone-id">${names[idx]}</div>
       `;
     }
-    
     div.onclick = () => checkProphecy(idx, r, div);
     c.appendChild(div);
   });
@@ -837,8 +824,6 @@ function checkProphecy(idx, rule, el) {
   const log = document.getElementById('log-container');
   const entry = document.createElement('div');
   const names = ["α", "β", "γ", "δ", "ε"];
-  
-  // オメガモードでもログには「予言α」と出るが、内容は書かない
   entry.className = isTrue ? 'log-entry log-true' : 'log-entry log-false';
   entry.innerHTML = `
     <span>R${state.round} 予言${names[idx]} <span class="log-nums">${i}-${a}-${v}</span></span>
@@ -871,7 +856,6 @@ function attemptUnlock() {
   modal.style.display = 'flex';
   
   const isCorrect = (i === state.ans.i && a === state.ans.a && v === state.ans.v);
-  
   const title = document.querySelector('.seal-broken');
   if(isCorrect) {
     title.innerText = "封印解除";
@@ -884,14 +868,14 @@ function attemptUnlock() {
   document.getElementById('final-code').innerText = `${state.ans.i} ${state.ans.a} ${state.ans.v}`;
   document.getElementById('final-round').innerText = state.round;
 
+  saveHistory(isCorrect);
+
   const detailBox = document.getElementById('result-details');
   let html = '';
   const names = ["α", "β", "γ", "δ", "ε"];
-  
   state.rules.forEach((r, idx) => {
       const isLiar = (idx === state.liarIndex);
       const liarTag = isLiar ? '<span class="res-liar-txt">[嘘つき]</span> ' : '';
-      
       html += `<div class="res-row">
         <div><strong>予言${names[idx]}</strong>: ${liarTag}${r.name}</div>
         <div style="color:#d4af37; padding-left:10px; font-size:0.85rem;">
@@ -902,9 +886,62 @@ function attemptUnlock() {
   detailBox.innerHTML = html;
 }
 
+function saveHistory(isWin) {
+  const historyItem = {
+    seed: state.currentSeed,
+    mode: state.currentMode,
+    round: state.round,
+    win: isWin,
+    date: new Date().toLocaleString()
+  };
+  let history = JSON.parse(localStorage.getItem('omega_history') || '[]');
+  history.unshift(historyItem);
+  if(history.length > 30) history.pop();
+  localStorage.setItem('omega_history', JSON.stringify(history));
+}
+
+function showHistory() {
+  const modal = document.getElementById('history-modal');
+  const list = document.getElementById('history-list');
+  const history = JSON.parse(localStorage.getItem('omega_history') || '[]');
+  
+  modal.style.display = 'flex';
+  list.innerHTML = '';
+  
+  if(history.length === 0) {
+    list.innerHTML = '<div style="color:#666; text-align:center; padding:20px;">記録なし</div>';
+    return;
+  }
+
+  history.forEach(h => {
+    const item = document.createElement('div');
+    item.className = 'hist-item';
+    let modeLabel = h.mode.toUpperCase();
+    if(h.mode==='standard') modeLabel = 'STD';
+    if(h.mode==='nightmare') modeLabel = 'NIGHT';
+    
+    item.innerHTML = `
+      <div class="hist-left">
+        <span class="hist-mode mode-${h.mode}">${modeLabel}</span>
+        <span class="hist-id">#${h.seed}</span>
+        <div class="hist-date">${h.date} - R${h.round}</div>
+      </div>
+      <div style="display:flex; align-items:center;">
+        <span class="hist-result ${h.win ? 'res-win':'res-lose'}">${h.win ? 'WIN':'LOSE'}</span>
+        <button class="btn-replay" onclick="startFromHistory('${h.mode}', '${h.seed}')">再挑戦</button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function startFromHistory(mode, seed) {
+  closeHistory();
+  initGame(mode, seed);
+}
+
 function reviewBoard() {
   document.getElementById('result-modal').style.display = 'none';
-  
   const resultBtn = document.getElementById('btn-show-result');
   if(resultBtn) resultBtn.style.display = 'flex';
   
@@ -919,7 +956,6 @@ function reviewBoard() {
       if(liarStone) liarStone.classList.add('is-liar');
   }
   
-  // オメガモード: 振り返り時は石碑の正体を表示してあげる
   if(state.isOmega) {
       const names = ["α", "β", "γ", "δ", "ε"];
       state.rules.forEach((r, idx) => {
@@ -936,19 +972,16 @@ function reviewBoard() {
   }
 }
 
-function showResult() {
-  document.getElementById('result-modal').style.display = 'flex';
-}
-
+function showResult() { document.getElementById('result-modal').style.display = 'flex'; }
 function updateHUD() {
   document.getElementById('ui-round').innerText = state.round;
   document.getElementById('ui-mana').innerText = `${state.mana}/${state.maxMana}`;
 }
-
 function showHelp() { document.getElementById('help-modal').style.display = 'flex'; }
 function closeHelp() { document.getElementById('help-modal').style.display = 'none'; }
-
+function showInputId() { document.getElementById('id-modal').style.display = 'flex'; }
+function closeIdModal() { document.getElementById('id-modal').style.display = 'none'; }
+function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
 </script>
 </body>
 </html>
-
