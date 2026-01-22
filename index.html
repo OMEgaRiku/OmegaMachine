@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>OMEGA MACHINE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-color: #050505;
+    --text-main: #e0d0b0;
+    --accent-color: #d4af37;
+  }
+
+  body {
+    font-family: 'Shippori Mincho', serif;
+    background-color: var(--bg-color);
+    background-image: radial-gradient(circle at 50% 50%, #1a150e 0%, #000000 100%);
+    color: var(--text-main);
+    text-align: center;
+    padding: 20px;
+    margin: 0;
+    min-height: 100vh;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-image 1s ease;
+  }
+  .en-font { font-family: 'Cinzel', serif; }
+
+  /* Title Screen */
+  #title-screen {
+    display: flex; flex-direction: column; justify-content: center; align-items: center; height: 90vh; animation: fadeIn 2s;
+  }
+  .game-title {
+    font-family: 'Cinzel', serif; font-size: 2.5rem; font-weight: 900; letter-spacing: 3px;
+    background: linear-gradient(to bottom, #fff, #aaa); -webkit-background-clip: text; color: transparent;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3); margin-bottom: 5px;
+  }
+
+  /* Difficulty Buttons */
+  .btn {
+    background: rgba(0,0,0,0.5); border: 1px solid #777; color: #ccc; padding: 18px; margin: 8px;
+    font-size: 1.1rem; font-family: 'Shippori Mincho', serif; font-weight: bold; cursor: pointer;
+    width: 90%; max-width: 350px; position: relative; overflow: hidden; transition: 0.3s; border-radius: 8px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .btn:active { transform: scale(0.98); }
+  
+  .btn-std { border-color: #3498db; color: #aed6f1; box-shadow: 0 0 10px rgba(52, 152, 219, 0.2); }
+  .btn-hard { border-color: #e74c3c; color: #f5b7b1; box-shadow: 0 0 10px rgba(231, 76, 60, 0.2); }
+  .btn-night { border-color: #9b59b6; color: #d7bde2; box-shadow: 0 0 10px rgba(155, 89, 182, 0.2); }
+  .btn-chaos { border-color: #95a5a6; color: #d0d0d0; box-shadow: 0 0 10px rgba(255, 255, 255, 0.1); border-style: dashed;}
+
+  /* Game Screen */
+  #game-screen { display: none; max-width: 600px; margin: 0 auto; animation: slideIn 0.5s ease-out; }
+  @keyframes slideIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+  .hud {
+    display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.2);
+    padding-bottom: 10px; margin-bottom: 20px; font-family: 'Cinzel', serif;
+  }
+  .hud-left { display: flex; gap: 8px; }
+  .hud-btn { 
+    cursor: pointer; font-size: 0.85rem; color: #aaa; border: 1px solid #555; 
+    padding: 6px 12px; border-radius: 4px; background: rgba(0,0,0,0.6); 
+    display: flex; align-items: center; justify-content: center;
+  }
+  .btn-guide { border-color: #d4af37; color: #f1c40f; font-weight: bold; }
+  .mana-bar { font-size: 1.1rem; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+
+  /* Rune Inputs */
+  .rune-container {
+    display: flex; justify-content: center; gap: 12px; margin-bottom: 20px;
+    background: rgba(0,0,0,0.4); padding: 20px 10px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);
+  }
+  .rune-wrapper { position: relative; width: 80px; }
+  .rune-label { position: absolute; top: -28px; left: 0; width: 100%; font-size: 0.8rem; font-weight: bold; }
+  .rune-sub { font-size: 0.6rem; color: #888; display: block; margin-top: -2px; font-family: 'Cinzel', serif; }
+  
+  input.rune-input {
+    width: 100%; height: 75px; font-size: 2.2rem; text-align: center; background: #0f0f0f;
+    border: 2px solid #333; border-radius: 8px; color: #fff; font-family: 'Cinzel', serif; transition: 0.3s;
+  }
+  input:focus { outline: none; border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.3); }
+  
+  #r1 { border-color: #8a1c1c; color: #ff9999; } /* Ignis */
+  #r2 { border-color: #1c4e8a; color: #99ccff; } /* Aqua */
+  #r3 { border-color: #1c8a5e; color: #99ffcc; } /* Ventus */
+
+  /* Logic Matrix */
+  .logic-grid {
+    display: grid; grid-template-columns: auto repeat(5, 1fr); gap: 4px;
+    margin: 10px 0 10px 0; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+  }
+  .grid-header { font-family: 'Cinzel', serif; font-weight: bold; color: #888; font-size: 0.8rem; padding-bottom: 5px;}
+  .grid-row-label { text-align: right; padding-right: 10px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; justify-content: flex-end;}
+  
+  .grid-cell {
+    background: rgba(255,255,255,0.05); border: 1px solid #333; aspect-ratio: 1; border-radius: 4px;
+    cursor: pointer; display: flex; justify-content: center; align-items: center;
+    font-weight: bold; font-size: 1.2rem; user-select: none; transition: 0.1s;
+  }
+  
+  /* Shared Cell Styles */
+  .cell-x, .memo-btn.is-x { background: rgba(200, 50, 50, 0.2); color: #ff5555; border-color: #552222; }
+  .cell-x::after, .memo-btn.is-x::after { content: "×"; }
+  
+  .cell-o, .memo-btn.is-o { background: rgba(50, 200, 50, 0.2); color: #55ff55; border-color: #225522; }
+  .cell-o::after, .memo-btn.is-o::after { content: "○"; }
+
+  /* Memo Toggle & Area */
+  .memo-toggle-btn {
+    width: 100%; padding: 8px; background: rgba(255,255,255,0.1); border: 1px solid #444; border-radius: 6px;
+    color: #aaa; font-size: 0.8rem; cursor: pointer; margin-bottom: 5px; font-weight: bold; transition: 0.2s;
+  }
+  .memo-toggle-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+  .memo-area {
+    background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 8px;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out; overflow: hidden;
+  }
+  .memo-area.closed { display: none; }
+
+  .memo-row { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
+  .memo-label { width: 100%; font-size: 0.7rem; color: #888; margin-bottom: 2px; text-align: left; padding-left: 5px;}
+  .memo-btn {
+    border: 1px solid #444; background: #111; color: #ccc; padding: 6px 8px; border-radius: 4px;
+    font-size: 0.75rem; cursor: pointer; min-width: 45px; display: flex; align-items: center; justify-content: center; gap: 3px; user-select: none;
+  }
+  .memo-btn::after { margin-left: 2px; font-weight: bold; }
+
+  /* Prophecy List */
+  .prophecy-list { display: flex; flex-direction: column; gap: 10px; }
+  .stone {
+    background: linear-gradient(to right, rgba(30,30,30,0.9), rgba(10,10,10,0.9));
+    border: 1px solid #444; padding: 10px 15px;
+    border-radius: 5px; cursor: pointer; text-align: left; transition: 0.2s;
+    display: flex; justify-content: space-between; align-items: center; position: relative;
+    backdrop-filter: blur(5px);
+  }
+  .stone:hover { border-color: #aaa; transform: translateX(5px); }
+  .stone::after { content: ''; position: absolute; top:0; left:0; width: 4px; height: 100%; background: #666; }
+  .stone.disabled { opacity: 0.4; pointer-events: none; }
+  .stone-title { font-size: 0.75rem; color: #888; margin-bottom: 2px; }
+  .stone-text { font-size: 1rem; color: #fff; font-weight: bold; letter-spacing: 0.5px; }
+  .stone-id { font-family: 'Cinzel', serif; font-size: 1.4rem; color: #444; margin-left: 10px;}
+
+  /* Log */
+  .log-area {
+    margin-top: 20px; border-top: 1px solid #444; padding-top: 10px; max-height: 200px; overflow-y: auto; text-align: left; font-size: 0.9rem;
+  }
+  .log-entry { margin-bottom: 5px; padding: 8px 10px; border-radius: 4px; background: rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+  .log-true { border-left: 3px solid #2ecc71; color: #aaffaa; }
+  .log-false { border-left: 3px solid #e74c3c; color: #ffaaaa; }
+  .log-nums { font-family: 'Cinzel', serif; font-weight: bold; background: #000; padding: 1px 6px; border-radius: 3px; letter-spacing: 1px; font-size: 0.8rem;}
+
+  /* Action Bar */
+  .action-bar { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
+  .btn-action { flex: 1; padding: 15px; font-weight: bold; font-family: 'Shippori Mincho', serif; border: none; cursor: pointer; border-radius: 8px; font-size: 1rem; color: #fff; transition: 0.2s; }
+  .btn-next { background: #333; border: 1px solid #555; }
+  .btn-solve { background: #27ae60; box-shadow: 0 4px 0 #1e8449; }
+
+  /* Chaos Bar */
+  .chaos-bar { background: #c0392b; color: white; padding: 5px; font-size: 0.8rem; font-weight: bold; margin-bottom: 15px; border-radius: 4px; display: none; text-shadow: 0 0 5px #000; letter-spacing: 2px;}
+
+  /* Modals */
+  .modal-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9); z-index: 1000; flex-direction: column; justify-content: center; align-items: center;
+    backdrop-filter: blur(5px);
+  }
+  .seal-broken { font-size: 2.5rem; color: #fff; text-shadow: 0 0 30px #fff; font-weight: bold; }
+  .answer-reveal { font-size: 4rem; letter-spacing: 15px; margin: 20px; color: #fff; font-family: 'Cinzel', serif; }
+
+  #help-content {
+    background: #111; border: 1px solid #444; padding: 20px; border-radius: 10px; width: 85%; max-width: 500px;
+    max-height: 80vh; overflow-y: auto; text-align: left; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.8);
+  }
+  .help-section { margin-bottom: 25px; border-bottom: 1px dashed #333; padding-bottom: 15px; }
+  .help-title { color: #d4af37; font-weight: bold; margin-bottom: 10px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;}
+  .help-text { font-size: 0.9rem; line-height: 1.6; color: #ccc; }
+  .close-help { position: absolute; top: 10px; right: 15px; font-size: 1.5rem; cursor: pointer; color: #888; padding: 5px;}
+  
+  .diagram-box {
+    background: #222; border: 1px solid #444; padding: 15px; border-radius: 6px; margin: 10px 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .d-stone {
+    width: 90%; background: #333; border-left: 3px solid #666; padding: 8px; margin: 5px 0; color: #fff; font-size: 0.8rem; display: flex; justify-content: space-between;
+  }
+  .d-arrow { font-size: 1.5rem; color: #d4af37; margin: 5px 0; }
+  .d-result { font-weight: bold; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
+  .d-true { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+  .d-false { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
+  
+  .d-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; width: 140px; margin: 0 auto;}
+  .d-cell { width: 100%; aspect-ratio: 1; border: 1px solid #555; display: flex; justify-content: center; align-items: center; font-size: 0.8rem;}
+
+  #loading-indicator { font-size: 1.2rem; color: #d4af37; margin-top: 20px; display: none; }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+</style>
+</head>
+<body>
+
+  <div id="title-screen">
+    <div class="game-title">OMEGA MACHINE</div>
+    <div style="color:#aaa; margin-bottom:40px; letter-spacing:2px; font-size:0.9rem;">logical Thinking</div>
+    
+    <div class="btn btn-std" onclick="startGame('standard')"><span>基本 (Standard)</span><span class="en-font">I</span></div>
+    <div class="btn btn-hard" onclick="startGame('hard')"><span>高難度 (Hard)</span><span class="en-font">II</span></div>
+    <div class="btn btn-night" onclick="startGame('nightmare')"><span>悪夢 (Nightmare)</span><span class="en-font">III</span></div>
+    <div class="btn btn-chaos" onclick="startGame('chaos')"><span>混沌 (Chaos)</span><span class="en-font">∞</span></div>
+    <div id="loading-indicator">生成中...</div>
+  </div>
+
+  <div id="game-screen">
+    <div class="hud">
+      <div class="hud-left">
+        <div class="hud-btn" onclick="location.reload()">MENU</div>
+        <div class="hud-btn btn-guide" onclick="showHelp()">GUIDE ?</div>
+      </div>
+      <div class="mana-bar"><span style="font-size:0.8rem; color:#888;">MANA</span> <span id="ui-mana" class="en-font">0/3</span></div>
+    </div>
+
+    <div style="text-align:right; font-size:0.8rem; color:#aaa; margin-top:-15px; margin-bottom:15px; margin-right:5px;">ROUND <span id="ui-round" class="en-font" style="color:#fff; font-size:1.1rem;">1</span></div>
+
+    <div id="chaos-warning" class="chaos-bar">⚠ 偽りの石碑が含まれています (ONE LIAR)</div>
+
+    <div class="rune-container">
+      <div class="rune-wrapper">
+        <div class="rune-label" style="color:#ff9999">炎<span class="rune-sub">IGNIS</span></div>
+        <input type="number" id="r1" class="rune-input" min="1" max="5" placeholder="-" onchange="limitInput(this)">
+      </div>
+      <div class="rune-wrapper">
+        <div class="rune-label" style="color:#99ccff">水<span class="rune-sub">AQUA</span></div>
+        <input type="number" id="r2" class="rune-input" min="1" max="5" placeholder="-" onchange="limitInput(this)">
+      </div>
+      <div class="rune-wrapper">
+        <div class="rune-label" style="color:#99ffcc">風<span class="rune-sub">VENTUS</span></div>
+        <input type="number" id="r3" class="rune-input" min="1" max="5" placeholder="-" onchange="limitInput(this)">
+      </div>
+    </div>
+
+    <div style="text-align:left; color:#666; font-size:0.7rem; margin-bottom:5px; margin-left:5px;">LOGIC MATRIX & MEMO</div>
+    <div class="logic-grid" id="logic-matrix"></div>
+
+    <button class="memo-toggle-btn" onclick="toggleMemoArea()">📝 MEMO PAD (Show/Hide)</button>
+    
+    <div class="memo-area closed" id="memo-pad">
+      <div class="memo-label">合計メモ</div>
+      <div class="memo-row">
+        <div class="memo-btn" onclick="toggleMemo(this)">偶数</div>
+        <div class="memo-btn" onclick="toggleMemo(this)">奇数</div>
+        <div class="memo-btn" onclick="toggleMemo(this)">&lt; 6</div>
+        <div class="memo-btn" onclick="toggleMemo(this)">≧ 6</div>
+        <div class="memo-btn" onclick="toggleMemo(this)">&lt; 10</div>
+        <div class="memo-btn" onclick="toggleMemo(this)">≧ 10</div>
+      </div>
+      <div class="memo-label">大小メモ (値 ≧ 他)</div>
+      <div class="memo-row">
+        <div class="memo-btn" onclick="toggleMemo(this)">Max<span style="color:#ff9999">炎</span></div>
+        <div class="memo-btn" onclick="toggleMemo(this)">Max<span style="color:#99ccff">水</span></div>
+        <div class="memo-btn" onclick="toggleMemo(this)">Max<span style="color:#99ffcc">風</span></div>
+        <div class="memo-btn" onclick="toggleMemo(this)">Min<span style="color:#ff9999">炎</span></div>
+        <div class="memo-btn" onclick="toggleMemo(this)">Min<span style="color:#99ccff">水</span></div>
+        <div class="memo-btn" onclick="toggleMemo(this)">Min<span style="color:#99ffcc">風</span></div>
+      </div>
+    </div>
+
+    <div id="prophecy-container" class="prophecy-list"></div>
+
+    <div class="action-bar">
+      <button class="btn-action btn-next" onclick="nextRound()">次のラウンドへ</button>
+      <button class="btn-action btn-solve" onclick="attemptUnlock()">封印解除</button>
+    </div>
+
+    <div id="log-container" class="log-area">
+      <div style="color:#666; text-align:center; font-style:italic; font-size:0.8rem;">-- 解析の記録 --</div>
+    </div>
+  </div>
+
+  <div id="help-modal" class="modal-overlay">
+    <div id="help-content">
+      <div class="close-help" onclick="closeHelp()">×</div>
+      <h2 style="text-align:center; margin-top:0; color:#fff;">解析の手引き</h2>
+      <div class="help-section">
+        <div class="help-title">1. 目的</div>
+        <div class="help-text">
+          遺跡の封印を解くため、<strong style="color:#ff9999">炎</strong>・<strong style="color:#99ccff">水</strong>・<strong style="color:#99ffcc">風</strong>のルーンに隠された<strong>1〜5の数字</strong>を特定してください。
+        </div>
+      </div>
+      <div class="help-section">
+        <div class="help-title">2. 予言の確認（重要）</div>
+        <div class="help-text">
+          石碑には<strong>「テーマ」</strong>だけが書かれています。<br>
+          <span style="color:#d4af37">「炎と水 (<, =, >)」</span>という石碑の場合、内部で設定されたルールが「炎 > 水」なのか「炎 = 水」なのかは、<strong>自分で数字を入力して判定しないと分かりません。</strong>
+        </div>
+        <div class="diagram-box">
+          <div class="d-stone">
+             <span>予言: 炎と水 (<, =, >)</span>
+          </div>
+          <div class="d-arrow">↓ 3-1-1 で判定</div>
+          <div class="d-result d-true">TRUE</div>
+          <div style="font-size:0.7rem; color:#aaa; margin-top:5px;">
+            3>1でTRUEなら、この石碑の中身は<br>「炎 > 水」で確定！
+          </div>
+        </div>
+      </div>
+      <div class="help-section">
+        <div class="help-title">3. マトリックスとメモ</div>
+        <div class="help-text">
+          クリックで <span style="color:#55ff55">○</span> <span style="color:#ff5555">×</span> を切り替え。メモボタンはタップで表示/非表示を切り替えられます。
+        </div>
+      </div>
+      <button class="btn btn-std" style="width:100%; box-sizing:border-box;" onclick="closeHelp()">理解した</button>
+    </div>
+  </div>
+
+  <div id="result-modal" class="modal-overlay">
+    <div class="seal-broken">封印解除</div>
+    <div style="color:#ccc; margin-top:10px;">真実のルーン:</div>
+    <div class="answer-reveal" id="final-code"></div>
+    <div style="color:#fff; margin-bottom:30px;">到達ラウンド: <span id="final-round" class="en-font"></span></div>
+    <button class="btn btn-std" style="justify-content:center;" onclick="location.reload()">次の遺跡へ</button>
+  </div>
+  <script>
+// --- LOGIC ENGINE v5.1 (Cryptic Names) ---
+
+const POOL = [
+  // Parity
+  { name:"炎の偶奇 (偶数, 奇数)", f:(i,a,v)=>i%2==0 }, 
+  { name:"炎の偶奇 (偶数, 奇数)", f:(i,a,v)=>i%2!=0 }, 
+  { name:"水の偶奇 (偶数, 奇数)", f:(i,a,v)=>a%2==0 },
+  { name:"水の偶奇 (偶数, 奇数)", f:(i,a,v)=>a%2!=0 },
+  { name:"風の偶奇 (偶数, 奇数)", f:(i,a,v)=>v%2==0 },
+  { name:"風の偶奇 (偶数, 奇数)", f:(i,a,v)=>v%2!=0 },
+
+  // Values (vs 1)
+  { name:"炎と1の関係 (=, >)", f:(i,a,v)=>i==1 },
+  { name:"炎と1の関係 (=, >)", f:(i,a,v)=>i>1 },
+  { name:"水と1の関係 (=, >)", f:(i,a,v)=>a==1 },
+  { name:"水と1の関係 (=, >)", f:(i,a,v)=>a>1 },
+  { name:"風と1の関係 (=, >)", f:(i,a,v)=>v==1 },
+  { name:"風と1の関係 (=, >)", f:(i,a,v)=>v>1 },
+
+  // Values (vs 3)
+  { name:"炎と3の関係 (=, >)", f:(i,a,v)=>i==3 },
+  { name:"炎と3の関係 (=, >)", f:(i,a,v)=>i>3 },
+  { name:"水と3の関係 (=, >)", f:(i,a,v)=>a==3 },
+  { name:"水と3の関係 (=, >)", f:(i,a,v)=>a>3 },
+  { name:"風と3の関係 (=, >)", f:(i,a,v)=>v==3 },
+  { name:"風と3の関係 (=, >)", f:(i,a,v)=>v>3 },
+
+  // Comparison (Element vs Element) - Now Cryptic
+  { name:"炎と水の比較 (<, =, >)", f:(i,a,v)=>i>a }, 
+  { name:"炎と水の比較 (<, =, >)", f:(i,a,v)=>i<a }, 
+  { name:"炎と水の比較 (<, =, >)", f:(i,a,v)=>i==a },
+  
+  { name:"水と風の比較 (<, =, >)", f:(i,a,v)=>a>v }, 
+  { name:"水と風の比較 (<, =, >)", f:(i,a,v)=>a<v }, 
+  { name:"水と風の比較 (<, =, >)", f:(i,a,v)=>a==v },
+  
+  { name:"炎と風の比較 (<, =, >)", f:(i,a,v)=>i>v }, 
+  { name:"炎と風の比較 (<, =, >)", f:(i,a,v)=>i<v }, 
+  { name:"炎と風の比較 (<, =, >)", f:(i,a,v)=>i==v },
+
+  // Extremes
+  { name:"最大値の所在 (≧)", f:(i,a,v)=>i>=a && i>=v }, 
+  { name:"最大値の所在 (≧)", f:(i,a,v)=>a>=i && a>=v }, 
+  { name:"最大値の所在 (≧)", f:(i,a,v)=>v>=i && v>=a }, 
+  
+  { name:"最小値の所在 (≦)", f:(i,a,v)=>i<=a && i<=v }, 
+  { name:"最小値の所在 (≦)", f:(i,a,v)=>a<=i && a<=v }, 
+  { name:"最小値の所在 (≦)", f:(i,a,v)=>v<=i && v<=a }, 
+
+  // Sums (Total)
+  { name:"合計の偶奇 (偶数, 奇数)", f:(i,a,v)=>(i+a+v)%2==0 },
+  { name:"合計の偶奇 (偶数, 奇数)", f:(i,a,v)=>(i+a+v)%2!=0 },
+  { name:"合計と6の関係 (<, ≧)", f:(i,a,v)=>(i+a+v)<6 },
+  { name:"合計と6の関係 (<, ≧)", f:(i,a,v)=>(i+a+v)>=6 },
+  { name:"合計と10の関係 (<, ≧)", f:(i,a,v)=>(i+a+v)<10 },
+  { name:"合計と10の関係 (<, ≧)", f:(i,a,v)=>(i+a+v)>=10 },
+
+  // Primes
+  { name:"素数の有無 (あり, なし)", f:(i,a,v)=>[i,a,v].some(n=>[2,3,5].includes(n)) },
+  { name:"素数の有無 (あり, なし)", f:(i,a,v)=>![i,a,v].some(n=>[2,3,5].includes(n)) },
+
+  // Pair Sums (vs 5) - Now Cryptic
+  { name:"炎+水と5の関係 (<, =, >)", f:(i,a,v)=>(i+a)>5 },
+  { name:"炎+水と5の関係 (<, =, >)", f:(i,a,v)=>(i+a)<5 },
+  { name:"炎+水と5の関係 (<, =, >)", f:(i,a,v)=>(i+a)==5 },
+  
+  { name:"水+風と5の関係 (<, =, >)", f:(i,a,v)=>(a+v)>5 },
+  { name:"水+風と5の関係 (<, =, >)", f:(i,a,v)=>(a+v)<5 },
+  { name:"水+風と5の関係 (<, =, >)", f:(i,a,v)=>(a+v)==5 },
+  
+  { name:"炎+風と5の関係 (<, =, >)", f:(i,a,v)=>(i+v)>5 },
+  { name:"炎+風と5の関係 (<, =, >)", f:(i,a,v)=>(i+v)<5 },
+  { name:"炎+風と5の関係 (<, =, >)", f:(i,a,v)=>(i+v)==5 },
+  
+  // Counts
+  { name:"偶数の数 (1, 2)", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==1 },
+  { name:"偶数の数 (1, 2)", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==2 },
+  { name:"1の数 (0, 1)", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==0 },
+  { name:"1の数 (0, 1)", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==1 },
+  
+  // Patterns
+  { name:"並びの法則 (全異, ペア, 昇順)", f:(i,a,v)=>i!=a && a!=v && i!=v }, 
+  { name:"並びの法則 (全異, ペア, 昇順)", f:(i,a,v)=>i==a || a==v || i==v }, 
+  { name:"並びの法則 (全異, ペア, 昇順)", f:(i,a,v)=>i<a && a<v }
+];
+
+let state = { ans:{i:0,a:0,v:0}, rules:[], round:1, mana:0, maxMana:3, liarIndex:-1 };
+
+function limitInput(el) {
+  if(el.value < 1) el.value = 1;
+  if(el.value > 5) el.value = 5;
+}
+
+// Matrix & Memo
+function initMatrix() {
+  const grid = document.getElementById('logic-matrix');
+  grid.innerHTML = '';
+  grid.innerHTML += '<div></div>'; 
+  for(let n=1; n<=5; n++) grid.innerHTML += `<div class="grid-header">${n}</div>`;
+
+  const rows = [
+    {label:"炎", color:"#ff9999", id:"m-i"},
+    {label:"水", color:"#99ccff", id:"m-a"},
+    {label:"風", color:"#99ffcc", id:"m-v"}
+  ];
+
+  rows.forEach(r => {
+    grid.innerHTML += `<div class="grid-row-label" style="color:${r.color}">${r.label}</div>`;
+    for(let n=1; n<=5; n++) {
+      grid.innerHTML += `<div class="grid-cell" id="${r.id}-${n}" onclick="toggleCell(this)"></div>`;
+    }
+  });
+
+  document.querySelectorAll('.memo-btn').forEach(btn => {
+    btn.classList.remove('is-o');
+    btn.classList.remove('is-x');
+  });
+}
+
+function toggleCell(el) {
+  if(el.classList.contains('cell-x')) {
+    el.classList.remove('cell-x');
+    el.classList.add('cell-o');
+  } else if(el.classList.contains('cell-o')) {
+    el.classList.remove('cell-o');
+  } else {
+    el.classList.add('cell-x');
+  }
+}
+
+function toggleMemo(el) {
+  if(el.classList.contains('is-x')) {
+    el.classList.remove('is-x');
+  } else if(el.classList.contains('is-o')) {
+    el.classList.remove('is-o');
+    el.classList.add('is-x');
+  } else {
+    el.classList.add('is-o');
+  }
+}
+
+function toggleMemoArea() {
+  const area = document.getElementById('memo-pad');
+  if(area.classList.contains('closed')) {
+    area.classList.remove('closed');
+  } else {
+    area.classList.add('closed');
+  }
+}
+
+function setBackground(mode) {
+    const body = document.body;
+    switch(mode) {
+        case 'standard':
+            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #1a252e 0%, #05080a 100%)";
+            break;
+        case 'hard':
+            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #3e1a1a 0%, #0a0505 100%)";
+            break;
+        case 'nightmare':
+            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #2c1a3e 0%, #08050a 100%)";
+            break;
+        case 'chaos':
+            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #333 0%, #000 100%)";
+            break;
+    }
+}
+
+function startGame(mode) {
+  document.getElementById('loading-indicator').style.display = 'block';
+  setTimeout(() => {
+    initGame(mode);
+  }, 100);
+}
+
+function initGame(mode) {
+  state.round = 1;
+  state.mana = 0;
+  state.maxMana = (mode === 'nightmare') ? 2 : 3;
+  
+  let success = false;
+  let attempts = 0;
+  const maxAttempts = 10000; 
+  
+  while(!success && attempts < maxAttempts) {
+    attempts++;
+    state.ans = {
+      i: Math.floor(Math.random()*5)+1,
+      a: Math.floor(Math.random()*5)+1,
+      v: Math.floor(Math.random()*5)+1
+    };
+    
+    let validRules = POOL.filter(r => r.f(state.ans.i, state.ans.a, state.ans.v) === true);
+    if(validRules.length < 5) continue;
+
+    let picked = [];
+    let temp = [...validRules];
+    for (let i = temp.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [temp[i], temp[j]] = [temp[j], temp[i]];
+    }
+    for(let r of temp) {
+      if(!picked.some(p => p.name === r.name)) picked.push(r);
+      if(picked.length === 5) break;
+    }
+    if(picked.length < 5) continue;
+
+    let matches = 0;
+    for(let i=1; i<=5; i++) {
+      for(let a=1; a<=5; a++) {
+        for(let v=1; v<=5; v++) {
+           if(picked.every(rule => rule.f(i,a,v))) matches++;
+        }
+      }
+    }
+
+    if(matches === 1) {
+      if(mode === 'chaos') {
+        const tempLiar = Math.floor(Math.random()*5);
+        let chaosSolutions = 0;
+        for(let i=1; i<=5; i++) {
+          for(let a=1; a<=5; a++) {
+            for(let v=1; v<=5; v++) {
+               let trueCount = 0;
+               picked.forEach((r, idx) => {
+                 let res = r.f(i, a, v);
+                 if(idx === tempLiar) res = !res;
+                 if(res) trueCount++;
+               });
+               if(trueCount === 4) chaosSolutions++;
+            }
+          }
+        }
+        if(chaosSolutions === 1) {
+          state.rules = picked;
+          state.liarIndex = tempLiar;
+          success = true;
+        }
+      } else {
+        state.rules = picked;
+        state.liarIndex = -1;
+        success = true;
+      }
+    }
+  }
+
+  document.getElementById('loading-indicator').style.display = 'none';
+
+  if(!success) {
+    alert("生成失敗: 条件に合うパズルが見つかりませんでした。");
+  } else {
+    document.getElementById('title-screen').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'block';
+    setBackground(mode);
+    updateHUD();
+    document.getElementById('log-container').innerHTML = '';
+    document.getElementById('chaos-warning').style.display = (mode === 'chaos') ? 'block' : 'none';
+    initMatrix();
+    renderProphecies();
+  }
+}
+
+function renderProphecies() {
+  const c = document.getElementById('prophecy-container');
+  c.innerHTML = '';
+  const names = ["α", "β", "γ", "δ", "ε"];
+  state.rules.forEach((r, idx) => {
+    let div = document.createElement('div');
+    div.className = 'stone';
+    div.innerHTML = `
+      <div class="stone-content">
+        <div class="stone-title">予言 ${names[idx]}</div>
+        <div class="stone-text">${r.name}</div>
+      </div>
+      <div class="stone-id">${names[idx]}</div>
+    `;
+    div.onclick = () => checkProphecy(idx, r, div);
+    c.appendChild(div);
+  });
+}
+
+function checkProphecy(idx, rule, el) {
+  if(state.mana >= state.maxMana) return;
+  const i = +document.getElementById('r1').value;
+  const a = +document.getElementById('r2').value;
+  const v = +document.getElementById('r3').value;
+  if(!i || !a || !v) return;
+  
+  if(state.mana === 0) {
+    document.getElementById('r1').disabled = true;
+    document.getElementById('r2').disabled = true;
+    document.getElementById('r3').disabled = true;
+  }
+
+  let isTrue = rule.f(i, a, v);
+  if(idx === state.liarIndex) isTrue = !isTrue;
+
+  state.mana++;
+  updateHUD();
+  
+  const log = document.getElementById('log-container');
+  const entry = document.createElement('div');
+  entry.className = isTrue ? 'log-entry log-true' : 'log-entry log-false';
+  entry.innerHTML = `
+    <span>R${state.round} 予言${["α","β","γ","δ","ε"][idx]} <span class="log-nums">${i}-${a}-${v}</span></span>
+    <strong>${isTrue ? "TRUE" : "FALSE"}</strong>
+  `;
+  log.prepend(entry);
+
+  if(state.mana >= state.maxMana) {
+    document.querySelectorAll('.stone').forEach(s => s.classList.add('disabled'));
+  }
+}
+
+function nextRound() {
+  if(state.mana === 0) return;
+  state.round++;
+  state.mana = 0;
+  updateHUD();
+  document.getElementById('r1').disabled = false;
+  document.getElementById('r2').disabled = false;
+  document.getElementById('r3').disabled = false;
+  document.querySelectorAll('.stone').forEach(s => s.classList.remove('disabled'));
+}
+
+function attemptUnlock() {
+  const i = +document.getElementById('r1').value;
+  const a = +document.getElementById('r2').value;
+  const v = +document.getElementById('r3').value;
+  
+  const modal = document.getElementById('result-modal');
+  modal.style.display = 'flex';
+  
+  const isCorrect = (i === state.ans.i && a === state.ans.a && v === state.ans.v);
+  
+  if(isCorrect) {
+    document.querySelector('.seal-broken').innerText = "封印解除";
+    document.querySelector('.seal-broken').style.color = "#fff";
+  } else {
+    document.querySelector('.seal-broken').innerText = "解除失敗";
+    document.querySelector('.seal-broken').style.color = "#c0392b";
+  }
+  
+  document.getElementById('final-code').innerText = `${state.ans.i} ${state.ans.a} ${state.ans.v}`;
+  document.getElementById('final-round').innerText = state.round;
+}
+
+function updateHUD() {
+  document.getElementById('ui-round').innerText = state.round;
+  document.getElementById('ui-mana').innerText = `${state.mana}/${state.maxMana}`;
+}
+
+function showHelp() { document.getElementById('help-modal').style.display = 'flex'; }
+function closeHelp() { document.getElementById('help-modal').style.display = 'none'; }
+</script>
+</body>
+</html>
+
