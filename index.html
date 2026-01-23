@@ -185,7 +185,7 @@
   /* Modals */
   .modal-overlay {
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.9); z-index: 1000; flex-direction: column; justify-content: center; align-items: center;
+    background: rgba(0,0,0,0.9); z-index: 10000; flex-direction: column; justify-content: center; align-items: center;
     backdrop-filter: blur(5px);
   }
   .seal-broken { font-size: 2.5rem; color: #fff; text-shadow: 0 0 30px #fff; font-weight: bold; }
@@ -199,7 +199,22 @@
   .help-section { margin-bottom: 25px; border-bottom: 1px dashed #333; padding-bottom: 15px; }
   .help-title { color: #d4af37; font-weight: bold; margin-bottom: 10px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;}
   .help-text { font-size: 0.9rem; line-height: 1.6; color: #ccc; }
-  .close-help { position: absolute; top: 10px; right: 15px; font-size: 1.5rem; cursor: pointer; color: #888; padding: 5px;}
+  /* 閉じるボタン（スクロールしても追従するように変更） */
+.close-help { 
+  position: sticky !important; /* absolute から sticky に変更 */
+  top: 0; 
+  float: right; /* 右に寄せる */
+  font-size: 2rem; /* 少し大きくして押しやすく */
+  cursor: pointer; 
+  color: #888; 
+  padding: 5px 10px;
+  background: #111; /* 背景をつけて文字と被らないように */
+  border-radius: 0 0 0 8px;
+  z-index: 10;
+  margin-top: -10px; /* 位置微調整 */
+  margin-right: -10px;
+}
+
   
   .diagram-box {
     background: #222; border: 1px solid #444; padding: 15px; border-radius: 6px; margin: 10px 0;
@@ -280,19 +295,224 @@
 
   #loading-indicator { font-size: 1.2rem; color: #d4af37; margin-top: 20px; display: none; }
   @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  
+    /* --- チュートリアル用スタイル (改修版) --- */
+  
+  /* タイトル画面右上のボタン */
+  .title-top-right {
+    position: absolute; top: 20px; right: 20px;
+    display: flex; gap: 10px; z-index: 10;
+  }
+  .btn-tutorial {
+    background: rgba(46, 204, 113, 0.2); border: 1px solid #2ecc71; color: #2ecc71;
+    padding: 10px 15px; border-radius: 30px; font-weight: bold; cursor: pointer;
+    font-size: 0.9rem; display: flex; align-items: center; gap: 5px;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.2); transition: 0.2s;
+  }
+  .btn-tutorial:hover { background: rgba(46, 204, 113, 0.4); transform: scale(1.05); }
+
+  /* チュートリアルのメッセージBOX */
+  #tut-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    /* 背景の暗さを少し和らげました (0.7 -> 0.4) */
+    background: rgba(0,0,0,0.4); z-index: 2000; display: none;
+    pointer-events: auto;
+  }
+  
+  /* ハイライト（穴を開ける） */
+  .tut-highlight {
+    position: relative; z-index: 2001; 
+    /* 周りの暗さも少し和らげました */
+    box-shadow: 0 0 0 9999px rgba(0,0,0,0.6); 
+    pointer-events: auto; 
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+
+  /* 赤く点滅するアニメーション（注目！） */
+  @keyframes blink-red {
+    0% { border-color: #ff0000; box-shadow: 0 0 10px rgba(255, 0, 0, 0.5); transform: scale(1); }
+    50% { border-color: #ffcccc; box-shadow: 0 0 25px rgba(255, 50, 50, 0.9); transform: scale(1.02); }
+    100% { border-color: #ff0000; box-shadow: 0 0 10px rgba(255, 0, 0, 0.5); transform: scale(1); }
+  }
+  .tut-blink {
+    animation: blink-red 1.2s infinite ease-in-out !important;
+    border: 2px solid #ff0000 !important;
+    background: rgba(0, 0, 0, 0.8) !important; /* 文字が読みやすいように背景を濃く */
+  }
+  /* --- チュートリアルBOX (強制位置修正版) --- */
+
+  .tut-msg-box {
+    position: fixed !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 92% !important; /* 横幅 */
+    max-width: 500px !important;
+    background: rgba(15, 15, 20, 0.95) !important;
+    border: 1px solid #d4af37 !important;
+    border-radius: 8px !important;
+    padding: 12px 15px !important; /* パディングを減らす */
+    z-index: 9999 !important; /* 最前面に */
+    text-align: left !important;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.9) !important;
+    transition: all 0.3s ease !important;
+    
+    /* デフォルトは「画面の一番下」に配置 */
+    bottom: 20px !important;
+    top: auto !important;
+  }
+
+  /* 上に表示する場合のクラス */
+  .tut-pos-top {
+    top: 80px !important; /* ヘッダーの下 */
+    bottom: auto !important;
+  }
+
+  /* 下に表示する場合のクラス (デフォルトと同じだが念のため) */
+  .tut-pos-bottom {
+    bottom: 20px !important;
+    top: auto !important;
+  }
+
+  /* テキストサイズ調整 */
+  .tut-text {
+    color: #fff;
+    line-height: 1.4;
+    font-size: 0.9rem; /* 文字を少し小さく */
+    margin-bottom: 8px;
+  }
+
+  /* ボタン調整 */
+  .tut-next-btn {
+    background: #d4af37;
+    color: #000;
+    border: none;
+    padding: 5px 15px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    float: right;
+    font-size: 0.8rem;
+  }
+
+    
+  .tut-msg-box {
+    position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%);
+    width: 90%; max-width: 500px; background: #111; border: 2px solid #d4af37;
+    border-radius: 10px; padding: 20px; z-index: 2002; text-align: left;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+  }
+  .tut-text { color: #fff; line-height: 1.6; font-size: 1rem; margin-bottom: 15px; }
+  .tut-next-btn {
+    background: #d4af37; color: #000; border: none; padding: 8px 20px;
+    font-weight: bold; border-radius: 4px; cursor: pointer; float: right;
+  }
+  .tut-arrow {
+    position: absolute; color: #d4af37; font-size: 2rem; font-weight: bold;
+    animation: bounce 1s infinite; z-index: 2003; text-shadow: 0 0 5px #000;
+  }
+  @keyframes bounce { 0%, 100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
+
+/* --- チュートリアル用レイアウト調整（修正版） --- */
+
+/* 埋め込みモードのメッセージボックス */
+.tut-embedded-mode {
+  position: relative !important; /* 固定配置を解除 */
+  left: auto !important;
+  transform: none !important;
+  bottom: auto !important;
+  top: auto !important;
+  
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 0 20px 0 !important;
+  
+  background: rgba(20, 20, 25, 0.95) !important;
+  border: 1px solid #d4af37 !important;
+  border-radius: 8px !important;
+  padding: 15px !important;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.3) !important;
+  
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 120px; 
+}
+
+/* 矢印は埋め込みモードでは消す */
+.tut-embedded-mode .tut-arrow {
+  display: none !important;
+}
+
+/* 結果表示のデザイン */
+.tut-result-display {
+  font-family: 'Cinzel', serif;
+  font-size: 1.4rem;
+  font-weight: bold;
+  text-align: center;
+  margin: 10px 0;
+  padding: 8px;
+  background: rgba(0,0,0,0.5);
+  border-radius: 4px;
+}
+
+/* --- オメガモード用メモ欄 --- */
+.omega-memo-box {
+  margin-top: 5px;
+  padding: 0 5px;
+}
+.omega-memo-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #000;
+  border: 1px solid #444;
+  color: #d4af37; /* 金色文字 */
+  font-size: 0.8rem;
+  padding: 5px;
+  border-radius: 4px;
+  font-family: 'Shippori Mincho', serif;
+  transition: 0.3s;
+}
+.omega-memo-input:focus {
+  outline: none;
+  border-color: #d4af37;
+  box-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
+  background: #111;
+}
+.omega-memo-input::placeholder {
+  color: #444;
+  font-style: italic;
+}
+
+/* --- ロック状態のスタイル --- */
+input.rune-input:disabled {
+  background: #222;       /* 背景を暗く */
+  color: #555;            /* 文字を暗く */
+  border-color: #444;     /* 枠線も目立たなく */
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ロックメッセージのアニメーション */
+@keyframes fadeIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
+
 
 </style>
 </head>
 <body>
   <div id="title-screen">
+      <div class="title-top-right">
+      <div class="btn-tutorial" onclick="startTutorial()">Tutorial</div>
+    </div>
+
     <div class="game-title">OMEGA STONE</div>
     <div style="color:#aaa; margin-bottom:40px; letter-spacing:2px; font-size:0.9rem;">Logical Deduction RPG</div>
     
-    <div class="btn btn-std" onclick="startGame('standard')"><span>基本 (Standard)</span><span class="en-font">I</span></div>
-    <div class="btn btn-hard" onclick="startGame('hard')"><span>高難度 (Hard)</span><span class="en-font">II</span></div>
-    <div class="btn btn-night" onclick="startGame('nightmare')"><span>悪夢 (Nightmare)</span><span class="en-font">III</span></div>
-    <div class="btn btn-chaos" onclick="startGame('chaos')"><span>混沌 (Chaos)</span><span class="en-font">∞</span></div>
-    <div class="btn btn-omega" onclick="startGame('omega')"><span>Ω (Omega)</span><span class="en-font">?</span></div>
+    <div class="btn btn-std" onclick="startGame('standard')"><span>Standard</span><span class="en-font">I</span></div>
+    <div class="btn btn-hard" onclick="startGame('hard')"><span>Hard</span><span class="en-font">II</span></div>
+    <div class="btn btn-night" onclick="startGame('nightmare')"><span>Nightmare</span><span class="en-font">III</span></div>
+    <div class="btn btn-chaos" onclick="startGame('chaos')"><span>Chaos</span><span class="en-font">∞</span></div>
+    <div class="btn btn-omega" onclick="startGame('omega')"><span>Omega</span><span class="en-font">?</span></div>
 
     <div style="display:flex; gap:10px; width:90%; max-width:350px; margin-top:10px;">
       <div class="btn btn-std" style="font-size:0.9rem; padding:12px;" onclick="showHistory()">📜 履歴</div>
@@ -306,7 +526,7 @@
     <div class="hud">
       <div class="hud-left">
         <div class="hud-btn" onclick="location.reload()">MENU</div>
-        <div class="hud-btn btn-guide" onclick="showHelp()">GUIDE ?</div>
+        <div class="hud-btn btn-guide" onclick="showHelp()">GUIDE&RULE</div>
         <div id="btn-show-result" class="hud-btn" style="display:none; border-color:#2ecc71; color:#2ecc71; font-weight:bold;" onclick="showResult()">★ RESULT</div>
       </div>
       <div class="mana-bar"><span style="font-size:0.8rem; color:#888;">MANA</span> <span id="ui-mana" class="en-font">0/3</span></div>
@@ -314,22 +534,28 @@
 
     <div style="text-align:right; font-size:0.8rem; color:#aaa; margin-top:-15px; margin-bottom:15px; margin-right:5px;">ROUND <span id="ui-round" class="en-font" style="color:#fff; font-size:1.1rem;">1</span></div>
 
-    <div id="chaos-warning" class="chaos-bar">⚠ 偽りの石碑が含まれています (ONE LIAR)</div>
+    <div id="chaos-warning" class="chaos-bar">⚠ 常に嘘をつく偽りの石碑が含まれています (ONE LIAR)</div>
 
-    <div class="rune-container">
-      <div class="rune-wrapper">
-        <div class="rune-label" style="color:#ff9999">炎<span class="rune-sub">IGNIS</span></div>
-        <input type="number" id="r1" class="rune-input" min="1" max="5" placeholder="-" onchange="limitInput(this)">
+        <div class="rune-container" style="flex-direction:column; gap:5px;">
+      <div style="display:flex; justify-content:center; gap:12px;">
+        <div class="rune-wrapper">
+          <div class="rune-label" style="color:#ff9999">炎<span class="rune-sub">IGNIS</span></div>
+          <input type="number" id="r1" class="rune-input" min="1" max="5" placeholder="-" onchange="limitInput(this)">
+        </div>
+        <div class="rune-wrapper">
+          <div class="rune-label" style="color:#99ccff">水<span class="rune-sub">AQUA</span></div>
+          <input type="number" id="r2" class="rune-input" min="1" max="5" placeholder="-" onchange="limitInput(this)">
+        </div>
+        <div class="rune-wrapper">
+          <div class="rune-label" style="color:#99ffcc">風<span class="rune-sub">VENTUS</span></div>
+          <input type="number" id="r3" class="rune-input" min="1" max="5" placeholder="-" onchange="limitInput(this)">
+        </div>
       </div>
-      <div class="rune-wrapper">
-        <div class="rune-label" style="color:#99ccff">水<span class="rune-sub">AQUA</span></div>
-        <input type="number" id="r2" class="rune-input" min="1" max="5" placeholder="-" onchange="limitInput(this)">
-      </div>
-      <div class="rune-wrapper">
-        <div class="rune-label" style="color:#99ffcc">風<span class="rune-sub">VENTUS</span></div>
-        <input type="number" id="r3" class="rune-input" min="1" max="5" placeholder="-" onchange="limitInput(this)">
+      <div id="rune-lock-msg" style="display:none; color:#e74c3c; font-size:0.75rem; font-weight:bold; margin-top:5px; animation:fadeIn 0.5s;">
+        🔒️数字は次のラウンドまで変更できません
       </div>
     </div>
+
 
     <div style="text-align:left; color:#666; font-size:0.7rem; margin-bottom:5px; margin-left:5px;">LOGIC MATRIX & MEMO</div>
     <div class="logic-grid" id="logic-matrix"></div>
@@ -437,17 +663,23 @@
     </div>
   </div>
 
-  <div id="result-modal" class="modal-overlay">
+    <div id="result-modal" class="modal-overlay">
     <div class="seal-broken">封印解除</div>
     <div style="color:#ccc; margin-top:10px;">真実のルーン:</div>
     <div class="answer-reveal" id="final-code"></div>
     <div id="result-details" style="width:90%; max-width:400px; background:#222; padding:10px; border-radius:8px; margin-bottom:20px; text-align:left; max-height:30vh; overflow-y:auto; border:1px solid #444;"></div>
-    <div style="color:#fff; margin-bottom:20px;">到達ラウンド: <span id="final-round" class="en-font"></span></div>
+    
+    <div style="color:#fff; margin-bottom:20px; font-size:0.9rem;">
+      到達ラウンド: <span id="final-round" class="en-font" style="font-size:1.2rem; color:#d4af37; margin-right:15px;"></span>
+      総検証数: <span id="final-checks" class="en-font" style="font-size:1.2rem; color:#d4af37;"></span>回
+    </div>
+
     <div style="display:flex; gap:10px; width:90%; max-width:350px;">
       <button class="btn btn-std" style="justify-content:center; flex:1;" onclick="reviewBoard()">盤面を見る</button>
       <button class="btn btn-std" style="justify-content:center; flex:1; background:#d4af37; color:#000; border-color:#fff;" onclick="location.reload()">次の遺跡へ</button>
     </div>
   </div>
+
 
   <div id="id-modal" class="modal-overlay">
     <div style="background:#111; padding:20px; border:1px solid #444; border-radius:10px; width:80%; max-width:300px;">
@@ -471,14 +703,21 @@
       <div id="history-list"></div>
     </div>
   </div>
+  <div id="tut-overlay"></div> <div id="tut-box" class="tut-msg-box" style="display:none;">
+    <div id="tut-text" class="tut-text">ここに説明が入ります</div>
+    <div id="tut-pointer" class="tut-arrow" style="display:none;">⬇</div>
+    <button id="tut-btn" class="tut-next-btn" onclick="nextTutorialStep()">次へ</button>
+  </div>
 <script>
-// --- LOGIC ENGINE v7.1 (Fixed RNG & Full Features) ---
+// --- LOGIC ENGINE v7.3 (Final Balance) ---
 
-// 高性能乱数生成器 (Mulberry32)
-// これにより、IDから常に同じ問題が生成され、かつ生成失敗が激減します
+// チュートリアル用の状態変数
+let isTutorialMode = false;
+let tutStep = 0;
+
+
 class SeededRandom {
   constructor(seedStr) {
-    // 文字列を32bitシード値に変換 (MurmurHash3の簡易版)
     let h = 2166136261 >>> 0;
     for (let i = 0; i < seedStr.length; i++) {
       h = Math.imul(h ^ seedStr.charCodeAt(i), 16777619);
@@ -494,6 +733,16 @@ class SeededRandom {
 }
 let rng = null;
 
+// --- 追加するヘルパー関数 ---
+function colorize(text) {
+  if (!text) return "";
+  return text
+    .replace(/炎/g, '<span style="color:#ff9999; font-weight:bold;">炎</span>')
+    .replace(/水/g, '<span style="color:#99ccff; font-weight:bold;">水</span>')
+    .replace(/風/g, '<span style="color:#99ffcc; font-weight:bold;">風</span>');
+}
+
+
 const POOL = [
   { name:"炎の偶奇 (偶数, 奇数)", desc:"炎 = 偶数", f:(i,a,v)=>i%2==0 }, 
   { name:"炎の偶奇 (偶数, 奇数)", desc:"炎 = 奇数", f:(i,a,v)=>i%2!=0 }, 
@@ -502,19 +751,50 @@ const POOL = [
   { name:"風の偶奇 (偶数, 奇数)", desc:"風 = 偶数", f:(i,a,v)=>v%2==0 }, 
   { name:"風の偶奇 (偶数, 奇数)", desc:"風 = 奇数", f:(i,a,v)=>v%2!=0 },
 
-  { name:"炎と1の関係 (=, >)", desc:"炎 = 1", f:(i,a,v)=>i==1 },
-  { name:"炎と1の関係 (=, >)", desc:"炎 > 1", f:(i,a,v)=>i>1 },
-  { name:"水と1の関係 (=, >)", desc:"水 = 1", f:(i,a,v)=>a==1 },
-  { name:"水と1の関係 (=, >)", desc:"水 > 1", f:(i,a,v)=>a>1 },
-  { name:"風と1の関係 (=, >)", desc:"風 = 1", f:(i,a,v)=>v==1 },
-  { name:"風と1の関係 (=, >)", desc:"風 > 1", f:(i,a,v)=>v>1 },
+    // 炎・水・風と1〜5の関係（<, =, >）
+  { name:"炎と1の関係 ( =, >)", desc:"炎 = 1", f:(i,a,v)=>i==1 },
+  { name:"炎と1の関係 ( =, >)", desc:"炎 > 1", f:(i,a,v)=>i>1 },
+  { name:"水と1の関係 ( =, >)", desc:"水 = 1", f:(i,a,v)=>a==1 },
+  { name:"水と1の関係 ( =, >)", desc:"水 > 1", f:(i,a,v)=>a>1 },
+  { name:"風と1の関係 ( =, >)", desc:"風 = 1", f:(i,a,v)=>v==1 },
+  { name:"風と1の関係 ( =, >)", desc:"風 > 1", f:(i,a,v)=>v>1 },
+  
+  { name:"炎と2の関係 (<, =, >)", desc:"炎 = 2", f:(i,a,v)=>i==2 },
+  { name:"炎と2の関係 (<, =, >)", desc:"炎 > 2", f:(i,a,v)=>i>2 },
+  { name:"炎と2の関係 (<, =, >)", desc:"炎 < 2", f:(i,a,v)=>i<2 },
+  { name:"水と2の関係 (<, =, >)", desc:"水 = 2", f:(i,a,v)=>a==2 },
+  { name:"水と2の関係 (<, =, >)", desc:"水 > 2", f:(i,a,v)=>a>2 },
+  { name:"水と2の関係 (<, =, >)", desc:"水 < 2", f:(i,a,v)=>a<2 },
+  { name:"風と2の関係 (<, =, >)", desc:"風 = 2", f:(i,a,v)=>v==2 },
+  { name:"風と2の関係 (<, =, >)", desc:"風 > 2", f:(i,a,v)=>v>2 },
+  { name:"風と2の関係 (<, =, >)", desc:"風 < 2", f:(i,a,v)=>v<2 },
 
-  { name:"炎と3の関係 (=, >)", desc:"炎 = 3", f:(i,a,v)=>i==3 },
-  { name:"炎と3の関係 (=, >)", desc:"炎 > 3", f:(i,a,v)=>i>3 },
-  { name:"水と3の関係 (=, >)", desc:"水 = 3", f:(i,a,v)=>a==3 },
-  { name:"水と3の関係 (=, >)", desc:"水 > 3", f:(i,a,v)=>a>3 },
-  { name:"風と3の関係 (=, >)", desc:"風 = 3", f:(i,a,v)=>v==3 },
-  { name:"風と3の関係 (=, >)", desc:"風 > 3", f:(i,a,v)=>v>3 },
+  { name:"炎と3の関係 (<, =, >)", desc:"炎 = 3", f:(i,a,v)=>i==3 },
+  { name:"炎と3の関係 (<, =, >)", desc:"炎 > 3", f:(i,a,v)=>i>3 },
+  { name:"炎と3の関係 (<, =, >)", desc:"炎 < 3", f:(i,a,v)=>i<3 },
+  { name:"水と3の関係 (<, =, >)", desc:"水 = 3", f:(i,a,v)=>a==3 },
+  { name:"水と3の関係 (<, =, >)", desc:"水 > 3", f:(i,a,v)=>a>3 },
+  { name:"水と3の関係 (<, =, >)", desc:"水 < 3", f:(i,a,v)=>a<3 },
+  { name:"風と3の関係 (<, =, >)", desc:"風 = 3", f:(i,a,v)=>v==3 },
+  { name:"風と3の関係 (<, =, >)", desc:"風 > 3", f:(i,a,v)=>v>3 },
+  { name:"風と3の関係 (<, =, >)", desc:"風 < 3", f:(i,a,v)=>v<3 },
+
+  { name:"炎と4の関係 (<, =, >)", desc:"炎 = 4", f:(i,a,v)=>i==4 },
+  { name:"炎と4の関係 (<, =, >)", desc:"炎 > 4", f:(i,a,v)=>i>4 },
+  { name:"炎と4の関係 (<, =, >)", desc:"炎 < 4", f:(i,a,v)=>i<4 },
+  { name:"水と4の関係 (<, =, >)", desc:"水 = 4", f:(i,a,v)=>a==4 },
+  { name:"水と4の関係 (<, =, >)", desc:"水 > 4", f:(i,a,v)=>a>4 },
+  { name:"水と4の関係 (<, =, >)", desc:"水 < 4", f:(i,a,v)=>a<4 },
+  { name:"風と4の関係 (<, =, >)", desc:"風 = 4", f:(i,a,v)=>v==4 },
+  { name:"風と4の関係 (<, =, >)", desc:"風 > 4", f:(i,a,v)=>v>4 },
+  { name:"風と4の関係 (<, =, >)", desc:"風 < 4", f:(i,a,v)=>v<4 },
+
+  { name:"炎と5の関係 (<, = )", desc:"炎 = 5", f:(i,a,v)=>i==5 },
+  { name:"炎と5の関係 (<, = )", desc:"炎 < 5", f:(i,a,v)=>i<5 },
+  { name:"水と5の関係 (<, = )", desc:"水 = 5", f:(i,a,v)=>a==5 },
+  { name:"水と5の関係 (<, = )", desc:"水 < 5", f:(i,a,v)=>a<5 },
+  { name:"風と5の関係 (<, = )", desc:"風 = 5", f:(i,a,v)=>v==5 },
+  { name:"風と5の関係 (<, = )", desc:"風 < 5", f:(i,a,v)=>v<5 },
 
   { name:"炎と水の比較 (<, =, >)", desc:"炎 > 水", f:(i,a,v)=>i>a }, 
   { name:"炎と水の比較 (<, =, >)", desc:"炎 < 水", f:(i,a,v)=>i<a }, 
@@ -553,20 +833,76 @@ const POOL = [
   { name:"炎+風と5の関係 (<, =, >)", desc:"炎+風 < 5", f:(i,a,v)=>(i+v)<5 },
   { name:"炎+風と5の関係 (<, =, >)", desc:"炎+風 = 5", f:(i,a,v)=>(i+v)==5 },
 
-  { name:"偶数の数 (1, 2)", desc:"偶数が1個", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==1 },
-  { name:"偶数の数 (1, 2)", desc:"偶数が2個", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==2 },
-  { name:"1の数 (0, 1)", desc:"1を含まない", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==0 },
-  { name:"1の数 (0, 1)", desc:"1が1個", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==1 },
+  { name:"偶数の数 (0, 1, 2)", desc:"偶数が0個", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==0 },
+  { name:"偶数の数 (0, 1, 2)", desc:"偶数が1個", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==1 },
+  { name:"偶数の数 (0, 1, 2)", desc:"偶数が2個", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==2 },
+  { name:"1の数 (0, 1, 2, 3)", desc:"1を含まない", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==0 },
+  { name:"1の数 (0, 1, 2, 3)", desc:"1が1個", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==1 },
+  { name:"1の数 (0, 1, 2, 3)", desc:"1が2個", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==2 },
+  { name:"1の数 (0, 1, 2, 3)", desc:"1が3個", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==3 },
+  { name:"3の数 (0, 1, 2, 3)", desc:"3を含まない", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==0 },
+  { name:"3の数 (0, 1, 2, 3)", desc:"3が1個", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==1 },
+  { name:"3の数 (0, 1, 2, 3)", desc:"3が2個", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==2 },
+  { name:"3の数 (0, 1, 2, 3)", desc:"3が3個", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==3 },
   
-  { name:"並びの法則 (全異, ペア, 昇順)", desc:"すべて異なる", f:(i,a,v)=>i!=a && a!=v && i!=v }, 
-  { name:"並びの法則 (全異, ペア, 昇順)", desc:"ペアあり(2つ同じ)", f:(i,a,v)=>i==a || a==v || i==v }, 
-  { name:"並びの法則 (全異, ペア, 昇順)", desc:"昇順 (炎<水<風)", f:(i,a,v)=>i<a && a<v }
+  
+  { name:"順序の法則 (昇順, 降順, 順不同)", desc:"昇順 (炎 < 水 < 風)", f:(i,a,v)=> (i < a && a < v) },
+  { name:"順序の法則 (昇順, 降順, 順不同)", desc:"降順 (炎 > 水 > 風)", f:(i,a,v)=> (i > a && a > v) },
+  { name:"順序の法則 (昇順, 降順, 順不同)", desc:"順不同 (バラバラ)", f:(i,a,v)=> !((i < a && a < v) || (i > a && a > v)) },
+
+
+  { name:"隣接する連番の数(0 , 1 , 2)", desc:"隣接する連番の数(0箇所)", f:(i,a,v)=> {
+      let c = 0;
+      if(Math.abs(i-a) === 1) c++;
+      if(Math.abs(a-v) === 1) c++;
+      return c === 0;
+  }},
+  { name:"隣接する連番の数(0 , 1 , 2)", desc:"隣接する連番の数(1箇所)", f:(i,a,v)=> {
+      let c = 0;
+      if(Math.abs(i-a) === 1) c++;
+      if(Math.abs(a-v) === 1) c++;
+      return c === 1;
+  }},
+  { name:"隣接する連番の数(0 , 1 , 2)", desc:"隣接する連番の数(完全連結)", f:(i,a,v)=> {
+      let c = 0;
+      if(Math.abs(i-a) === 1) c++;
+      if(Math.abs(a-v) === 1) c++;
+      return c === 2;
+  }},
+  { name:"2つの同じ数字 (なし, 1組)", desc:"2つの同じ数字はない (すべて異なる)", f:(i,a,v)=> (i!=a && a!=v && i!=v) },
+  { name:"2つの同じ数字 (なし, 1組)", desc:"2つ同じは1つ", f:(i,a,v)=> {
+      // 3つ同じ(スリーカード)は除外して、厳密に「2つだけ同じ」場合
+      if (i===a && a===v) return false; 
+      return (i===a || a===v || i===v);
+  }},
+
+  { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 0 (すべて同じ)", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 0 },
+  { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 1 ", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 1 },
+  { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 2 ", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 2 },
+  { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 3 ", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 3 },
+  { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 4 ", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 4 },
+
+  { name:"合計が特定の倍数(2, 3, 5)", desc:"合計が 2の倍数 ", f:(i,a,v)=> (i+a+v)%2 === 0 },
+  { name:"合計が特定の倍数(2, 3, 5)", desc:"合計が 3の倍数", f:(i,a,v)=> (i+a+v)%3 === 0 },
+  { name:"合計が特定の倍数(2, 3, 5)", desc:"合計が 5の倍数", f:(i,a,v)=> (i+a+v)%5 === 0 },
+
+  { name:"合計値が素数かどうか", desc:"合計が素数 (3,5,7,11,13)", f:(i,a,v)=> {
+      const sum = i+a+v;
+      return [3, 5, 7, 11, 13].includes(sum);
+  }},
+  { name:"合計値が素数かどうか", desc:"合計が素数ではない", f:(i,a,v)=> {
+      const sum = i+a+v;
+      return ![3, 5, 7, 11, 13].includes(sum);
+  }},
+
+
 ];
 
 let state = { 
   ans:{i:0,a:0,v:0}, rules:[], round:1, mana:0, maxMana:3, 
   liarIndex:-1, stoneCount:5, isOmega:false,
-  currentSeed: "", currentMode: ""
+  currentSeed: "", currentMode: "",
+  doomLimit: 0 // ラウンド制限(0は無制限)
 };
 
 function generateSeed(length) {
@@ -632,7 +968,8 @@ function setBackground(mode) {
     }
 }
 
-function startGame(mode) {
+ function startGame(mode) {
+  isTutorialMode = false; // ★追加: 通常モードであることを明示
   const newSeed = generateSeed(5);
   initGame(mode, newSeed);
 }
@@ -655,7 +992,10 @@ function initGame(mode, seed) {
   setTimeout(() => {
     state.round = 1;
     state.mana = 0;
-    state.maxMana = (mode === 'nightmare' || mode === 'omega') ? 2 : 3;
+    state.totalChecks = 0;
+    
+    state.maxMana = (mode === 'nightmare') ? 2 : 3;
+    state.doomLimit = (mode === 'nightmare') ? 5 : 0; 
     state.stoneCount = (mode === 'standard') ? 4 : 5;
     state.isOmega = (mode === 'omega');
 
@@ -664,7 +1004,7 @@ function initGame(mode, seed) {
     
     let success = false;
     let attempts = 0;
-    const maxAttempts = 50000; 
+    const maxAttempts = 10000; // 試行回数
     
     while(!success && attempts < maxAttempts) {
       attempts++;
@@ -674,23 +1014,50 @@ function initGame(mode, seed) {
         v: Math.floor(rng.next()*5)+1
       };
       
+      // 1. 今回の答えで「TRUE」になるルールを全抽出
       let validRules = POOL.filter(r => r.f(state.ans.i, state.ans.a, state.ans.v) === true);
+      
+      // そもそも正解ルールが少なすぎる場合はパス
       if(validRules.length < state.stoneCount) continue;
 
-      let picked = [];
+      // シャッフル
       let temp = [...validRules];
-      
       for (let i = temp.length - 1; i > 0; i--) {
           const j = Math.floor(rng.next() * (i + 1));
           [temp[i], temp[j]] = [temp[j], temp[i]];
       }
+
+      // --- ★ここから選定ロジック（修正版）---
+      let picked = [];
+
+      // フェーズ1: 重複（コンフリクト）を避けて選ぶ
       for(let r of temp) {
-        if(!picked.some(p => p.name === r.name)) picked.push(r);
+        if(picked.some(p => p.name === r.name)) continue; // 完全一致は常にNG
+        if(isConflict(picked, r)) continue; // 似たルールも避ける
+
+        picked.push(r);
         if(picked.length === state.stoneCount) break;
       }
+
+      // フェーズ2: もし数が足りなければ、重複を許容して補充する（生成失敗を防ぐため）
+      if(picked.length < state.stoneCount) {
+        for(let r of temp) {
+          if(picked.length === state.stoneCount) break;
+          // すでに選んだものと「名前が完全一致」してなければ採用（isConflictは無視）
+          if(!picked.some(p => p.name === r.name)) {
+            picked.push(r);
+          }
+        }
+      }
+      
+      // それでも足りない場合（極めて稀）はやり直し
       if(picked.length < state.stoneCount) continue;
 
+      // --- 選定完了 ---
+
+      // 解が1つに定まるかどうかの検証（カオスモード対応）
       let matches = 0;
+      // 高速化のため、検証ループは少し軽量化してもよいが、ここでは正確性重視
       for(let i=1; i<=5; i++) {
         for(let a=1; a<=5; a++) {
           for(let v=1; v<=5; v++) {
@@ -701,8 +1068,12 @@ function initGame(mode, seed) {
 
       if(matches === 1) {
         if(mode === 'chaos') {
+          // カオスモード: 嘘つきを混ぜても解けるか判定
           const tempLiar = Math.floor(rng.next()*state.stoneCount);
           let chaosSolutions = 0;
+          
+          // 簡易検証: カオスは計算コストが高いので、発見次第採用する
+          // (本来は全探索すべきだが、生成失敗回避を優先)
           for(let i=1; i<=5; i++) {
             for(let a=1; a<=5; a++) {
               for(let v=1; v<=5; v++) {
@@ -722,6 +1093,7 @@ function initGame(mode, seed) {
             success = true;
           }
         } else {
+          // 通常モード
           state.rules = picked;
           state.liarIndex = -1;
           success = true;
@@ -733,6 +1105,7 @@ function initGame(mode, seed) {
 
     if(!success) {
       alert("生成失敗: 条件に合うパズルが見つかりませんでした。別のIDを試すか、もう一度やり直してください。");
+      // フォールバック: 次は必ず成功するようにランダムシードを変えるなどの処理
       rng = new SeededRandom(generateSeed(5)); 
     } else {
       document.getElementById('title-screen').style.display = 'none';
@@ -743,7 +1116,6 @@ function initGame(mode, seed) {
       document.getElementById('chaos-warning').style.display = (mode === 'chaos') ? 'block' : 'none';
       
       const hud = document.querySelector('.hud');
-      // 古いID表示があれば消す
       const oldId = document.getElementById('current-id-display');
       if(oldId) oldId.remove();
       
@@ -758,76 +1130,176 @@ function initGame(mode, seed) {
   }, 100);
 }
 
+// グローバル変数: 現在選択中のメモ欄を記憶する
+let activeOmegaInput = null;
+
 function renderProphecies() {
   const c = document.getElementById('prophecy-container');
   c.innerHTML = '';
   const names = ["α", "β", "γ", "δ", "ε"];
   
+  // --- 1. Omegaモードのリスト表示部分 (タップ入力対応) ---
   if (state.isOmega) {
     const listContainer = document.getElementById('omega-list');
     listContainer.innerHTML = '';
     let shuffledRules = [...state.rules];
-    for (let i = shuffledRules.length - 1; i > 0; i--) {
-        const j = Math.floor(rng.next() * (i + 1));
-        [shuffledRules[i], shuffledRules[j]] = [shuffledRules[j], shuffledRules[i]];
-    }
-    shuffledRules.forEach(r => {
+    
+    // シャッフル表示（ネタバレ防止）
+    // ※seed依存のランダムだと再描画で順序が変わらないよう工夫が必要ですが、
+    // ここでは簡易的に毎回シャッフル、あるいは固定でもOKです。
+    // 今回は「入力しやすさ」優先で、元の配列順(state.rules)でも良いですが、
+    // 答えがバレないようシャッフルします。
+    let displayRules = [...state.rules];
+    displayRules.sort(() => Math.random() - 0.5); // 簡易シャッフル
+
+    displayRules.forEach(r => {
       const item = document.createElement('div');
       item.className = 'omega-list-item';
-      item.innerText = r.name;
-      item.onclick = () => { item.classList.toggle('excluded'); };
+      item.innerHTML = colorize(r.name);
+      
+      // ★ここが新機能: クリック時の挙動
+      item.onclick = () => {
+        if (activeOmegaInput) {
+          // メモ欄が選択されていれば、そこに文字を追記する
+          // (すでに文字があればカンマで区切る)
+          const currentText = activeOmegaInput.value;
+          const newText = r.name.split(' (')[0]; // カッコ書きの説明は省いて短くする
+          
+          if(currentText) {
+             activeOmegaInput.value = currentText + ", " + newText;
+          } else {
+             activeOmegaInput.value = newText;
+          }
+          // 入力後もフォーカスを維持（連続入力用）
+          activeOmegaInput.focus();
+        } else {
+          // 選択されてなければ、従来通り「取り消し線」のON/OFF
+          item.classList.toggle('excluded'); 
+        }
+      };
       listContainer.appendChild(item);
     });
   }
 
+  // --- 2. 石碑の生成部分 ---
   state.rules.forEach((r, idx) => {
+    // コンテナ作成
+    let wrapper = document.createElement('div');
+    
     let div = document.createElement('div');
     if (state.isOmega) {
+      // Omegaモード（???表示）
       div.className = 'stone is-mystery';
       div.id = `stone-${idx}`;
       div.innerHTML = `<div class="stone-text" style="font-size:1.8rem;">???</div>`;
     } else {
+      // 通常モード
       div.className = 'stone';
       div.id = `stone-${idx}`;
       div.innerHTML = `
         <div class="stone-content">
           <div class="stone-title">予言 ${names[idx]}</div>
-          <div class="stone-text">${r.name}</div>
-        </div>
+          <div class="stone-text">${colorize(r.name)}</div> </div>
         <div class="stone-id">${names[idx]}</div>
       `;
     }
     div.onclick = () => checkProphecy(idx, r, div);
-    c.appendChild(div);
+    wrapper.appendChild(div);
+
+    // ★ここが新機能: Omegaモードならメモ欄を追加
+    if (state.isOmega) {
+      const memoBox = document.createElement('div');
+      memoBox.className = 'omega-memo-box';
+      
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'omega-memo-input';
+      input.placeholder = `予言${names[idx]} の推理メモ (リストタップで入力)`;
+      
+      // フォーカスされたら「アクティブな入力欄」として記憶
+      input.onfocus = () => { activeOmegaInput = input; };
+      
+      // フォーカスが外れたら、少し待ってから解除
+      // (リストクリックの瞬間に外れてしまわないようにするための遅延)
+      input.onblur = () => { 
+        setTimeout(() => {
+          if(activeOmegaInput === input) activeOmegaInput = null;
+        }, 200);
+      };
+      
+      memoBox.appendChild(input);
+      wrapper.appendChild(memoBox);
+    }
+
+    c.appendChild(wrapper);
   });
 }
 
+
+// 重複ルール排除用の判定関数
+function isConflict(pickedList, newRule) {
+  // チェック対象: "〇〇と[数字]の関係" というパターンの名前
+  // 例: "炎と3の関係", "合計と10の関係", "水+風と5の関係" など
+  const re = /^(.+)と\d+の関係/;
+
+  const matchNew = newRule.name.match(re);
+  if(matchNew) {
+    const key = matchNew[1]; // "炎", "水", "合計" などを抜き出す
+    
+    // すでに選ばれたルール(pickedList)の中に、同じキーを持つものが無いか探す
+    return pickedList.some(p => {
+       const matchP = p.name.match(re);
+       return matchP && matchP[1] === key;
+    });
+  }
+  return false;
+}
+
 function checkProphecy(idx, rule, el) {
+  if(isTutorialMode && tutStep !== 6 && tutStep !== 12 && tutStep !== 15) return;
   if(state.mana >= state.maxMana) return;
   const i = +document.getElementById('r1').value;
   const a = +document.getElementById('r2').value;
   const v = +document.getElementById('r3').value;
   if(!i || !a || !v) return;
   
+  // ★ここを修正: 最初の判定時にロック＆メッセージ表示
   if(state.mana === 0) {
     document.getElementById('r1').disabled = true;
     document.getElementById('r2').disabled = true;
     document.getElementById('r3').disabled = true;
+    
+    // メッセージを表示
+    const msg = document.getElementById('rune-lock-msg');
+    if(msg) msg.style.display = 'block';
   }
 
   let isTrue = rule.f(i, a, v);
   if(idx === state.liarIndex) isTrue = !isTrue;
 
   state.mana++;
+  state.totalChecks++; // ★追加: 検証回数をプラス
   updateHUD();
   
   const log = document.getElementById('log-container');
   const entry = document.createElement('div');
   const names = ["α", "β", "γ", "δ", "ε"];
   entry.className = isTrue ? 'log-entry log-true' : 'log-entry log-false';
+  
+  // ★修正: ログに予言名を表示し、見やすくレイアウト
   entry.innerHTML = `
-    <span>R${state.round} 予言${names[idx]} <span class="log-nums">${i}-${a}-${v}</span></span>
-    <strong>${isTrue ? "TRUE" : "FALSE"}</strong>
+    <div style="width:100%;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-weight:bold;">R${state.round} 予言${names[idx]}</span>
+        <strong>${isTrue ? "TRUE" : "FALSE"}</strong>
+      </div>
+      <div style="font-size:0.85rem; margin:4px 0; color:#ddd; padding-left:8px; border-left:2px solid rgba(255,255,255,0.2);">
+        ${state.isOmega ? "???" : colorize(rule.name)}
+      </div>
+      <div style="text-align:right;">
+        <span class="log-nums">${i}-${a}-${v}</span>
+      </div>
+    </div>
   `;
   log.prepend(entry);
 
@@ -836,39 +1308,89 @@ function checkProphecy(idx, rule, el) {
   }
 }
 
+// ラウンド進行関数（ロック解除＆メッセージ消去対応版）
 function nextRound() {
-  if(state.mana === 0) return;
+  // マナが残っているのに押した場合（通常時のみ無効化）
+  if(state.mana === 0 && !isTutorialMode) return;
+  
+  // --- チュートリアル中の特別処理 ---
+  if(isTutorialMode) {
+    // ステップ9（ラウンド終了指示）の時だけ許可
+    if(tutStep === 9) {
+      state.round++;
+      state.mana = 0;
+      updateHUD();
+      
+      // ★修正: 入力ロック解除 & メッセージを消す！
+      document.getElementById('r1').disabled = false;
+      document.getElementById('r2').disabled = false;
+      document.getElementById('r3').disabled = false;
+      
+      const msg = document.getElementById('rune-lock-msg');
+      if(msg) msg.style.display = 'none'; // ← ここで消しています
+
+      document.querySelectorAll('.stone').forEach(s => s.classList.remove('disabled'));
+      
+      nextTutorialStep(); // 次のステップへ
+    }
+    return;
+  }
+
+  // --- 通常時の処理 ---
+  
+  // ナイトメアモード等の「死の宣告」チェック
+  if(state.doomLimit > 0 && state.round >= state.doomLimit) {
+    finishGame(false, "遺跡崩壊");
+    return;
+  }
+  
   state.round++;
   state.mana = 0;
   updateHUD();
+
+  // ★修正: 入力ロック解除 & メッセージを消す！
   document.getElementById('r1').disabled = false;
   document.getElementById('r2').disabled = false;
   document.getElementById('r3').disabled = false;
+  
+  const msg = document.getElementById('rune-lock-msg');
+  if(msg) msg.style.display = 'none'; // ← ここで消しています
+
   document.querySelectorAll('.stone').forEach(s => s.classList.remove('disabled'));
 }
+
 
 function attemptUnlock() {
   const i = +document.getElementById('r1').value;
   const a = +document.getElementById('r2').value;
   const v = +document.getElementById('r3').value;
+  const isCorrect = (i === state.ans.i && a === state.ans.a && v === state.ans.v);
   
+  finishGame(isCorrect);
+}
+
+// 終了処理
+function finishGame(isWin, titleOverride) {
   const modal = document.getElementById('result-modal');
   modal.style.display = 'flex';
   
-  const isCorrect = (i === state.ans.i && a === state.ans.a && v === state.ans.v);
   const title = document.querySelector('.seal-broken');
-  if(isCorrect) {
+  if(isWin) {
     title.innerText = "封印解除";
     title.style.color = "#fff";
   } else {
-    title.innerText = "解除失敗";
+    title.innerText = titleOverride || "解除失敗";
     title.style.color = "#c0392b";
   }
   
   document.getElementById('final-code').innerText = `${state.ans.i} ${state.ans.a} ${state.ans.v}`;
   document.getElementById('final-round').innerText = state.round;
+  
+  // ★追加: 検証回数を表示 (存在チェック付き)
+  const checksEl = document.getElementById('final-checks');
+  if(checksEl) checksEl.innerText = state.totalChecks;
 
-  saveHistory(isCorrect);
+  saveHistory(isWin);
 
   const detailBox = document.getElementById('result-details');
   let html = '';
@@ -974,14 +1496,618 @@ function reviewBoard() {
 
 function showResult() { document.getElementById('result-modal').style.display = 'flex'; }
 function updateHUD() {
-  document.getElementById('ui-round').innerText = state.round;
+  // 制限がある場合 "1 / 5" のように表示
+  const roundText = (state.doomLimit > 0) ? `${state.round} / ${state.doomLimit}` : state.round;
+  document.getElementById('ui-round').innerText = roundText;
   document.getElementById('ui-mana').innerText = `${state.mana}/${state.maxMana}`;
 }
-function showHelp() { document.getElementById('help-modal').style.display = 'flex'; }
-function closeHelp() { document.getElementById('help-modal').style.display = 'none'; }
-function showInputId() { document.getElementById('id-modal').style.display = 'flex'; }
-function closeIdModal() { document.getElementById('id-modal').style.display = 'none'; }
-function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
+// ガイド表示関数（×ボタン削除・理解したボタン版）
+function showHelp() {
+  const modal = document.getElementById('help-modal');
+  modal.style.display = 'flex';
+  
+  // HTML生成用の変数
+  let difficultyHtml = '';
+  const mode = state.currentMode || 'standard';
+
+  // --- 1. 難易度別の特別ルール ---
+  if (mode === 'nightmare') {
+    difficultyHtml = `
+      <div class="help-section" style="border-color:#9b59b6; background:rgba(44, 26, 62, 0.4);">
+        <div class="help-title" style="color:#d7bde2;">★ NIGHTMARE (悪夢) のルール</div>
+        <div class="help-text">
+          <ul>
+            <li><strong>死の宣告:</strong> <span style="color:#ff5555;">5ラウンド</span>経過でゲームオーバー。</li>
+            <li><strong>魔力枯渇:</strong> 1ラウンドのマナは <span style="color:#ff5555;">2つ</span> のみ。</li>
+          </ul>
+        </div>
+      </div>`;
+  } else if (mode === 'chaos') {
+    difficultyHtml = `
+      <div class="help-section" style="border-color:#95a5a6; background:rgba(50,50,50,0.4);">
+        <div class="help-title" style="color:#ccc;">★ CHAOS (混沌) のルール</div>
+        <div class="help-text">
+          <ul>
+            <li><strong>嘘つき:</strong> 石碑の中に1つだけ<span style="color:#ff5555;">「判定を逆にする嘘つき」</span>が混ざっています。</li>
+            <li>矛盾を見抜いて、嘘つきを特定してください。</li>
+          </ul>
+        </div>
+      </div>`;
+  } else if (mode === 'omega') {
+    difficultyHtml = `
+      <div class="help-section" style="border-color:#fff; background:rgba(0,0,0,0.6);">
+        <div class="help-title" style="color:#fff;">★ OMEGA (Ω) のルール</div>
+        <div class="help-text">
+          <ul>
+            <li><strong>不可視:</strong> 全ての予言の内容が <span style="color:#fff;">???</span> です。</li>
+            <li>右下のリストから、適用されているルールを推理してください。</li>
+          </ul>
+        </div>
+      </div>`;
+  } else if (mode === 'hard') {
+     difficultyHtml = `
+      <div class="help-section" style="border-color:#e74c3c; background:rgba(62, 26, 26, 0.4);">
+        <div class="help-title" style="color:#f5b7b1;">★ HARD (高難度) のルール</div>
+        <div class="help-text">
+          「炎=1」のような単純なヒントが出現にくく、<br>
+          計算や比較が必要な、手ごわい予言が登場しやすいです。
+        </div>
+      </div>`;
+  }
+
+  // --- 2. 共通ガイド ---
+  const contentHtml = `
+    <h2 style="text-align:center; margin-top:0; color:#fff; border-bottom:1px solid #333; padding-bottom:10px;">遺跡解析マニュアル</h2>
+    
+    ${difficultyHtml}
+
+    <div class="help-section">
+      <div class="help-title">1. ゲームの目的</div>
+      <div class="help-text">
+        隠された正解の数字（<span style="color:#ff9999">炎</span>・<span style="color:#99ccff">水</span>・<span style="color:#99ffcc">風</span> それぞれ1〜5）を特定することです。<br>
+        いきなり当てるのは無理なので、<strong>「予言の石碑」</strong>に質問をして、少しずつ絞り込みます。
+      </div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-title">2. 解析の流れ (図解)</div>
+      <div class="help-text">
+        例えば、ある石碑に<strong>「合計と10の関係」</strong>というルールが書かれていたとします。
+      </div>
+
+      <div class="diagram-box">
+        <div style="width:100%; text-align:left; font-size:0.8rem; color:#aaa; margin-bottom:5px;">▼ STEP 1: 仮の数字をセット</div>
+        <div style="display:flex; gap:5px; justify-content:center; margin-bottom:10px;">
+          <div style="border:1px solid #8a1c1c; color:#ff9999; padding:5px 10px; border-radius:4px;">炎: 4</div>
+          <div style="border:1px solid #1c4e8a; color:#99ccff; padding:5px 10px; border-radius:4px;">水: 5</div>
+          <div style="border:1px solid #1c8a5e; color:#99ffcc; padding:5px 10px; border-radius:4px;">風: 2</div>
+        </div>
+        <div style="font-size:0.8rem; color:#fff;">合計 = <strong>11</strong> の状態です。</div>
+      </div>
+
+      <div style="text-align:center; font-size:1.5rem; color:#d4af37; margin:-10px 0;">⬇</div>
+
+      <div class="diagram-box">
+        <div style="width:100%; text-align:left; font-size:0.8rem; color:#aaa; margin-bottom:5px;">▼ STEP 2: 石碑に判定させる</div>
+        <div class="d-stone" style="width:95%;">
+          <span>予言β: 合計と10の関係</span>
+          <span style="font-weight:bold;">判定 ▶</span>
+        </div>
+        <div style="margin:5px 0;">もし、結果がこう出たら…？</div>
+        <div class="d-result d-true" style="padding:10px; width:80%; text-align:center;">TRUE (真実)</div>
+      </div>
+
+      <div class="diagram-box" style="border-color:#d4af37; background:rgba(212, 175, 55, 0.1);">
+        <div style="width:100%; text-align:left; font-size:0.8rem; color:#d4af37; font-weight:bold; margin-bottom:5px;">▼ STEP 3: 推理</div>
+        <div class="help-text" style="font-size:0.85rem;">
+          「合計11」で「TRUE」が出た。<br>
+          → つまりこの石碑は<strong>「合計 ≧ 10」</strong>のルールだと推測できます。<br>
+          (もし「合計＜10」ならFALSEになるはずだからです)
+        </div>
+      </div>
+    </div>
+
+    <div class="help-section" style="border-bottom:none;">
+      <div class="help-title">3. メモを活用せよ</div>
+      <div class="help-text">
+        マトリクス表をタップしてメモを取り、可能性を絞り込んでいきましょう。
+      </div>
+    </div>
+
+    <button class="btn btn-std" style="width:100%; box-sizing:border-box; margin-top:10px; padding:15px; font-weight:bold; font-size:1.1rem; border-color:#d4af37; color:#d4af37;" onclick="closeHelp()">理解した！</button>
+  `;
+
+  const contentDiv = document.getElementById('help-content');
+  contentDiv.innerHTML = contentHtml;
+}
+
+  // --- TUTORIAL LOGIC v2 ---
+function startTutorial() {
+  // エラー防止: colorize関数がない場合の対策
+  if (typeof colorize !== 'function') {
+    window.colorize = function(t) { return t; }; // 無害なダミー関数を作る
+  }
+
+  isTutorialMode = true;
+  tutStep = 0;
+  
+  const loader = document.getElementById('loading-indicator');
+  if(loader) loader.style.display = 'block';
+  
+  document.getElementById('title-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'block';
+  
+  // --- レイアウト変更処理 ---
+  try {
+    // 1. テキスト初期化
+    const txt = document.getElementById('tut-text');
+    if(txt) txt.innerHTML = '<div style="text-align:center; color:#888;">システム起動中...</div>';
+
+    // 2. マトリクスとメモ関連を非表示
+    const matrix = document.getElementById('logic-matrix');
+    if(matrix) matrix.style.display = 'none';
+    
+    const memoBtn = document.querySelector('.memo-toggle-btn');
+    if(memoBtn) memoBtn.style.display = 'none';
+    
+    const memoPad = document.getElementById('memo-pad');
+    if(memoPad) memoPad.style.display = 'none';
+
+    // "LOGIC MATRIX..." ラベルの非表示（安全策）
+    const runeContainer = document.querySelector('.rune-container');
+    if(runeContainer) {
+       const matrixLabel = runeContainer.nextElementSibling;
+       // ラベルかどうかの簡易チェック
+       if(matrixLabel && matrixLabel.innerText && matrixLabel.innerText.includes('LOGIC')) {
+          matrixLabel.style.display = 'none';
+       }
+    }
+
+    // 3. チュートリアルBOX移動
+    const gameScreen = document.getElementById('game-screen');
+    const tutBox = document.getElementById('tut-box');
+    const prophecyContainer = document.getElementById('prophecy-container');
+    
+    if (gameScreen && tutBox && prophecyContainer) {
+      gameScreen.insertBefore(tutBox, prophecyContainer);
+      tutBox.classList.add('tut-embedded-mode');
+      tutBox.style.display = 'flex';
+    }
+  } catch(e) {
+    console.error("Layout Setup Error:", e);
+  }
+  // ---------------------------
+  
+  setTimeout(() => {
+    try {
+      // チュートリアル盤面セット
+      state.round = 1;
+      state.mana = 0;
+      state.totalChecks = 0; // ★これを追加！
+      state.maxMana = 3;
+      state.stoneCount = 3;
+      state.ans = { i:4, a:4, v:3 }; 
+      state.liarIndex = -1;
+      state.isOmega = false;
+      
+      // ルールセット
+      state.rules = [
+        { name:"炎と水の比較 (<, =, >)", desc:"炎 = 水", f:(i,a,v)=>i==a },
+        { name:"合計と10の関係 (<, ≧)", desc:"合計 ≧ 10", f:(i,a,v)=>(i+a+v)>=10 },
+        { name:"風の偶奇 (偶数, 奇数)", desc:"風 = 奇数", f:(i,a,v)=>v%2!=0 }
+      ];
+      
+      setBackground('standard');
+      updateHUD();
+      
+      const logContainer = document.getElementById('log-container');
+      if(logContainer) logContainer.innerHTML = '';
+      
+      const chaosWarn = document.getElementById('chaos-warning');
+      if(chaosWarn) chaosWarn.style.display = 'none';
+      
+      const omegaArea = document.getElementById('omega-rule-area');
+      if(omegaArea) omegaArea.style.display = 'none';
+      
+      // マトリクス再初期化＆非表示
+      initMatrix();
+      const matrix = document.getElementById('logic-matrix');
+      if(matrix) matrix.style.display = 'none';
+      
+      const c = document.getElementById('prophecy-container');
+      if(c) {
+        c.innerHTML = '';
+        const names = ["α", "β", "γ"];
+        state.rules.forEach((r, idx) => {
+          let div = document.createElement('div');
+          div.className = 'stone';
+          div.id = `stone-${idx}`;
+          div.innerHTML = `
+            <div class="stone-content">
+              <div class="stone-title">予言 ${names[idx]}</div>
+              <div class="stone-text">${colorize(r.name)}</div>
+            </div>
+            <div class="stone-id">${names[idx]}</div>
+          `;
+          div.onclick = () => { if(isTutorialMode) handleTutClick('stone', idx); };
+          c.appendChild(div);
+        });
+      }
+
+      document.getElementById('r1').value = "";
+      document.getElementById('r2').value = "";
+      document.getElementById('r3').value = "";
+
+      nextTutorialStep(); 
+    } catch(e) {
+      alert("チュートリアル起動エラー: " + e);
+      console.error(e);
+    } finally {
+      if(loader) loader.style.display = 'none';
+    }
+  }, 500);
+}
+
+
+// 数字を順番に入力する演出関数
+function typeNumber(n1, n2, n3, callback) {
+  const r1 = document.getElementById('r1');
+  const r2 = document.getElementById('r2');
+  const r3 = document.getElementById('r3');
+  
+  // 入力欄が見つからない場合のエラー回避
+  if(!r1 || !r2 || !r3) {
+    console.error("エラー: 入力欄(r1, r2, r3)が見つかりません");
+    if(callback) callback(); // 無理やり次へ進める
+    return;
+  }
+  
+  // 値をリセット
+  r1.value = ""; r2.value = ""; r3.value = "";
+  
+  // リズムよく入力 (0.7秒, 1.2秒, 1.6秒後)
+  setTimeout(() => { r1.value = n1; }, 700);
+  setTimeout(() => { r2.value = n2; }, 1200);
+  setTimeout(() => { r3.value = n3; }, 1600);
+  
+  // 全て終わった後にコールバックを実行 (3秒後)
+  setTimeout(() => {
+    if(callback) callback();
+  }, 3000);
+}
+
+// チュートリアル中のクリックハンドラ
+function handleTutClick(type, idx) {
+  // ステップ6: 石碑α
+  if(tutStep === 6 && type === 'stone' && idx === 0) {
+    checkProphecy(0, state.rules[0], document.getElementById('stone-0'));
+    nextTutorialStep(); 
+  }
+  // ステップ12: 石碑β
+  if(tutStep === 12. && type === 'stone' && idx === 1) {
+    checkProphecy(1, state.rules[1], document.getElementById('stone-1'));
+    nextTutorialStep(); 
+  }
+  // ★追加 ステップ15: 石碑γ
+  if(tutStep === 15 && type === 'stone' && idx === 2) {
+    checkProphecy(2, state.rules[2], document.getElementById('stone-2'));
+    nextTutorialStep(); 
+  }
+}
+
+
+
+const originalAttemptUnlock = attemptUnlock;
+attemptUnlock = function() {
+  if(isTutorialMode) {
+    // ★変更: 終了ステップ 19
+    if(tutStep === 19) {
+      document.querySelectorAll('.tut-highlight').forEach(e => e.classList.remove('tut-highlight'));
+      document.querySelectorAll('.tut-blink').forEach(e => e.classList.remove('tut-blink'));
+
+      const tutBox = document.getElementById('tut-box');
+      if(tutBox) {
+        tutBox.style.display = 'none';
+        tutBox.classList.remove('tut-embedded-mode');
+        document.body.appendChild(tutBox); 
+      }
+      document.getElementById('tut-overlay').style.display = 'none';
+      
+      const matrix = document.getElementById('logic-matrix');
+      if(matrix) matrix.style.display = '';
+      
+      const memoBtn = document.querySelector('.memo-toggle-btn');
+      if(memoBtn) memoBtn.style.display = '';
+      
+      const memoPad = document.getElementById('memo-pad');
+      if(memoPad) memoPad.style.display = '';
+      
+      const runeContainer = document.querySelector('.rune-container');
+      if(runeContainer) {
+          const matrixLabel = runeContainer.nextElementSibling;
+          if(matrixLabel) matrixLabel.style.display = '';
+      }
+
+      const modal = document.getElementById('result-modal');
+      modal.style.display = 'flex';
+      document.querySelector('.seal-broken').innerText = "解析中...";
+      document.querySelector('.seal-broken').style.color = "#aaa";
+      document.getElementById('final-code').innerText = "";
+      document.getElementById('result-details').innerHTML = "";
+      
+      setTimeout(() => {
+          originalAttemptUnlock(); 
+          setTimeout(() => {
+             alert("おめでとう！\nチュートリアルは完了だ。\nさあ、本番の遺跡へ挑もう！");
+          }, 3000);
+      }, 3000);
+    }
+  } else {
+    originalAttemptUnlock();
+  }
+};
+
+
+function nextTutorialStep() {
+  tutStep++;
+  const txt = document.getElementById('tut-text');
+  const btn = document.getElementById('tut-btn');
+  
+  // リセット
+  document.querySelectorAll('.tut-highlight').forEach(e => e.classList.remove('tut-highlight'));
+  document.querySelectorAll('.tut-blink').forEach(e => e.classList.remove('tut-blink'));
+  document.getElementById('tut-overlay').style.display = 'block'; 
+  
+  btn.style.display = 'block'; 
+  btn.innerText = "次へ ▶";
+
+  // 文字色定義
+  const cFire = '<span style="color:#ff9999; font-weight:bold;">炎</span>';
+  const cWater = '<span style="color:#99ccff; font-weight:bold;">水</span>';
+  const cWind = '<span style="color:#99ffcc; font-weight:bold;">風</span>';
+  const cTrue = '<span style="color:#2ecc71;">TRUE</span>';
+  const cFalse = '<span style="color:#e74c3c;">FALSE</span>';
+
+  switch(tutStep) {
+    case 1:
+      txt.innerHTML = `ようこそ、探求者よ。<br>
+      まずは画面右上を見てほしい。<br>
+      ここには現在の<b>「ラウンド数」</b>が刻まれている。<br>
+      一度セットした数字はラウンド終了まで変更できないぞ。`;
+      const uiRound = document.getElementById('ui-round');
+      if(uiRound && uiRound.parentNode) uiRound.parentNode.classList.add('tut-highlight', 'tut-blink');
+      break;
+
+    case 2:
+      txt.innerHTML = `そしてその上が<b>「マナ」</b>だ。<br>
+      石碑に問いかけるたびに 1 消費する。<br>
+      マナが尽きると、回復するために次のラウンドに進むしかなくなる。<br>
+      慣れるまでは1ラウンドでマナを使い切るのがオススメだ。<br>
+      慣れてきたらなるべく少ないマナとラウンドでのクリアを目指そう。`;
+      const manaBar = document.querySelector('.mana-bar');
+      if(manaBar) manaBar.classList.add('tut-highlight', 'tut-blink');
+      break;
+
+    case 3:
+      txt.innerHTML = `では、調査を始めよう。<br>
+      君の目的は、石碑に<b>「質問」</b>をして法則を暴き、隠された<b>「3つの数字」</b>を特定することだ。`;
+      break;
+      
+    case 4:
+      txt.innerHTML = `下にあるのが<b>「予言の石碑」</b>だ。<br>
+      これらは正解の数字に関する「ある法則」を知っている。<br>まずはこれらに注目してほしい。`;
+      const pContainer = document.getElementById('prophecy-container');
+      if(pContainer) pContainer.classList.add('tut-highlight', 'tut-blink'); 
+      break;
+
+    case 5:
+      txt.innerHTML = `上の入力欄を使って、石碑に質問を投げかける。<br>
+      試しに<b>「1 - 1 - 1」</b>という数字をセットしてみよう。<br>
+      (${cFire}:1, ${cWater}:1, ${cWind}:1 という意味だ)`;
+      
+      const runeBox = document.querySelector('.rune-container');
+      if(runeBox) runeBox.classList.add('tut-highlight', 'tut-blink');
+      btn.style.display = 'none';
+      
+      setTimeout(() => {
+        if (typeof typeNumber !== 'function') {
+           document.getElementById('r1').value = 1; document.getElementById('r2').value = 1; document.getElementById('r3').value = 1;
+           btn.style.display = 'block'; btn.innerText = "OK"; return;
+        }
+        typeNumber(1, 1, 1, () => {
+             txt.innerHTML = `よし。「1 - 1 - 1」とセット完了だ。<br>
+             これで石碑に聞く準備が整った。<br>右下のボタンを押してくれ。`;
+             btn.style.display = 'block'; btn.innerText = "OK";
+        });
+      }, 500);
+      break;
+      
+    case 6:
+      txt.innerHTML = `「もし正解が 1-1-1 だったら、お前の法則を満たすか？」<br>
+      一番上の<b>「予言 α」</b>にそう聞いてみよう。<br>
+      タップして判定を行え。`;
+      const s0 = document.getElementById('stone-0');
+      if(s0) s0.classList.add('tut-highlight', 'tut-blink');
+      btn.style.display = 'none'; 
+      break;
+
+    case 7: 
+      const logTrue = `
+        <div class="log-entry log-true" style="margin-top:10px; text-align:left;">
+          <div style="width:100%;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:bold;">R1 予言α</span> <strong>TRUE</strong>
+            </div>
+            <div style="font-size:0.85rem; margin:4px 0; color:#ddd; padding-left:8px; border-left:2px solid rgba(255,255,255,0.2);">
+              ${colorize("炎と水の比較 (<, =, >)")}
+            </div>
+            <div style="text-align:right;"><span class="log-nums">1-1-1</span></div>
+          </div>
+        </div>`;
+      txt.innerHTML = `石碑の反応があったぞ！<br>${logTrue}<br>「1-1-1」は条件（${cFire} = ${cWater}）を満たしているため <b>TRUE</b> となったのだ。`;
+      document.getElementById('log-container').classList.add('tut-highlight');
+      break;
+
+    case 8:
+      txt.innerHTML = `これで「${cFire}と${cWater}が同じ」とわかった。<br>
+      さて、別の数字を試したいところだが…<br>
+      <b>一度セットした数字(1-1-1)は、このラウンド中は変更できない。</b>`;
+      break;
+
+    // --- ★ここから新規追加 (ラウンド変更) ---
+    case 9:
+      txt.innerHTML = `新しい数字を試すには、時間を進める必要がある。<br>
+      右下の<b>「次のラウンドへ」</b>ボタンを押してくれ。<br>
+      （ラウンドが進むとマナも回復するぞ）`;
+      const nextBtn = document.querySelector('.btn-next');
+      if(nextBtn) nextBtn.classList.add('tut-highlight', 'tut-blink');
+      btn.style.display = 'none'; // ユーザーがボタンを押すのを待つ
+      break;
+
+    case 10:
+      txt.innerHTML = `よし！ <b>ラウンド2</b> に突入した。<br>
+      これで入力欄のロックが解除され、再び自由に数字をセットできる。<br>
+      さあ、検証の続きだ。`;
+      document.getElementById('ui-round').parentNode.classList.add('tut-highlight');
+      break;
+    // ------------------------------------
+
+    case 11: // 元Case9
+      txt.innerHTML = `次は<b>「わざと間違った数字」</b>を入れて反応を見るのがコツだ。<br>
+      合計がとても小さい<b>「1 - 1 - 2」</b>（合計4）を入力しよう。`;
+      const runeBox2 = document.querySelector('.rune-container');
+      if(runeBox2) runeBox2.classList.add('tut-highlight', 'tut-blink');
+      btn.style.display = 'none';
+      setTimeout(() => {
+        if (typeof typeNumber !== 'function') {
+           document.getElementById('r1').value = 1; document.getElementById('r2').value = 1; document.getElementById('r3').value = 2;
+           btn.style.display = 'block'; btn.innerText = "OK"; return;
+        }
+        typeNumber(1, 1, 2, () => {
+             btn.style.display = 'block'; btn.innerText = "OK";
+        });
+      }, 500);
+      break;
+
+    case 12:
+      txt.innerHTML = `真ん中の<b>「予言 β」</b>をタップしろ。<br>
+      この石碑は「合計」に関するルールを持っているようだ。`;
+      const s1 = document.getElementById('stone-1');
+      if(s1) s1.classList.add('tut-highlight', 'tut-blink');
+      btn.style.display = 'none';
+      break;
+
+    case 13: // 元Case11
+      const logFalse = `
+        <div class="log-entry log-false" style="margin-top:10px; text-align:left;">
+          <div style="width:100%;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:bold;">R2 予言β</span> <strong>FALSE</strong>
+            </div>
+            <div style="font-size:0.85rem; margin:4px 0; color:#ddd; padding-left:8px; border-left:2px solid rgba(255,255,255,0.2);">
+              ${colorize("合計と10の関係 (<, ≧)")}
+            </div>
+            <div style="text-align:right;"><span class="log-nums">1-1-2</span></div>
+          </div>
+        </div>`;
+      txt.innerHTML = `判定が出た！<br>${logFalse}<br><b>FALSE</b>（偽り）だ。<br>合計4ではダメらしい。「合計はもっと大きい（10以上）」ということだ！`;
+      document.getElementById('log-container').classList.add('tut-highlight');
+      break;
+
+    case 14: // 元Case12
+      txt.innerHTML = `FALSEが出たことで、正解を絞り込めた。<br>
+      しかしまだ情報が足りない。<br>
+      念のため、一番下の<b>「予言 γ」</b>も調べておこう。`;
+      break;
+
+    case 15: // 元Case13
+      txt.innerHTML = `入力数字はさっきと同じ<b>「1 - 1 - 2」</b>のままでいい。<br>
+      一番下の<b>「予言 γ」</b>をタップして反応を見るんだ。`;
+      const s2 = document.getElementById('stone-2');
+      if(s2) s2.classList.add('tut-highlight', 'tut-blink');
+      btn.style.display = 'none'; 
+      break;
+
+    case 16: // 元Case14
+      const logGamma = `
+        <div class="log-entry log-false" style="margin-top:10px; text-align:left;">
+          <div style="width:100%;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:bold;">R2 予言γ</span> <strong>FALSE</strong>
+            </div>
+            <div style="font-size:0.85rem; margin:4px 0; color:#ddd; padding-left:8px; border-left:2px solid rgba(255,255,255,0.2);">
+              ${colorize("風の偶奇 (偶数, 奇数)")}
+            </div>
+            <div style="text-align:right;"><span class="log-nums">1-1-2</span></div>
+          </div>
+        </div>`;
+      txt.innerHTML = `結果は…<br>${logGamma}<br>
+      <b>FALSE</b>だ！<br>
+      今の風(2)は偶数。つまり、正解の${cWind}は<b>「奇数」</b>でなければならない！`;
+      document.getElementById('log-container').classList.add('tut-highlight');
+      break;
+
+    case 17: // 元Case15
+      txt.innerHTML = `これですべての条件が揃ったぞ。<br>
+      <ul style="font-size:0.85rem; padding-left:20px; color:#ddd; text-align:left;">
+        <li>予言α: ${cFire}と${cWater}は同じ</li>
+        <li>予言β: 合計は10以上</li>
+        <li>予言γ: ${cWind}は奇数</li>
+      </ul>
+      これを満たす組み合わせは…<br>
+      <span style="font-size:1.2rem; color:#d4af37; font-weight:bold;">そう、これしかない！</span>`;
+      break;
+
+    case 18: // 元Case16
+      txt.innerHTML = `導き出した答え、<b>「4 - 4 - 3」</b>を入力せよ！<br>
+      (合計11、風は奇数、炎=水と条件を全て満たしている)<br>
+      ※本来は「次のラウンドへ」ボタンを押さないと数字を変えられないが、今は特別にスキップしてあげよう`;
+      const runeBox3 = document.querySelector('.rune-container');
+      if(runeBox3) runeBox3.classList.add('tut-highlight', 'tut-blink');
+      btn.style.display = 'none';
+      setTimeout(() => {
+        if (typeof typeNumber !== 'function') {
+           document.getElementById('r1').value = 4; document.getElementById('r2').value = 4; document.getElementById('r3').value = 3;
+           btn.style.display = 'block'; btn.innerText = "OK"; return;
+        }
+        typeNumber(4, 4, 3, () => {
+             btn.style.display = 'block'; btn.innerText = "OK";
+        });
+      }, 500);
+      break;
+
+    case 19: // 元Case17
+      txt.innerHTML = `これが正解なら、すべての石碑が ${cTrue} になるはずだ。<br>
+      最後に<b>「封印解除」</b>ボタンを押して、答え合わせをしよう！`;
+      const solveBtn = document.querySelector('.btn-solve');
+      if(solveBtn) solveBtn.classList.add('tut-highlight', 'tut-blink');
+      btn.style.display = 'none'; 
+      break;
+  }
+}
+
+// ▼▼▼ この部分を追加してください ▼▼▼
+
+// ガイドを閉じる
+function closeHelp() {
+  document.getElementById('help-modal').style.display = 'none';
+}
+
+// 履歴を閉じる
+function closeHistory() {
+  document.getElementById('history-modal').style.display = 'none';
+}
+
+// ID入力画面を表示する
+function showInputId() {
+  document.getElementById('id-modal').style.display = 'flex';
+}
+
+// ID入力画面を閉じる
+function closeIdModal() {
+  document.getElementById('id-modal').style.display = 'none';
+}
+
 </script>
 </body>
 </html>
