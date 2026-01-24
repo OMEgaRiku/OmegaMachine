@@ -498,6 +498,30 @@ input.rune-input:disabled {
 /* ロックメッセージのアニメーション */
 @keyframes fadeIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
 
+/* --- iPhone (iOS Safari) 表示崩れ対策 --- */
+
+/* 1. 入力欄のスタイルを強制リセット＆サイズ固定 */
+.rune-input {
+  /* iPhone特有の丸みや影を消す */
+  -webkit-appearance: none !important; 
+  appearance: none !important;
+  
+  /* 横幅を強制的に広げる */
+  width: 80px !important; 
+  min-width: 80px !important; /* 念のため最小幅も指定 */
+  
+  /* 余計な隙間を消す */
+  margin: 0;
+  border-radius: 8px; /* デザインに合わせて調整してOK */
+  box-sizing: border-box; /* 枠線を含めたサイズ計算にする */
+}
+
+/* 2. 入力欄を包んでいる箱が潰れないようにする */
+.rune-wrapper {
+  flex-shrink: 0 !important; /* 「縮むな！」という命令 */
+  width: auto !important;
+}
+
 
 </style>
 </head>
