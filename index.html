@@ -522,6 +522,109 @@ input.rune-input:disabled {
   width: auto !important;
 }
 
+/* --- ゲート解放演出 (強化版) --- */
+
+/* モダル全体のアニメーション制御用クラス */
+.gate-anim-running {
+  /* 子要素のアニメーション発火用 */
+}
+
+/* 金色の十字線 */
+.cross-line {
+  position: absolute;
+  background: #d4af37;
+  box-shadow: 0 0 30px #d4af37, 0 0 10px #fff; /* 強烈な光 */
+  z-index: -1; /* 石板の後ろへ */
+  opacity: 0; /* 初期は非表示 */
+}
+.cross-line.horizontal {
+  width: 100vw; height: 6px; /* 横線 */
+  top: 50%; left: 0; transform: translateY(-50%);
+}
+.cross-line.vertical {
+  height: 100vh; width: 6px; /* 縦線 */
+  top: 0; left: 50%; transform: translateX(-50%);
+}
+/* 十字線のアニメーション */
+.gate-anim-running .cross-line {
+  animation: crossLineFlash 2.5s forwards;
+}
+@keyframes crossLineFlash {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0); } /* 中心から出現 */
+  10% { opacity: 1; transform: translate(-50%, -50%) scale(1); } /* バッと広がる */
+  80% { opacity: 1; filter: brightness(3); } /* 眩しく輝く */
+  100% { opacity: 0; filter: brightness(10); } /* ホワイトアウト */
+}
+
+/* 石板本体 (質感を強化) */
+.gate-stone {
+  width: 180px; height: 180px; /* 少し大きく */
+  /* 点線をやめて、ゴツゴツした実線と多重影に変更 */
+  border: 8px solid #2a2a2a;
+  border-radius: 50%;
+  display: flex; justify-content: center; align-items: center;
+  font-family: 'Cinzel', serif; font-size: 6rem; color: #111;
+  position: relative;
+  /* 岩っぽいテクスチャと内側からの光 */
+  background: radial-gradient(circle, #333 0%, #000 100%);
+  box-shadow: 
+    inset 0 0 30px #000, /* 内側の深い影 */
+    0 0 20px rgba(212, 175, 55, 0.3); /* 外側の微かな光 */
+  text-shadow: 0 0 5px rgba(212, 175, 55, 0.5); /* 文字の光 */
+}
+
+/* 内側の装飾リング */
+.gate-inner {
+  width: 140px; height: 140px;
+  border: 4px solid rgba(212, 175, 55, 0.6); /* 金色のリング */
+  border-radius: 50%;
+  display: flex; justify-content: center; align-items: center;
+}
+
+/* 石板のアニメーション (クラス付与で開始) */
+.gate-active {
+  animation: gateOpenHeavy 2.5s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+}
+
+@keyframes gateOpenHeavy {
+  0% { 
+    transform: rotate(0deg) scale(1);
+    border-color: #2a2a2a; color: #111;
+  }
+  20% {
+    /* 起動: ガガガッと少し回って止まる */
+    transform: rotate(45deg) scale(1.1);
+    color: #d4af37; border-color: #d4af37;
+    box-shadow: inset 0 0 50px #d4af37, 0 0 50px #d4af37;
+  }
+  40% {
+    /*溜め: 一瞬逆回転してエネルギーを溜める */
+    transform: rotate(30deg) scale(1.05);
+    filter: brightness(1.5);
+  }
+  100% {
+    /* 解放: 一気に加速してホワイトアウト */
+    transform: rotate(1080deg) scale(15);
+    opacity: 0; filter: brightness(20);
+    color: #fff; border-color: #fff;
+  }
+}
+
+/* --- 予言リスト画面用スタイル --- */
+#prophecy-list-content {
+  background: #111; border: 1px solid #444; padding: 20px; border-radius: 10px; width: 85%; max-width: 500px;
+  max-height: 80vh; overflow-y: auto; text-align: left; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.8);
+}
+.p-cat-title {
+  margin-top: 20px; margin-bottom: 10px; font-weight: bold; border-left: 4px solid #555; padding-left: 8px; font-size: 0.95rem;
+}
+.p-item {
+  margin-bottom: 12px; font-size: 0.9rem; line-height: 1.5; border-bottom: 1px dashed #333; padding-bottom: 8px; color: #ddd;
+}
+.p-ex {
+  color: #888; font-size: 0.8rem; display: block; margin-top: 2px;
+}
+
 
 </style>
 </head>
@@ -553,6 +656,7 @@ input.rune-input:disabled {
       <div class="hud-left">
         <div class="hud-btn" onclick="location.reload()">MENU</div>
         <div class="hud-btn btn-guide" onclick="showHelp()">GUIDE&RULE</div>
+         <div class="hud-btn" onclick="showProphecyList()" style="margin-left:5px;">予言書</div>
         <div id="btn-show-result" class="hud-btn" style="display:none; border-color:#2ecc71; color:#2ecc71; font-weight:bold;" onclick="showResult()">★ RESULT</div>
       </div>
       <div class="mana-bar"><span style="font-size:0.8rem; color:#888;">MANA</span> <span id="ui-mana" class="en-font">0/3</span></div>
@@ -713,9 +817,10 @@ input.rune-input:disabled {
       <input type="text" id="input-seed" placeholder="例: A1B2C" style="width:100%; padding:10px; font-size:1.2rem; text-align:center; margin-bottom:15px; background:#222; border:1px solid #555; color:#fff; font-family:'Cinzel', serif; text-transform:uppercase;">
       <div style="color:#aaa; font-size:0.8rem; margin-bottom:10px;">難易度を選択して開始:</div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
-        <button class="btn btn-std" style="width:auto; padding:10px; font-size:0.8rem; margin:0;" onclick="startFromId('standard')">基本</button>
-        <button class="btn btn-hard" style="width:auto; padding:10px; font-size:0.8rem; margin:0;" onclick="startFromId('hard')">高難度</button>
-        <button class="btn btn-night" style="width:auto; padding:10px; font-size:0.8rem; margin:0;" onclick="startFromId('nightmare')">悪夢</button>
+        <button class="btn btn-std" style="width:auto; padding:10px; font-size:0.8rem; margin:0;" onclick="startFromId('standard')">Standard</button>
+        <button class="btn btn-hard" style="width:auto; padding:10px; font-size:0.8rem; margin:0;" onclick="startFromId('hard')">Hard</button>
+        <button class="btn btn-night" style="width:auto; padding:10px; font-size:0.8rem; margin:0;" onclick="startFromId('nightmare')">Nightmare</button>
+          <button class="btn btn-chaos" style="width:auto; padding:10px; font-size:0.8rem; margin:0;" onclick="startFromId('chaos')">Chaos</button>
         <button class="btn btn-omega" style="width:auto; padding:10px; font-size:0.8rem; margin:0; border:1px solid #fff;" onclick="startFromId('omega')">Ω</button>
       </div>
       <button class="btn btn-std" style="margin-top:15px; width:100%; border-color:#555; color:#aaa;" onclick="closeIdModal()">閉じる</button>
@@ -1540,10 +1645,10 @@ function showHelp() {
   if (mode === 'nightmare') {
     difficultyHtml = `
       <div class="help-section" style="border-color:#9b59b6; background:rgba(44, 26, 62, 0.4);">
-        <div class="help-title" style="color:#d7bde2;">★ NIGHTMARE (悪夢) のルール</div>
+        <div class="help-title" style="color:#d7bde2;">★ NIGHTMAREのルール</div>
         <div class="help-text">
           <ul>
-            <li><strong>死の宣告:</strong> <span style="color:#ff5555;">5ラウンド</span>経過でゲームオーバー。</li>
+            <li><strong>死の宣告:</strong> <span style="color:#ff5555;">封印解除を含めて5ラウンド</span>経過でゲームオーバー。</li>
             <li><strong>魔力枯渇:</strong> 1ラウンドのマナは <span style="color:#ff5555;">2つ</span> のみ。</li>
           </ul>
         </div>
@@ -1868,10 +1973,27 @@ attemptUnlock = function() {
           }, 3000);
       }, 3000);
     }
-  } else {
-    originalAttemptUnlock();
+    } else {
+    // --- ★ここから書き換え ---
+    
+    // 1. 入力されているかチェック
+    const i = document.getElementById('r1').value;
+    const a = document.getElementById('r2').value;
+    const v = document.getElementById('r3').value;
+
+    if(!i || !a || !v) {
+      alert("数字が入力されていません！");
+      return;
+    }
+
+    // 2. 確認ポップアップに数字を表示して出す
+    document.getElementById('confirm-nums').innerText = `${i} - ${a} - ${v}`;
+    document.getElementById('confirm-modal').style.display = 'flex';
+    
+    // --- ▲ここまで書き換え ---
   }
 };
+
 
 
 function nextTutorialStep() {
@@ -2134,6 +2256,209 @@ function closeIdModal() {
   document.getElementById('id-modal').style.display = 'none';
 }
 
+// --- ▼▼▼ ここから追加 (封印解除の演出用) ▼▼▼ ---
+
+// 1. 確認ポップアップを閉じる
+function closeConfirm() {
+  document.getElementById('confirm-modal').style.display = 'none';
+}
+
+// 2. 演出を実行してから結果画面へ (完全版)
+function executeUnlock() {
+  closeConfirm();
+
+  const animModal = document.getElementById('gate-anim-modal');
+  const gateObj = document.getElementById('gate-circle');
+  
+  animModal.style.display = 'flex';
+  
+  // 親要素にもアニメーション開始の合図クラスを付ける
+  animModal.classList.add('gate-anim-running');
+
+  // 石板のアニメーションリセット＆開始
+  gateObj.classList.remove('gate-active');
+  void gateObj.offsetWidth; 
+  gateObj.classList.add('gate-active');
+
+  setTimeout(() => {
+    animModal.style.display = 'none';
+    gateObj.classList.remove('gate-active');
+    // 親要素のクラスも掃除しておく
+    animModal.classList.remove('gate-anim-running');
+
+    // ▼▼▼ ここが抜けていました！正解判定ロジック ▼▼▼
+    const i = +document.getElementById('r1').value;
+    const a = +document.getElementById('r2').value;
+    const v = +document.getElementById('r3').value;
+    
+    // 正解と比較する
+    const isCorrect = (i === state.ans.i && a === state.ans.a && v === state.ans.v);
+    // ▲▲▲ ここまで ▲▲▲
+    
+    finishGame(isCorrect);
+    
+  }, 2300);
+}
+
+// --- 予言リストの開閉 ---
+function showProphecyList() {
+  document.getElementById('prophecy-list-modal').style.display = 'flex';
+}
+function closeProphecyList() {
+  document.getElementById('prophecy-list-modal').style.display = 'none';
+}
+
+
 </script>
+<div id="confirm-modal" class="modal-overlay">
+  <div style="background:#111; padding:25px; border:1px solid #d4af37; border-radius:10px; width:85%; max-width:350px; text-align:center; box-shadow:0 0 30px rgba(212, 175, 55, 0.2);">
+    <h3 style="color:#ccc; margin-top:0; font-size:1rem;">封印を解除しますか？</h3>
+    
+    <div style="font-family:'Cinzel', serif; font-size:2.5rem; color:#d4af37; margin:15px 0; letter-spacing:5px; font-weight:bold; text-shadow:0 0 10px rgba(212, 175, 55, 0.5);">
+      <span id="confirm-nums">???</span>
+    </div>
+    
+    <div style="font-size:0.8rem; color:#888; margin-bottom:20px;">
+      一度解除すると、やり直しはできません。<br>
+      このコードで確定しますか？
+    </div>
+
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-std" style="border-color:#555; color:#aaa;" onclick="closeConfirm()">再考する</button>
+      <button class="btn btn-std" style="background:#d4af37; color:#000; border-color:#fff; font-weight:bold;" onclick="executeUnlock()">解除！！</button>
+    </div>
+  </div>
+</div>
+
+<div id="gate-anim-modal" class="modal-overlay" style="background:#000; z-index:11000;">
+  <div class="cross-line horizontal"></div>
+  <div class="cross-line vertical"></div>
+  
+  <div id="gate-circle" class="gate-stone">
+    <div class="gate-inner">Ω</div>
+  </div>
+</div>
+
+<div id="prophecy-list-modal" class="modal-overlay">
+  <div id="prophecy-list-content">
+    <div class="close-help" onclick="closeProphecyList()">×</div>
+    <h3 style="color:#d4af37; margin-top:0; border-bottom:1px solid #333; padding-bottom:10px; text-align:center;">予言の解読書</h3>
+    
+    <div class="p-cat-title" style="color:#ff9999;">■ 基本・比較</div>
+    
+    <div class="p-item">
+      <strong>[属性]と[数字]の関係 ( <, =, > )</strong><br>
+      例: 「炎と3の関係」など。<br>
+      そのルーンが指定された数字より大きいか小さいか 同一か。<br>
+      <span class="p-ex">判定: 炎が4なら「炎 > 3」はTRUE</span>
+    </div>
+
+    <div class="p-item">
+      <strong>[属性]と[属性]の比較 ( <, =, > )</strong><br>
+      例: 「炎と水の比較」など。<br>
+      2つのルーンの大きさを比べる。<br>
+      <span class="p-ex">判定: 炎4・水2なら「炎 > 水」はTRUE</span>
+    </div>
+
+    <div class="p-item">
+      <strong>順序の法則 (昇順, 降順, 順不同)</strong><br>
+      3つの数字の並び方。<br>
+      <span class="p-ex">
+        昇順: 1-2-5 (増えていく)<br>
+        降順: 5-3-2 (減っていく)<br>
+        順不同: 1-5-2 (バラバラ)
+      </span>
+    </div>
+
+    <div class="p-item">
+      <strong>最大値の所在 (≧) / 最小値の所在 (≦)</strong><br>
+      誰が一番大きい(または小さい)か。<br>
+      <span class="p-ex">判定: 5-2-2なら「炎が最大」はTRUE</span>
+    </div>
+
+
+    <div class="p-cat-title" style="color:#99ccff;">■ 数学・合計</div>
+
+    <div class="p-item">
+      <strong>[属性]の偶奇 (偶数, 奇数)</strong><br>
+      その数字が2で割り切れるかどうか。<br>
+      <span class="p-ex">判定: 炎が4なら「炎=偶数」はTRUE</span>
+    </div>
+
+    <div class="p-item">
+      <strong>合計の偶奇 (偶数, 奇数)</strong><br>
+      3つの合計値が偶数か奇数か。<br>
+      <span class="p-ex">判定: 1+2+4=7 なら「奇数」がTRUE</span>
+    </div>
+
+    <div class="p-item">
+      <strong>合計と[数字]の関係 ( <, ≧ )</strong><br>
+      例: 「合計と10の関係」など。<br>
+      3つの合計が基準(6や10)より大きいか小さいか。<br>
+      <span class="p-ex">判定: 合計11なら「合計 ≧ 10」はTRUE</span>
+    </div>
+
+    <div class="p-item">
+      <strong>合計が特定の倍数(2, 3, 5)</strong><br>
+      合計値がその数で割り切れるか。<br>
+      <span class="p-ex">判定: 合計10なら「5の倍数」「2の倍数」がTRUE</span>
+    </div>
+    
+    <div class="p-item">
+      <strong>[属性]+[属性]と5の関係 ( <, =, > )</strong><br>
+      例: 「炎+水と5の関係」など。<br>
+      指定された2つの和が5より大きいか小さいか。<br>
+      <span class="p-ex">判定: 3+3=6 なら「炎+水 > 5」がTRUE</span>
+    </div>
+
+    <div class="p-item">
+      <strong>合計値が素数かどうか</strong><br>
+      合計が 3, 5, 7, 11, 13 のいずれかである。<br>
+      <span class="p-ex">判定: 合計5ならTRUE</span>
+    </div>
+
+    <div class="p-item">
+      <strong>素数の有無 (あり, なし)</strong><br>
+      数字の中に素数(2, 3, 5)が1つでも含まれるか。<br>
+      <span class="p-ex">判定: 1-1-4 (なし) / 1-1-2 (あり)</span>
+    </div>
+
+
+    <div class="p-cat-title" style="color:#99ffcc;">■ 構造・パターン</div>
+
+    <div class="p-item">
+      <strong>[数字]の数 (0, 1, 2, 3)</strong><br>
+      例: 「偶数の数」「1の数」など。<br>
+      条件に合う数字がいくつあるか。<br>
+      <span class="p-ex">判定: 2-3-5 なら「偶数が1個」がTRUE</span>
+    </div>
+
+    <div class="p-item">
+      <strong>隣接する連番の数(0 , 1 , 2)</strong><br>
+      隣り合う数字の差が「1」である箇所の数。<br>
+      <span class="p-ex">
+        4-5-1 (4と5) → 1箇所<br>
+        1-2-3 (1と2, 2と3) → 2箇所<br>
+        1-3-5 (繋がりなし) → 0箇所
+      </span>
+    </div>
+
+    <div class="p-item">
+      <strong>2つの同じ数字 (なし, 1組)</strong><br>
+      ペアが含まれているか (ワンペア)。<br>
+      <span class="p-ex">判定: 2-2-5 (1組) / 1-2-3 (なし)</span>
+    </div>
+
+    <div class="p-item">
+      <strong>最大と最小の差(0 ,1 ,2 ,3 ,4)</strong><br>
+      一番大きい数 - 一番小さい数。<br>
+      <span class="p-ex">判定: 2-5-5 なら 5-2=3 なので「差が3」</span>
+    </div>
+
+    <button class="btn btn-std" onclick="closeProphecyList()" style="width:100%; margin-top:20px;">閉じる</button>
+  </div>
+</div>
+
+
 </body>
 </html>
