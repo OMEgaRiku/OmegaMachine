@@ -529,31 +529,53 @@ input.rune-input:disabled {
   /* 子要素のアニメーション発火用 */
 }
 
-/* 金色の十字線 */
-.cross-line {
+/* === 十字線演出 (中心拡散・極細版) === */
+.lightning-svg {
   position: absolute;
-  background: #d4af37;
-  box-shadow: 0 0 30px #d4af37, 0 0 10px #fff; /* 強烈な光 */
-  z-index: -1; /* 石板の後ろへ */
-  opacity: 0; /* 初期は非表示 */
+  top: 0; left: 0;
+  pointer-events: none;
+  opacity: 0;
+  transform-origin: center center; /* 中心を軸にする */
 }
-.cross-line.horizontal {
-  width: 100vw; height: 6px; /* 横線 */
-  top: 50%; left: 0; transform: translateY(-50%);
+
+.lightning-path {
+  fill: none;
+  stroke: #fffbe0; 
+  stroke-width: 0.4px; /* さらに細くして鋭さを出す */
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 3px #d4af37) drop-shadow(0 0 6px #aa771c);
+  vector-effect: non-scaling-stroke;
 }
-.cross-line.vertical {
-  height: 100vh; width: 6px; /* 縦線 */
-  top: 0; left: 50%; transform: translateX(-50%);
+
+.lightning-path.main { stroke-width: 0.6px; }
+.lightning-path.sub { stroke-width: 0.2px; opacity: 0.5; }
+
+.lightning-svg.omega-mode .lightning-path {
+  stroke: #ffffff !important;
+  filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 8px #fff) !important;
 }
-/* 十字線のアニメーション */
-.gate-anim-running .cross-line {
-  animation: crossLineFlash 2.5s forwards;
+
+.gate-anim-running .lightning-svg {
+  animation: explode-discharge 2.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
 }
-@keyframes crossLineFlash {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(0); } /* 中心から出現 */
-  10% { opacity: 1; transform: translate(-50%, -50%) scale(1); } /* バッと広がる */
-  80% { opacity: 1; filter: brightness(3); } /* 眩しく輝く */
-  100% { opacity: 0; filter: brightness(10); } /* ホワイトアウト */
+
+/* 中心から爆発的に広がり、震えるアニメーション */
+@keyframes explode-discharge {
+  0% { 
+    opacity: 0; 
+    transform: scale(0.2); /* 中心に凝縮 */
+  }
+  5% { 
+    opacity: 1; 
+    transform: scale(1.2); /* 一気に広がる */
+  }
+  
+  /* バチバチと震えるノイズ */
+  10%, 30%, 50%, 70%, 90% { transform: scale(1.05) translate(2px, -1px); opacity: 1; }
+  20%, 40%, 60%, 80% { transform: scale(1) translate(-2px, 1px); opacity: 0.2; }
+
+  95% { opacity: 1; transform: scale(1.2) filter(brightness(2)); }
+  100% { opacity: 0; transform: scale(2); filter: brightness(10); }
 }
 
 /* 石板本体 (質感を強化) */
@@ -625,6 +647,64 @@ input.rune-input:disabled {
   color: #888; font-size: 0.8rem; display: block; margin-top: 2px;
 }
 
+/* --- Ωモード特殊演出 (修正版: 天空からの降臨) --- */
+
+/* 1. 開始時: 予言が画面最上部から降ってくる */
+@keyframes dropStone {
+  0% { 
+    transform: translateY(-120vh); /* 画面の遥か上からスタート */
+    opacity: 0;
+  }
+  10% {
+    opacity: 1; /* 降り始めですぐ見えるように */
+  }
+  100% { 
+    transform: translateY(0); /* 自分の場所に着地 */
+    opacity: 1; 
+  }
+}
+
+.stone-fall {
+  /* 3秒かけてゆっくり、ふんわりと着地する */
+  animation: dropStone 3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  opacity: 0; /* 最初は隠しておく */
+  
+  /* 降ってくる間、他のパーツより手前に表示する */
+  position: relative;
+  z-index: 100; 
+}
+
+/* 2. 解除時: 白色の石板スタイル (変更なし) */
+.gate-stone-omega {
+  border-color: #fff !important;
+  color: #fff !important;
+  background: radial-gradient(circle, #555 0%, #000 100%) !important;
+  box-shadow: inset 0 0 50px #fff, 0 0 30px #fff !important;
+  text-shadow: 0 0 20px #fff !important;
+}
+.gate-inner-omega {
+  border-color: #fff !important;
+}
+
+/* 通常の1.5倍の時間 (2.5s * 1.5 = 3.75s) */
+.gate-active-omega {
+  animation: gateOpenHeavy 3.75s cubic-bezier(0.7, 0, 0.3, 1) forwards !important;
+}
+
+/* 3. クリア時: 神々しいフレーム (変更なし) */
+.divine-frame {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 20000;
+  box-shadow: inset 0 0 50px #fff, inset 0 0 100px rgba(212, 175, 55, 0.5);
+  border: 4px solid #fff;
+  animation: divinePulse 3s infinite alternate;
+}
+@keyframes divinePulse {
+  0% { box-shadow: inset 0 0 30px #fff, inset 0 0 80px rgba(212, 175, 55, 0.3); opacity: 0.8; }
+  100% { box-shadow: inset 0 0 60px #fff, inset 0 0 150px rgba(212, 175, 55, 0.8); opacity: 1; }
+}
+
+
 
 </style>
 </head>
@@ -657,7 +737,7 @@ input.rune-input:disabled {
         <div class="hud-btn" onclick="location.reload()">MENU</div>
         <div class="hud-btn btn-guide" onclick="showHelp()">GUIDE&RULE</div>
          <div class="hud-btn" onclick="showProphecyList()" style="margin-left:5px;">予言書</div>
-        <div id="btn-show-result" class="hud-btn" style="display:none; border-color:#2ecc71; color:#2ecc71; font-weight:bold;" onclick="showResult()">★ RESULT</div>
+        <div id="btn-show-result" class="hud-btn" style="display:none; border-color:#2ecc71; color:#2ecc71; font-weight:bold;" onclick="showResult()">RESULT</div>
       </div>
       <div class="mana-bar"><span style="font-size:0.8rem; color:#888;">MANA</span> <span id="ui-mana" class="en-font">0/3</span></div>
     </div>
@@ -1115,6 +1195,10 @@ function startFromId(mode) {
 
 function initGame(mode, seed) {
   document.getElementById('loading-indicator').style.display = 'block';
+   
+// ★追加: 神々しいフレームが残っていたら消す
+  const oldFrame = document.querySelector('.divine-frame');
+  if(oldFrame) oldFrame.remove();
   
   rng = new SeededRandom(seed);
   state.currentSeed = seed;
@@ -1273,13 +1357,8 @@ function renderProphecies() {
   if (state.isOmega) {
     const listContainer = document.getElementById('omega-list');
     listContainer.innerHTML = '';
-    let shuffledRules = [...state.rules];
     
     // シャッフル表示（ネタバレ防止）
-    // ※seed依存のランダムだと再描画で順序が変わらないよう工夫が必要ですが、
-    // ここでは簡易的に毎回シャッフル、あるいは固定でもOKです。
-    // 今回は「入力しやすさ」優先で、元の配列順(state.rules)でも良いですが、
-    // 答えがバレないようシャッフルします。
     let displayRules = [...state.rules];
     displayRules.sort(() => Math.random() - 0.5); // 簡易シャッフル
 
@@ -1288,23 +1367,21 @@ function renderProphecies() {
       item.className = 'omega-list-item';
       item.innerHTML = colorize(r.name);
       
-      // ★ここが新機能: クリック時の挙動
+      // クリック時の挙動
       item.onclick = () => {
         if (activeOmegaInput) {
           // メモ欄が選択されていれば、そこに文字を追記する
-          // (すでに文字があればカンマで区切る)
           const currentText = activeOmegaInput.value;
-          const newText = r.name.split(' (')[0]; // カッコ書きの説明は省いて短くする
+          const newText = r.name.split(' (')[0]; 
           
           if(currentText) {
              activeOmegaInput.value = currentText + ", " + newText;
           } else {
              activeOmegaInput.value = newText;
           }
-          // 入力後もフォーカスを維持（連続入力用）
           activeOmegaInput.focus();
         } else {
-          // 選択されてなければ、従来通り「取り消し線」のON/OFF
+          // 選択されてなければ、取り消し線のON/OFF
           item.classList.toggle('excluded'); 
         }
       };
@@ -1314,30 +1391,45 @@ function renderProphecies() {
 
   // --- 2. 石碑の生成部分 ---
   state.rules.forEach((r, idx) => {
-    // コンテナ作成
+    // ラッパー作成
     let wrapper = document.createElement('div');
     
     let div = document.createElement('div');
+    
     if (state.isOmega) {
-      // Omegaモード（???表示）
+      // ▼▼▼ Ωモード: 特殊演出とラベル表示 ▼▼▼
       div.className = 'stone is-mystery';
+      div.classList.add('stone-fall'); // 落下アニメーション
+      div.style.animationDelay = `${idx * 0.2}s`; // 順番に落とす
+      
+      // レイアウトを通常モードに合わせて調整
+      div.style.justifyContent = "space-between"; 
+      
       div.id = `stone-${idx}`;
-      div.innerHTML = `<div class="stone-text" style="font-size:1.8rem;">???</div>`;
+      div.innerHTML = `
+        <div class="stone-content">
+          <div class="stone-title" style="display:block; color:#888;">予言 ${names[idx]}</div>
+          <div class="stone-text" style="font-size:1.8rem; letter-spacing:3px;">???</div>
+        </div>
+        <div class="stone-id" style="color:#444;">${names[idx]}</div>
+      `;
     } else {
-      // 通常モード
+      // ▼▼▼ 通常モード ▼▼▼
       div.className = 'stone';
       div.id = `stone-${idx}`;
       div.innerHTML = `
         <div class="stone-content">
           <div class="stone-title">予言 ${names[idx]}</div>
-          <div class="stone-text">${colorize(r.name)}</div> </div>
+          <div class="stone-text">${colorize(r.name)}</div> 
+        </div>
         <div class="stone-id">${names[idx]}</div>
       `;
     }
+
     div.onclick = () => checkProphecy(idx, r, div);
     wrapper.appendChild(div);
 
-    // ★ここが新機能: Omegaモードならメモ欄を追加
+    // Ωモードならメモ欄を追加
     if (state.isOmega) {
       const memoBox = document.createElement('div');
       memoBox.className = 'omega-memo-box';
@@ -1347,11 +1439,8 @@ function renderProphecies() {
       input.className = 'omega-memo-input';
       input.placeholder = `予言${names[idx]} の推理メモ (リストタップで入力)`;
       
-      // フォーカスされたら「アクティブな入力欄」として記憶
+      // フォーカス制御
       input.onfocus = () => { activeOmegaInput = input; };
-      
-      // フォーカスが外れたら、少し待ってから解除
-      // (リストクリックの瞬間に外れてしまわないようにするための遅延)
       input.onblur = () => { 
         setTimeout(() => {
           if(activeOmegaInput === input) activeOmegaInput = null;
@@ -1365,7 +1454,6 @@ function renderProphecies() {
     c.appendChild(wrapper);
   });
 }
-
 
 // 重複ルール排除用の判定関数
 function isConflict(pickedList, newRule) {
@@ -1505,6 +1593,12 @@ function finishGame(isWin, titleOverride) {
   const modal = document.getElementById('result-modal');
   modal.style.display = 'flex';
   
+  // ★追加: Ωモードクリア時の神演出
+  if (isWin && state.isOmega) {
+    const frame = document.createElement('div');
+    frame.className = 'divine-frame';
+    document.body.appendChild(frame);
+  }
   const title = document.querySelector('.seal-broken');
   if(isWin) {
     title.innerText = "封印解除";
@@ -2263,42 +2357,70 @@ function closeConfirm() {
   document.getElementById('confirm-modal').style.display = 'none';
 }
 
-// 2. 演出を実行してから結果画面へ (完全版)
+// 2. 演出を実行してから結果画面へ (Ω対応版)
 function executeUnlock() {
   closeConfirm();
 
   const animModal = document.getElementById('gate-anim-modal');
   const gateObj = document.getElementById('gate-circle');
+  const gateInner = document.querySelector('.gate-inner'); // 中のリング
   
   animModal.style.display = 'flex';
+  animModal.classList.add('gate-anim-running');
   
-  // 親要素にもアニメーション開始の合図クラスを付ける
+  // ★追加: 十字線の色をモードに合わせて切り替える
+    // 親要素にもアニメーション開始の合図クラスを付ける
   animModal.classList.add('gate-anim-running');
 
-  // 石板のアニメーションリセット＆開始
-  gateObj.classList.remove('gate-active');
-  void gateObj.offsetWidth; 
-  gateObj.classList.add('gate-active');
+  // ★修正: SVG要素に対してモードクラスを付け外しする
+  const lightningSvg = document.querySelector('.lightning-svg');
+  if (state.isOmega) {
+    lightningSvg.classList.add('omega-mode'); // 白くする
+  } else {
+    lightningSvg.classList.remove('omega-mode'); // 金色に戻す
+  }
 
+  // リセット
+  gateObj.classList.remove('gate-active');
+  gateObj.classList.remove('gate-active-omega'); // 追加
+  gateObj.classList.remove('gate-stone-omega');  // 追加
+  gateInner.classList.remove('gate-inner-omega');// 追加
+
+  void gateObj.offsetWidth; // リフロー
+
+  // ★分岐: Ωモードかどうかでアニメーションを変える
+  let animTime = 2300; // 通常時間
+
+  if (state.isOmega) {
+    // Ωモード: 白くてゆっくり
+    gateObj.classList.add('gate-stone-omega');
+    gateInner.classList.add('gate-inner-omega');
+    gateObj.classList.add('gate-active-omega'); // 3.75秒のアニメーション
+    animTime = 3800; // 待ち時間も延長 (3.75s + α)
+  } else {
+    // 通常モード
+    gateObj.classList.add('gate-active');
+  }
+
+  // アニメーション終了後の処理
   setTimeout(() => {
     animModal.style.display = 'none';
-    gateObj.classList.remove('gate-active');
-    // 親要素のクラスも掃除しておく
     animModal.classList.remove('gate-anim-running');
-
-    // ▼▼▼ ここが抜けていました！正解判定ロジック ▼▼▼
+    gateObj.classList.remove('gate-active');
+    gateObj.classList.remove('gate-active-omega'); // 掃除
+    
+    // 判定
     const i = +document.getElementById('r1').value;
     const a = +document.getElementById('r2').value;
     const v = +document.getElementById('r3').value;
-    
-    // 正解と比較する
     const isCorrect = (i === state.ans.i && a === state.ans.a && v === state.ans.v);
-    // ▲▲▲ ここまで ▲▲▲
+
     
     finishGame(isCorrect);
     
-  }, 2300);
+  }, animTime); // ★待ち時間を変数にする
 }
+
 
 // --- 予言リストの開閉 ---
 function showProphecyList() {
@@ -2331,13 +2453,30 @@ function closeProphecyList() {
 </div>
 
 <div id="gate-anim-modal" class="modal-overlay" style="background:#000; z-index:11000;">
-  <div class="cross-line horizontal"></div>
-  <div class="cross-line vertical"></div>
   
+  <svg class="lightning-svg" width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+  <defs>
+    <filter id="glow-gold" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="0.5" result="blur1" />
+      <feMerge>
+        <feMergeNode in="blur1" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <g class="cross-line-group">
+    <path class="lightning-path main" d="M50,50 L50,0 M50,50 L50,100 M50,50 L0,50 M50,50 L100,50" />
+    <path class="lightning-path sub" d="M50,50 L20,20 M50,50 L80,20 M50,50 L20,80 M50,50 L80,80" />
+    <path class="lightning-path sub" d="M50,50 L40,10 L50,50 L90,40 L50,50 L60,90 L50,50 L10,60" />
+  </g>
+</svg>
+
   <div id="gate-circle" class="gate-stone">
     <div class="gate-inner">Ω</div>
   </div>
 </div>
+
 
 <div id="prophecy-list-modal" class="modal-overlay">
   <div id="prophecy-list-content">
