@@ -704,6 +704,78 @@ input.rune-input:disabled {
   100% { box-shadow: inset 0 0 60px #fff, inset 0 0 150px rgba(212, 175, 55, 0.8); opacity: 1; }
 }
 
+/* 斬撃エフェクト本体 */
+.slash-effect {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 30000; display: none;
+}
+.slash-line {
+  position: absolute; background: #fff;
+  box-shadow: 0 0 20px #fff, 0 0 40px #ff0000;
+  transform: rotate(-20deg);
+}
+
+/* 数字が壊される時の震え */
+@keyframes glitch-shake {
+  0% { transform: translate(0); }
+  20% { transform: translate(-5px, 5px); color: #ff0000; }
+  40% { transform: translate(-5px, -5px); }
+  60% { transform: translate(5px, 5px); }
+  80% { transform: translate(5px, -5px); }
+  100% { transform: translate(0); }
+}
+.glitch-active { animation: glitch-shake 0.3s linear infinite; }
+
+/* --- カオスモード演出用 --- */
+
+/* 1. 降り注ぐ禍々しいオーブ */
+.chaos-orb {
+  position: fixed;
+  width: 20px; height: 20px;
+  background: radial-gradient(circle, #fff 0%, #9b59b6 30%, #000 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 10px #9b59b6, 0 0 20px #8e44ad;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+}
+/* 落下アニメーション */
+@keyframes chaos-fall {
+  0% { transform: translateY(-100px) scale(2); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* 2. 石碑が呪われた時の振動と変色 */
+@keyframes chaos-impact {
+  0% { transform: scale(1); border-color: #777; }
+  10% { transform: scale(1.1); border-color: #9b59b6; background: #2c0e3a; }
+  20% { transform: translate(-3px, 3px); }
+  40% { transform: translate(3px, -3px); }
+  60% { transform: translate(-3px, -3px); }
+  80% { transform: translate(3px, 3px); }
+  100% { transform: scale(1); border-color: #9b59b6; background: rgba(0,0,0,0.6); }
+}
+.stone.chaos-infected {
+  animation: chaos-impact 0.5s cubic-bezier(.36,.07,.19,.97) forwards;
+  /* 憑依後は枠線を紫色に固定 */
+  border-color: #9b59b6 !important;
+  box-shadow: 0 0 15px rgba(155, 89, 182, 0.3);
+}
+
+/* 警告文のじわっと表示 */
+.chaos-bar {
+  opacity: 0;
+  transition: opacity 2s ease-in; 
+  
+  /* 以下は変更なし */
+  background: #c0392b; color: white; padding: 5px; font-size: 0.8rem; 
+  font-weight: bold; margin-bottom: 15px; border-radius: 4px; 
+  display: none; text-shadow: 0 0 5px #000; letter-spacing: 2px;
+}
+.chaos-bar.visible {
+  opacity: 1;
+}
 
 
 </style>
@@ -744,7 +816,7 @@ input.rune-input:disabled {
 
     <div style="text-align:right; font-size:0.8rem; color:#aaa; margin-top:-15px; margin-bottom:15px; margin-right:5px;">ROUND <span id="ui-round" class="en-font" style="color:#fff; font-size:1.1rem;">1</span></div>
 
-    <div id="chaos-warning" class="chaos-bar">⚠ 常に嘘をつく偽りの石碑が含まれています (ONE LIAR)</div>
+    <div id="chaos-warning" class="chaos-bar">⚠ 常に嘘をつく偽りの予言が1つ含まれています</div>
 
         <div class="rune-container" style="flex-direction:column; gap:5px;">
       <div style="display:flex; justify-content:center; gap:12px;">
@@ -874,8 +946,11 @@ input.rune-input:disabled {
   </div>
 
     <div id="result-modal" class="modal-overlay">
-    <div class="seal-broken">封印解除</div>
-    <div style="color:#ccc; margin-top:10px;">真実のルーン:</div>
+  <div class="seal-broken">封印解除</div>
+
+  <div id="result-mode-badge" class="en-font" style="font-size:1.5rem; letter-spacing:3px; margin-bottom:15px; font-weight:bold; text-transform:uppercase;"></div>
+  <div style="color:#ccc; margin-top:10px;">真実のルーン:</div>
+
     <div class="answer-reveal" id="final-code"></div>
     <div id="result-details" style="width:90%; max-width:400px; background:#222; padding:10px; border-radius:8px; margin-bottom:20px; text-align:left; max-height:30vh; overflow-y:auto; border:1px solid #444;"></div>
     
@@ -1193,10 +1268,12 @@ function startFromId(mode) {
   initGame(mode, seed);
 }
 
+// ▼▼▼ 修正版 initGame関数 (これを既存のものと入れ替えてください) ▼▼▼
+
 function initGame(mode, seed) {
   document.getElementById('loading-indicator').style.display = 'block';
-   
-// ★追加: 神々しいフレームが残っていたら消す
+
+  // 神々しいフレームが残っていたら消す
   const oldFrame = document.querySelector('.divine-frame');
   if(oldFrame) oldFrame.remove();
   
@@ -1221,6 +1298,7 @@ function initGame(mode, seed) {
     let attempts = 0;
     const maxAttempts = 10000; // 試行回数
     
+    // --- ここからパズル生成ループ ---
     while(!success && attempts < maxAttempts) {
       attempts++;
       state.ans = {
@@ -1232,7 +1310,7 @@ function initGame(mode, seed) {
       // 1. 今回の答えで「TRUE」になるルールを全抽出
       let validRules = POOL.filter(r => r.f(state.ans.i, state.ans.a, state.ans.v) === true);
       
-      // そもそも正解ルールが少なすぎる場合はパス
+      // 正解ルールが少なすぎる場合はパス
       if(validRules.length < state.stoneCount) continue;
 
       // シャッフル
@@ -1242,37 +1320,30 @@ function initGame(mode, seed) {
           [temp[i], temp[j]] = [temp[j], temp[i]];
       }
 
-      // --- ★ここから選定ロジック（修正版）---
+      // --- 選定ロジック ---
       let picked = [];
 
       // フェーズ1: 重複（コンフリクト）を避けて選ぶ
       for(let r of temp) {
-        if(picked.some(p => p.name === r.name)) continue; // 完全一致は常にNG
-        if(isConflict(picked, r)) continue; // 似たルールも避ける
-
+        if(picked.some(p => p.name === r.name)) continue; 
+        if(isConflict(picked, r)) continue; 
         picked.push(r);
         if(picked.length === state.stoneCount) break;
       }
 
-      // フェーズ2: もし数が足りなければ、重複を許容して補充する（生成失敗を防ぐため）
+      // フェーズ2: 補充
       if(picked.length < state.stoneCount) {
         for(let r of temp) {
           if(picked.length === state.stoneCount) break;
-          // すでに選んだものと「名前が完全一致」してなければ採用（isConflictは無視）
           if(!picked.some(p => p.name === r.name)) {
             picked.push(r);
           }
         }
       }
-      
-      // それでも足りない場合（極めて稀）はやり直し
       if(picked.length < state.stoneCount) continue;
 
-      // --- 選定完了 ---
-
-      // 解が1つに定まるかどうかの検証（カオスモード対応）
+      // 解が1つに定まるか検証
       let matches = 0;
-      // 高速化のため、検証ループは少し軽量化してもよいが、ここでは正確性重視
       for(let i=1; i<=5; i++) {
         for(let a=1; a<=5; a++) {
           for(let v=1; v<=5; v++) {
@@ -1283,12 +1354,9 @@ function initGame(mode, seed) {
 
       if(matches === 1) {
         if(mode === 'chaos') {
-          // カオスモード: 嘘つきを混ぜても解けるか判定
+          // カオスモード処理
           const tempLiar = Math.floor(rng.next()*state.stoneCount);
           let chaosSolutions = 0;
-          
-          // 簡易検証: カオスは計算コストが高いので、発見次第採用する
-          // (本来は全探索すべきだが、生成失敗回避を優先)
           for(let i=1; i<=5; i++) {
             for(let a=1; a<=5; a++) {
               for(let v=1; v<=5; v++) {
@@ -1315,14 +1383,15 @@ function initGame(mode, seed) {
         }
       }
     }
+    // --- ループ終了 ---
 
     document.getElementById('loading-indicator').style.display = 'none';
 
     if(!success) {
       alert("生成失敗: 条件に合うパズルが見つかりませんでした。別のIDを試すか、もう一度やり直してください。");
-      // フォールバック: 次は必ず成功するようにランダムシードを変えるなどの処理
       rng = new SeededRandom(generateSeed(5)); 
     } else {
+      // ▼ 生成成功時の処理 ▼
       document.getElementById('title-screen').style.display = 'none';
       document.getElementById('game-screen').style.display = 'block';
       setBackground(mode);
@@ -1341,9 +1410,144 @@ function initGame(mode, seed) {
       document.getElementById('omega-rule-area').style.display = state.isOmega ? 'block' : 'none';
       initMatrix();
       renderProphecies();
+      
+          // ★ここを修正
+      const chaosWarn = document.getElementById('chaos-warning');
+      if (mode === 'chaos') {
+        // カオスモードなら、最初は非表示(display:none)ではなく
+        // 透明(opacity:0)にして、場所だけ確保しておくか、あるいは演出関数に任せる
+        if(chaosWarn) {
+            chaosWarn.style.display = 'none'; // 一旦隠す
+            chaosWarn.classList.remove('visible');
+        }
+        // カオス演出開始！
+        executeChaosIntro();
+      } else {
+        // カオス以外なら警告は消す
+        if(chaosWarn) chaosWarn.style.display = 'none';
+      }
+
+      // ナイトメア演出
+      if (mode === 'nightmare') {
+        executeNightmareIntro();
+      }
+
+      // ★★★ ここで演出関数を呼び出します ★★★
+      if (mode === 'nightmare') {
+        executeNightmareIntro();
+      }
     }
   }, 100);
 }
+
+// ▼▼▼ initGameの外に出した演出用関数 ▼▼▼
+
+async function executeNightmareIntro() {
+  const slash = document.getElementById('nightmare-slash');
+  const manaBar = document.querySelector('.mana-bar');
+  // ROUND表示の取得（構造依存なので注意）
+  const roundDisplay = document.getElementById('ui-round').parentNode;
+
+  // 1. 一瞬の静寂と暗転
+  document.body.style.filter = "brightness(0.5)";
+  
+  // 2. 斬撃！！
+  if(slash) {
+    slash.style.display = 'block';
+    setTimeout(() => { 
+        slash.style.display = 'none'; 
+        document.body.style.filter = ""; 
+    }, 200);
+  }
+
+  // 3. マナとラウンドを「破壊」して書き換える
+  if(manaBar) manaBar.classList.add('glitch-active');
+  if(roundDisplay) roundDisplay.classList.add('glitch-active');
+
+  setTimeout(() => {
+    // マナを3から2へ強制改変する視覚演出
+    const uiMana = document.getElementById('ui-mana');
+    const uiRound = document.getElementById('ui-round');
+
+    if(uiMana) uiMana.innerHTML = '<span style="text-decoration:line-through; color:#555;">3</span> 0/2';
+    if(uiRound) uiRound.innerText = "1 / 5";
+    
+    // 4. 演出終了、色を禍々しく
+    setTimeout(() => {
+      if(manaBar) {
+          manaBar.classList.remove('glitch-active');
+          manaBar.style.color = "#ff0000";
+          manaBar.style.textShadow = "0 0 10px #ff0000";
+      }
+      if(roundDisplay) roundDisplay.classList.remove('glitch-active');
+    }, 1000);
+  }, 500);
+}
+
+function executeChaosIntro() {
+  const stones = document.querySelectorAll('.stone');
+  const warningBar = document.getElementById('chaos-warning');
+  
+  // 警告文を一旦隠す（念のため）
+  if(warningBar) warningBar.classList.remove('visible');
+
+  stones.forEach((stone, index) => {
+    // 石碑の位置を取得
+    const rect = stone.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const topY = rect.top + window.scrollY; // スクロール考慮
+
+    // 呪いのオーブを生成
+    const orb = document.createElement('div');
+    orb.className = 'chaos-orb';
+    document.body.appendChild(orb);
+
+    // オーブの開始位置（画面上部）と終了位置を設定
+    // アニメーションで制御するため、CSS変数で落差を渡す手もありますが、
+    // ここではシンプルにWeb Animations APIを使います
+    
+    orb.style.left = (centerX - 10) + 'px'; // -10はオーブの半径
+    orb.style.top = (topY - 500) + 'px'; // かなり上から
+
+    // 落下アニメーション
+    // ランダムな遅延を入れてバラバラ落ちてくるようにする
+    const delay = index * 200; 
+    const duration = 800;
+
+    const animation = orb.animate([
+      { transform: 'translateY(0) scale(1.5)', opacity: 0 },
+      { transform: 'translateY(500px) scale(1)', opacity: 1 } // 500px落下して着弾
+    ], {
+      duration: duration,
+      delay: delay,
+      easing: 'cubic-bezier(0.5, 0, 1, 1)', // 加速しながら落ちる
+      fill: 'forwards'
+    });
+
+    // 着弾時の処理
+    setTimeout(() => {
+      orb.remove(); // オーブ消滅
+      stone.classList.add('chaos-infected'); // 石碑が感染！
+      
+      // SEがあればここで再生
+    }, delay + duration);
+  });
+
+  // 全てが着弾した後に、警告文をじわっと表示
+  setTimeout(() => {
+    if(warningBar) {
+      // 1. まず「透明な状態で」箱を出現させる
+      warningBar.style.display = 'block'; 
+      
+      // 2. ブラウザが箱を描画するのをほんの少し(0.1秒)待つ
+      setTimeout(() => {
+        // 3. その後、クラスをつけてフェードイン開始！
+        warningBar.classList.add('visible');
+      }, 100); 
+    }
+  }, 1500); // 着弾待ち時間
+}
+
 
 // グローバル変数: 現在選択中のメモ欄を記憶する
 let activeOmegaInput = null;
@@ -1592,6 +1796,27 @@ function attemptUnlock() {
 function finishGame(isWin, titleOverride) {
   const modal = document.getElementById('result-modal');
   modal.style.display = 'flex';
+  
+   const modeBadge = document.getElementById('result-mode-badge');
+  if(modeBadge) {
+    // モード名を表示 (大文字に変換)
+    modeBadge.innerText = state.currentMode.toUpperCase();
+
+    // モードごとの色設定
+    let mColor = "#fff"; // デフォルト
+    let mGlow = "#fff";
+    
+    switch(state.currentMode) {
+      case 'standard': mColor = "#3498db"; mGlow = "#2980b9"; break;
+      case 'hard':     mColor = "#e74c3c"; mGlow = "#c0392b"; break;
+      case 'nightmare':mColor = "#9b59b6"; mGlow = "#8e44ad"; break;
+      case 'chaos':    mColor = "#95a5a6"; mGlow = "#7f8c8d"; break; // 灰色
+      case 'omega':    mColor = "#fff";    mGlow = "#d4af37"; break; // 白＆金
+    }
+
+    modeBadge.style.color = mColor;
+    modeBadge.style.textShadow = `0 0 15px ${mGlow}`;
+  }
   
   // ★追加: Ωモードクリア時の神演出
   if (isWin && state.isOmega) {
@@ -2489,14 +2714,14 @@ function closeProphecyList() {
       <strong>[属性]と[数字]の関係 ( <, =, > )</strong><br>
       例: 「炎と3の関係」など。<br>
       そのルーンが指定された数字より大きいか小さいか 同一か。<br>
-      <span class="p-ex">判定: 炎が4なら「炎 > 3」はTRUE</span>
+      <span class="p-ex">判定: 炎が4でTRUEなら「炎 > 3」</span>
     </div>
 
     <div class="p-item">
       <strong>[属性]と[属性]の比較 ( <, =, > )</strong><br>
       例: 「炎と水の比較」など。<br>
       2つのルーンの大きさを比べる。<br>
-      <span class="p-ex">判定: 炎4・水2なら「炎 > 水」はTRUE</span>
+      <span class="p-ex">判定: 炎4・水2でTRUEなら「炎 > 水」</span>
     </div>
 
     <div class="p-item">
@@ -2505,14 +2730,14 @@ function closeProphecyList() {
       <span class="p-ex">
         昇順: 1-2-5 (増えていく)<br>
         降順: 5-3-2 (減っていく)<br>
-        順不同: 1-5-2 (バラバラ)
+        順不同: 1-5-5 (バラバラ)
       </span>
     </div>
 
     <div class="p-item">
       <strong>最大値の所在 (≧) / 最小値の所在 (≦)</strong><br>
       誰が一番大きい(または小さい)か。<br>
-      <span class="p-ex">判定: 5-2-2なら「炎が最大」はTRUE</span>
+      <span class="p-ex">判定: 5-2-2でTRUEなら「炎が最大」</span>
     </div>
 
 
@@ -2521,39 +2746,39 @@ function closeProphecyList() {
     <div class="p-item">
       <strong>[属性]の偶奇 (偶数, 奇数)</strong><br>
       その数字が2で割り切れるかどうか。<br>
-      <span class="p-ex">判定: 炎が4なら「炎=偶数」はTRUE</span>
+      <span class="p-ex">判定: 炎が4でTRUEなら「炎=偶数」</span>
     </div>
 
     <div class="p-item">
       <strong>合計の偶奇 (偶数, 奇数)</strong><br>
       3つの合計値が偶数か奇数か。<br>
-      <span class="p-ex">判定: 1+2+4=7 なら「奇数」がTRUE</span>
+      <span class="p-ex">判定: 1+2+4=7 でTRUEなら「合計は奇数」</span>
     </div>
 
     <div class="p-item">
       <strong>合計と[数字]の関係 ( <, ≧ )</strong><br>
       例: 「合計と10の関係」など。<br>
       3つの合計が基準(6や10)より大きいか小さいか。<br>
-      <span class="p-ex">判定: 合計11なら「合計 ≧ 10」はTRUE</span>
+      <span class="p-ex">判定: 合計11でTRUEなら「合計 ≧ 10」</span>
     </div>
 
     <div class="p-item">
       <strong>合計が特定の倍数(2, 3, 5)</strong><br>
       合計値がその数で割り切れるか。<br>
-      <span class="p-ex">判定: 合計10なら「5の倍数」「2の倍数」がTRUE</span>
+      <span class="p-ex">判定: 合計10でTRUEなら「5の倍数」「2の倍数」</span>
     </div>
     
     <div class="p-item">
       <strong>[属性]+[属性]と5の関係 ( <, =, > )</strong><br>
       例: 「炎+水と5の関係」など。<br>
       指定された2つの和が5より大きいか小さいか。<br>
-      <span class="p-ex">判定: 3+3=6 なら「炎+水 > 5」がTRUE</span>
+      <span class="p-ex">判定: 3+3=6でTRUEなら「炎+水 > 5」</span>
     </div>
 
     <div class="p-item">
       <strong>合計値が素数かどうか</strong><br>
       合計が 3, 5, 7, 11, 13 のいずれかである。<br>
-      <span class="p-ex">判定: 合計5ならTRUE</span>
+      <span class="p-ex">判定: 合計5でTRUEなら「合計は素数」</span>
     </div>
 
     <div class="p-item">
@@ -2569,7 +2794,7 @@ function closeProphecyList() {
       <strong>[数字]の数 (0, 1, 2, 3)</strong><br>
       例: 「偶数の数」「1の数」など。<br>
       条件に合う数字がいくつあるか。<br>
-      <span class="p-ex">判定: 2-3-5 なら「偶数が1個」がTRUE</span>
+      <span class="p-ex">判定: 2-3-5 でTRUEなら「偶数が1個」</span>
     </div>
 
     <div class="p-item">
@@ -2597,6 +2822,12 @@ function closeProphecyList() {
     <button class="btn btn-std" onclick="closeProphecyList()" style="width:100%; margin-top:20px;">閉じる</button>
   </div>
 </div>
+
+<div id="nightmare-slash" class="slash-effect">
+  <div class="slash-line" style="top: 15%; left: -10%; width: 120%; height: 4px;"></div>
+  <div class="slash-line" style="top: 25%; left: -10%; width: 120%; height: 2px;"></div>
+</div>
+
 
 
 </body>
