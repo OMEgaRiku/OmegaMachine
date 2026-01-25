@@ -299,12 +299,19 @@
   @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
   
     /* --- チュートリアル用スタイル (改修版) --- */
+.title-top-right {
+  position: fixed;
+  top: max(20px, env(safe-area-inset-top)); 
+  right: 20px; 
+  left: auto;   /* ←コレ重要！左側は固定しない */
+  width: auto;  /* ←コレ重要！勝手に伸びないようにする */
   
-  /* タイトル画面右上のボタン */
-  .title-top-right {
-    position: absolute; top: 20px; right: 20px;
-    display: flex; gap: 10px; z-index: 10;
-  }
+  display: flex; 
+  gap: 10px; 
+  z-index: 20000; 
+  pointer-events: auto; 
+}
+
   .btn-tutorial {
     background: rgba(46, 204, 113, 0.2); border: 1px solid #2ecc71; color: #2ecc71;
     padding: 10px 15px; border-radius: 30px; font-weight: bold; cursor: pointer;
@@ -777,17 +784,21 @@ input.rune-input:disabled {
   opacity: 1;
 }
 
+/* タップ時の遅延を無効化して即時反応させる */
+button, .btn, .hud-btn, .stone, .memo-btn {
+  touch-action: manipulation;
+}
+
 
 </style>
 </head>
 <body>
+  <div id="top-tut-btn" class="title-top-right">
+  <div class="btn-tutorial" onclick="startTutorial()">Tutorial</div>
+</div>
   <div id="title-screen">
-      <div class="title-top-right">
-      <div class="btn-tutorial" onclick="startTutorial()">Tutorial</div>
-    </div>
-
-    <div class="game-title">OMEGA STONE</div>
-    <div style="color:#aaa; margin-bottom:40px; letter-spacing:2px; font-size:0.9rem;">Logical Deduction RPG</div>
+      <div class="game-title">OMEGA STONE</div>
+    <div style="color:#aaa; margin-bottom:40px; letter-spacing:2px; font-size:0.9rem;">Logical Deduction</div>
     
     <div class="btn btn-std" onclick="startGame('standard')"><span>Standard</span><span class="en-font">I</span></div>
     <div class="btn btn-hard" onclick="startGame('hard')"><span>Hard</span><span class="en-font">II</span></div>
@@ -806,7 +817,7 @@ input.rune-input:disabled {
   <div id="game-screen">
     <div class="hud">
       <div class="hud-left">
-        <div class="hud-btn" onclick="location.reload()">MENU</div>
+        <div class="hud-btn" onclick="openMenuModal()">MENU</div>
         <div class="hud-btn btn-guide" onclick="showHelp()">GUIDE&RULE</div>
          <div class="hud-btn" onclick="showProphecyList()" style="margin-left:5px;">予言書</div>
         <div id="btn-show-result" class="hud-btn" style="display:none; border-color:#2ecc71; color:#2ecc71; font-weight:bold;" onclick="showResult()">RESULT</div>
@@ -961,7 +972,7 @@ input.rune-input:disabled {
 
     <div style="display:flex; gap:10px; width:90%; max-width:350px;">
       <button class="btn btn-std" style="justify-content:center; flex:1;" onclick="reviewBoard()">盤面を見る</button>
-      <button class="btn btn-std" style="justify-content:center; flex:1; background:#d4af37; color:#000; border-color:#fff;" onclick="location.reload()">次の遺跡へ</button>
+      <button class="btn btn-std" style="justify-content:center; flex:1; background:#d4af37; color:#000; border-color:#fff;" onclick="softResetGame()">次の遺跡へ</button>
     </div>
   </div>
 
@@ -1293,6 +1304,11 @@ function initGame(mode, seed) {
 
     const resultBtn = document.getElementById('btn-show-result');
     if(resultBtn) resultBtn.style.display = 'none';
+    
+     // ▼▼▼ これを追加！(ゲーム開始時に隠す) ▼▼▼
+      const tutBtn = document.getElementById('top-tut-btn');
+      if(tutBtn) tutBtn.style.display = 'none';
+      // ▲▲▲▲▲▲
     
     let success = false;
     let attempts = 0;
@@ -1659,24 +1675,22 @@ function renderProphecies() {
   });
 }
 
-// 重複ルール排除用の判定関数
-function isConflict(pickedList, newRule) {
-  // チェック対象: "〇〇と[数字]の関係" というパターンの名前
-  // 例: "炎と3の関係", "合計と10の関係", "水+風と5の関係" など
-  const re = /^(.+)と\d+の関係/;
+// ▼▼▼ 高速化修正: 正規表現を定数として外に出す ▼▼▼
+const CONFLICT_REGEX = /^(.+)と\d+の関係/;
 
-  const matchNew = newRule.name.match(re);
+function isConflict(pickedList, newRule) {
+  // キャッシュした正規表現を使う（ここが高速化の肝！）
+  const matchNew = newRule.name.match(CONFLICT_REGEX);
   if(matchNew) {
-    const key = matchNew[1]; // "炎", "水", "合計" などを抜き出す
-    
-    // すでに選ばれたルール(pickedList)の中に、同じキーを持つものが無いか探す
+    const key = matchNew[1]; 
     return pickedList.some(p => {
-       const matchP = p.name.match(re);
+       const matchP = p.name.match(CONFLICT_REGEX);
        return matchP && matchP[1] === key;
     });
   }
   return false;
 }
+
 
 function checkProphecy(idx, rule, el) {
   if(isTutorialMode && tutStep !== 6 && tutStep !== 12 && tutStep !== 15) return;
@@ -2080,6 +2094,11 @@ function startTutorial() {
 
   isTutorialMode = true;
   tutStep = 0;
+  
+  // ▼▼▼ これを追加！ ▼▼▼
+  const tutBtn = document.getElementById('top-tut-btn');
+  if(tutBtn) tutBtn.style.display = 'none';
+  // ▲▲▲▲▲▲
   
   const loader = document.getElementById('loading-indicator');
   if(loader) loader.style.display = 'block';
@@ -2655,6 +2674,63 @@ function closeProphecyList() {
   document.getElementById('prophecy-list-modal').style.display = 'none';
 }
 
+// ゲームをリロードせずに初期化してタイトルに戻す関数
+function softResetGame() {
+  // 1. モーダルや演出を消す
+  document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+  const frame = document.querySelector('.divine-frame');
+  if(frame) frame.remove();
+
+  // 2. 画面切り替え（ゲーム画面を隠してタイトルを出す）
+  document.getElementById('game-screen').style.display = 'none';
+  document.getElementById('title-screen').style.display = 'flex'; 
+  
+  // ▼▼▼ これを追加！(タイトルに戻ったら表示) ▼▼▼
+  const tutBtn = document.getElementById('top-tut-btn');
+  if(tutBtn) tutBtn.style.display = 'flex';
+  // ▲▲▲▲▲▲
+
+  // 3. データのリセット
+  document.getElementById('r1').value = '';
+  document.getElementById('r2').value = '';
+  document.getElementById('r3').value = '';
+  document.getElementById('r1').disabled = false;
+  document.getElementById('r2').disabled = false;
+  document.getElementById('r3').disabled = false;
+  
+  document.getElementById('log-container').innerHTML = '';
+  document.getElementById('prophecy-container').innerHTML = '';
+  const omegaList = document.getElementById('omega-list');
+  if(omegaList) omegaList.innerHTML = ''; // Ω用リストもクリア
+  
+  initMatrix(); 
+  const memoPad = document.getElementById('memo-pad');
+  if(memoPad) memoPad.classList.add('closed');
+
+  // カオス警告のリセット
+  const chaosWarn = document.getElementById('chaos-warning');
+  if(chaosWarn) {
+    chaosWarn.style.display = 'none';
+    chaosWarn.classList.remove('visible');
+  }
+}
+
+// MENUボタンを押したとき
+function openMenuModal() {
+  document.getElementById('menu-modal').style.display = 'flex';
+}
+
+// キャンセルを押したとき
+function closeMenuModal() {
+  document.getElementById('menu-modal').style.display = 'none';
+}
+
+// 終了するを押したとき（さっき作ったリセット関数を再利用！）
+function executeBackToTitle() {
+  closeMenuModal();
+  softResetGame(); // ステップ2で作った関数を呼び出すだけでOK
+}
+
 
 </script>
 <div id="confirm-modal" class="modal-overlay">
@@ -2699,6 +2775,20 @@ function closeProphecyList() {
 
   <div id="gate-circle" class="gate-stone">
     <div class="gate-inner">Ω</div>
+  </div>
+</div>
+
+<div id="menu-modal" class="modal-overlay">
+  <div style="background:#111; padding:25px; border:1px solid #555; border-radius:10px; width:85%; max-width:300px; text-align:center; box-shadow:0 0 20px rgba(0,0,0,0.8);">
+    <h3 style="color:#fff; margin-top:0; border-bottom:1px solid #333; padding-bottom:10px;">MENU</h3>
+    <div style="color:#ccc; margin:20px 0; font-size:0.95rem;">
+      現在のゲームを終了しますか？<br>
+      <span style="font-size:0.8rem; color:#888;">(進行状況は失われます)</span>
+    </div>
+    <div style="display:flex; gap:10px; justify-content:center;">
+      <button class="btn btn-std" style="flex:1; padding:10px; border-color:#777; color:#ccc;" onclick="closeMenuModal()">キャンセル</button>
+      <button class="btn btn-std" style="flex:1; padding:10px; border-color:#e74c3c; color:#e74c3c; font-weight:bold;" onclick="executeBackToTitle()">終了する</button>
+    </div>
   </div>
 </div>
 
