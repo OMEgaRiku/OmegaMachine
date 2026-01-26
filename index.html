@@ -800,11 +800,13 @@ button, .btn, .hud-btn, .stone, .memo-btn {
       <div class="game-title">OMEGA STONE</div>
     <div style="color:#aaa; margin-bottom:40px; letter-spacing:2px; font-size:0.9rem;">Logical Deduction</div>
     
-    <div class="btn btn-std" onclick="startGame('standard')"><span>Standard</span><span class="en-font">I</span></div>
-    <div class="btn btn-hard" onclick="startGame('hard')"><span>Hard</span><span class="en-font">II</span></div>
-    <div class="btn btn-night" onclick="startGame('nightmare')"><span>Nightmare</span><span class="en-font">III</span></div>
-    <div class="btn btn-chaos" onclick="startGame('chaos')"><span>Chaos</span><span class="en-font">∞</span></div>
-    <div class="btn btn-omega" onclick="startGame('omega')"><span>Omega</span><span class="en-font">?</span></div>
+<div class="btn btn-std" onclick="startGame('easy')"><span>Easy</span><span class="en-font">I</span></div>
+<div class="btn btn-hard" style="border-color:#27ae60; color:#abebc6;" onclick="startGame('standard')"><span>Standard</span><span class="en-font">II</span></div>
+<div class="btn btn-hard" onclick="startGame('hard')"><span>Hard</span><span class="en-font">III</span></div>
+<div class="btn btn-night" onclick="startGame('nightmare')"><span>Nightmare</span><span class="en-font">IV</span></div>
+<div class="btn btn-chaos" onclick="startGame('chaos')"><span>Chaos</span><span class="en-font">∞</span></div>
+<div class="btn btn-omega" onclick="startGame('omega')"><span>Omega</span><span class="en-font">?</span></div>
+
 
     <div style="display:flex; gap:10px; width:90%; max-width:350px; margin-top:10px;">
       <div class="btn btn-std" style="font-size:0.9rem; padding:12px;" onclick="showHistory()">📜 履歴</div>
@@ -1039,113 +1041,116 @@ function colorize(text) {
     .replace(/風/g, '<span style="color:#99ffcc; font-weight:bold;">風</span>');
 }
 
-
+/* diff: 1 -> 簡単 (単一の値、単純な偶奇)
+  diff: 2 -> 普通 (2つの比較、単純な合計)
+  diff: 3 -> 難しい (3つの関係、複雑な条件、否定形)
+*/
 const POOL = [
-  { name:"炎の偶奇 (偶数, 奇数)", desc:"炎 = 偶数", f:(i,a,v)=>i%2==0 }, 
-  { name:"炎の偶奇 (偶数, 奇数)", desc:"炎 = 奇数", f:(i,a,v)=>i%2!=0 }, 
-  { name:"水の偶奇 (偶数, 奇数)", desc:"水 = 偶数", f:(i,a,v)=>a%2==0 }, 
-  { name:"水の偶奇 (偶数, 奇数)", desc:"水 = 奇数", f:(i,a,v)=>a%2!=0 }, 
-  { name:"風の偶奇 (偶数, 奇数)", desc:"風 = 偶数", f:(i,a,v)=>v%2==0 }, 
-  { name:"風の偶奇 (偶数, 奇数)", desc:"風 = 奇数", f:(i,a,v)=>v%2!=0 },
+  { name:"炎の偶奇 (偶数, 奇数)", desc:"炎 = 偶数", f:(i,a,v)=>i%2==0, diff:1 }, 
+  { name:"炎の偶奇 (偶数, 奇数)", desc:"炎 = 奇数", f:(i,a,v)=>i%2!=0, diff:1 }, 
+  { name:"水の偶奇 (偶数, 奇数)", desc:"水 = 偶数", f:(i,a,v)=>a%2==0, diff:1 }, 
+  { name:"水の偶奇 (偶数, 奇数)", desc:"水 = 奇数", f:(i,a,v)=>a%2!=0 , diff:1}, 
+  { name:"風の偶奇 (偶数, 奇数)", desc:"風 = 偶数", f:(i,a,v)=>v%2==0 , diff:1}, 
+  { name:"風の偶奇 (偶数, 奇数)", desc:"風 = 奇数", f:(i,a,v)=>v%2!=0 , diff:1},
 
     // 炎・水・風と1〜5の関係（<, =, >）
-  { name:"炎と1の関係 ( =, >)", desc:"炎 = 1", f:(i,a,v)=>i==1 },
-  { name:"炎と1の関係 ( =, >)", desc:"炎 > 1", f:(i,a,v)=>i>1 },
-  { name:"水と1の関係 ( =, >)", desc:"水 = 1", f:(i,a,v)=>a==1 },
-  { name:"水と1の関係 ( =, >)", desc:"水 > 1", f:(i,a,v)=>a>1 },
-  { name:"風と1の関係 ( =, >)", desc:"風 = 1", f:(i,a,v)=>v==1 },
-  { name:"風と1の関係 ( =, >)", desc:"風 > 1", f:(i,a,v)=>v>1 },
+  { name:"炎と1の関係 ( =, >)", desc:"炎 = 1", f:(i,a,v)=>i==1 , diff:1},
+  { name:"炎と1の関係 ( =, >)", desc:"炎 > 1", f:(i,a,v)=>i>1 , diff:1},
+  { name:"水と1の関係 ( =, >)", desc:"水 = 1", f:(i,a,v)=>a==1, diff:1 },
+  { name:"水と1の関係 ( =, >)", desc:"水 > 1", f:(i,a,v)=>a>1 , diff:1},
+  { name:"風と1の関係 ( =, >)", desc:"風 = 1", f:(i,a,v)=>v==1, diff:1 },
+  { name:"風と1の関係 ( =, >)", desc:"風 > 1", f:(i,a,v)=>v>1, diff:1 },
   
-  { name:"炎と2の関係 (<, =, >)", desc:"炎 = 2", f:(i,a,v)=>i==2 },
-  { name:"炎と2の関係 (<, =, >)", desc:"炎 > 2", f:(i,a,v)=>i>2 },
-  { name:"炎と2の関係 (<, =, >)", desc:"炎 < 2", f:(i,a,v)=>i<2 },
-  { name:"水と2の関係 (<, =, >)", desc:"水 = 2", f:(i,a,v)=>a==2 },
-  { name:"水と2の関係 (<, =, >)", desc:"水 > 2", f:(i,a,v)=>a>2 },
-  { name:"水と2の関係 (<, =, >)", desc:"水 < 2", f:(i,a,v)=>a<2 },
-  { name:"風と2の関係 (<, =, >)", desc:"風 = 2", f:(i,a,v)=>v==2 },
-  { name:"風と2の関係 (<, =, >)", desc:"風 > 2", f:(i,a,v)=>v>2 },
-  { name:"風と2の関係 (<, =, >)", desc:"風 < 2", f:(i,a,v)=>v<2 },
+  { name:"炎と2の関係 (<, =, >)", desc:"炎 = 2", f:(i,a,v)=>i==2, diff:1 },
+  { name:"炎と2の関係 (<, =, >)", desc:"炎 > 2", f:(i,a,v)=>i>2 , diff:1},
+  { name:"炎と2の関係 (<, =, >)", desc:"炎 < 2", f:(i,a,v)=>i<2 , diff:1},
+  { name:"水と2の関係 (<, =, >)", desc:"水 = 2", f:(i,a,v)=>a==2, diff:1 },
+  { name:"水と2の関係 (<, =, >)", desc:"水 > 2", f:(i,a,v)=>a>2, diff:1 },
+  { name:"水と2の関係 (<, =, >)", desc:"水 < 2", f:(i,a,v)=>a<2 , diff:1},
+  { name:"風と2の関係 (<, =, >)", desc:"風 = 2", f:(i,a,v)=>v==2, diff:1 },
+  { name:"風と2の関係 (<, =, >)", desc:"風 > 2", f:(i,a,v)=>v>2, diff:1 },
+  { name:"風と2の関係 (<, =, >)", desc:"風 < 2", f:(i,a,v)=>v<2, diff:1 },
 
-  { name:"炎と3の関係 (<, =, >)", desc:"炎 = 3", f:(i,a,v)=>i==3 },
-  { name:"炎と3の関係 (<, =, >)", desc:"炎 > 3", f:(i,a,v)=>i>3 },
-  { name:"炎と3の関係 (<, =, >)", desc:"炎 < 3", f:(i,a,v)=>i<3 },
-  { name:"水と3の関係 (<, =, >)", desc:"水 = 3", f:(i,a,v)=>a==3 },
-  { name:"水と3の関係 (<, =, >)", desc:"水 > 3", f:(i,a,v)=>a>3 },
-  { name:"水と3の関係 (<, =, >)", desc:"水 < 3", f:(i,a,v)=>a<3 },
-  { name:"風と3の関係 (<, =, >)", desc:"風 = 3", f:(i,a,v)=>v==3 },
-  { name:"風と3の関係 (<, =, >)", desc:"風 > 3", f:(i,a,v)=>v>3 },
-  { name:"風と3の関係 (<, =, >)", desc:"風 < 3", f:(i,a,v)=>v<3 },
+  { name:"炎と3の関係 (<, =, >)", desc:"炎 = 3", f:(i,a,v)=>i==3 , diff:1},
+  { name:"炎と3の関係 (<, =, >)", desc:"炎 > 3", f:(i,a,v)=>i>3, diff:1 },
+  { name:"炎と3の関係 (<, =, >)", desc:"炎 < 3", f:(i,a,v)=>i<3, diff:1 },
+  { name:"水と3の関係 (<, =, >)", desc:"水 = 3", f:(i,a,v)=>a==3, diff:1 },
+  { name:"水と3の関係 (<, =, >)", desc:"水 > 3", f:(i,a,v)=>a>3 , diff:1},
+  { name:"水と3の関係 (<, =, >)", desc:"水 < 3", f:(i,a,v)=>a<3 , diff:1},
+  { name:"風と3の関係 (<, =, >)", desc:"風 = 3", f:(i,a,v)=>v==3 , diff:1},
+  { name:"風と3の関係 (<, =, >)", desc:"風 > 3", f:(i,a,v)=>v>3 , diff:1},
+  { name:"風と3の関係 (<, =, >)", desc:"風 < 3", f:(i,a,v)=>v<3 , diff:1},
 
-  { name:"炎と4の関係 (<, =, >)", desc:"炎 = 4", f:(i,a,v)=>i==4 },
-  { name:"炎と4の関係 (<, =, >)", desc:"炎 > 4", f:(i,a,v)=>i>4 },
-  { name:"炎と4の関係 (<, =, >)", desc:"炎 < 4", f:(i,a,v)=>i<4 },
-  { name:"水と4の関係 (<, =, >)", desc:"水 = 4", f:(i,a,v)=>a==4 },
-  { name:"水と4の関係 (<, =, >)", desc:"水 > 4", f:(i,a,v)=>a>4 },
-  { name:"水と4の関係 (<, =, >)", desc:"水 < 4", f:(i,a,v)=>a<4 },
-  { name:"風と4の関係 (<, =, >)", desc:"風 = 4", f:(i,a,v)=>v==4 },
-  { name:"風と4の関係 (<, =, >)", desc:"風 > 4", f:(i,a,v)=>v>4 },
-  { name:"風と4の関係 (<, =, >)", desc:"風 < 4", f:(i,a,v)=>v<4 },
+  { name:"炎と4の関係 (<, =, >)", desc:"炎 = 4", f:(i,a,v)=>i==4 , diff:1},
+  { name:"炎と4の関係 (<, =, >)", desc:"炎 > 4", f:(i,a,v)=>i>4 , diff:1},
+  { name:"炎と4の関係 (<, =, >)", desc:"炎 < 4", f:(i,a,v)=>i<4 , diff:1},
+  { name:"水と4の関係 (<, =, >)", desc:"水 = 4", f:(i,a,v)=>a==4, diff:1 },
+  { name:"水と4の関係 (<, =, >)", desc:"水 > 4", f:(i,a,v)=>a>4 , diff:1},
+  { name:"水と4の関係 (<, =, >)", desc:"水 < 4", f:(i,a,v)=>a<4 , diff:1},
+  { name:"風と4の関係 (<, =, >)", desc:"風 = 4", f:(i,a,v)=>v==4 , diff:1},
+  { name:"風と4の関係 (<, =, >)", desc:"風 > 4", f:(i,a,v)=>v>4 , diff:1},
+  { name:"風と4の関係 (<, =, >)", desc:"風 < 4", f:(i,a,v)=>v<4 , diff:1},
 
-  { name:"炎と5の関係 (<, = )", desc:"炎 = 5", f:(i,a,v)=>i==5 },
-  { name:"炎と5の関係 (<, = )", desc:"炎 < 5", f:(i,a,v)=>i<5 },
-  { name:"水と5の関係 (<, = )", desc:"水 = 5", f:(i,a,v)=>a==5 },
-  { name:"水と5の関係 (<, = )", desc:"水 < 5", f:(i,a,v)=>a<5 },
-  { name:"風と5の関係 (<, = )", desc:"風 = 5", f:(i,a,v)=>v==5 },
-  { name:"風と5の関係 (<, = )", desc:"風 < 5", f:(i,a,v)=>v<5 },
+  { name:"炎と5の関係 (<, = )", desc:"炎 = 5", f:(i,a,v)=>i==5 , diff:1},
+  { name:"炎と5の関係 (<, = )", desc:"炎 < 5", f:(i,a,v)=>i<5 , diff:1},
+  { name:"水と5の関係 (<, = )", desc:"水 = 5", f:(i,a,v)=>a==5, diff:1 },
+  { name:"水と5の関係 (<, = )", desc:"水 < 5", f:(i,a,v)=>a<5 , diff:1},
+  { name:"風と5の関係 (<, = )", desc:"風 = 5", f:(i,a,v)=>v==5, diff:1 },
+  { name:"風と5の関係 (<, = )", desc:"風 < 5", f:(i,a,v)=>v<5, diff:1 },
 
-  { name:"炎と水の比較 (<, =, >)", desc:"炎 > 水", f:(i,a,v)=>i>a }, 
-  { name:"炎と水の比較 (<, =, >)", desc:"炎 < 水", f:(i,a,v)=>i<a }, 
-  { name:"炎と水の比較 (<, =, >)", desc:"炎 = 水", f:(i,a,v)=>i==a },
-  { name:"水と風の比較 (<, =, >)", desc:"水 > 風", f:(i,a,v)=>a>v }, 
-  { name:"水と風の比較 (<, =, >)", desc:"水 < 風", f:(i,a,v)=>a<v }, 
-  { name:"水と風の比較 (<, =, >)", desc:"水 = 風", f:(i,a,v)=>a==v },
-  { name:"炎と風の比較 (<, =, >)", desc:"炎 > 風", f:(i,a,v)=>i>v }, 
-  { name:"炎と風の比較 (<, =, >)", desc:"炎 < 風", f:(i,a,v)=>i<v }, 
-  { name:"炎と風の比較 (<, =, >)", desc:"炎 = 風", f:(i,a,v)=>i==v },
+  { name:"炎と水の比較 (<, =, >)", desc:"炎 > 水", f:(i,a,v)=>i>a, diff:2 }, 
+  { name:"炎と水の比較 (<, =, >)", desc:"炎 < 水", f:(i,a,v)=>i<a, diff:2 }, 
+  { name:"炎と水の比較 (<, =, >)", desc:"炎 = 水", f:(i,a,v)=>i==a, diff:2 },
+  { name:"水と風の比較 (<, =, >)", desc:"水 > 風", f:(i,a,v)=>a>v , diff:2}, 
+  { name:"水と風の比較 (<, =, >)", desc:"水 < 風", f:(i,a,v)=>a<v , diff:2}, 
+  { name:"水と風の比較 (<, =, >)", desc:"水 = 風", f:(i,a,v)=>a==v , diff:2},
+  { name:"炎と風の比較 (<, =, >)", desc:"炎 > 風", f:(i,a,v)=>i>v, diff:2 }, 
+  { name:"炎と風の比較 (<, =, >)", desc:"炎 < 風", f:(i,a,v)=>i<v , diff:2}, 
+  { name:"炎と風の比較 (<, =, >)", desc:"炎 = 風", f:(i,a,v)=>i==v, diff:2 },
 
-  { name:"最大値の所在 (≧)", desc:"炎が最大 (他以上)", f:(i,a,v)=>i>=a && i>=v }, 
-  { name:"最大値の所在 (≧)", desc:"水が最大 (他以上)", f:(i,a,v)=>a>=i && a>=v }, 
-  { name:"最大値の所在 (≧)", desc:"風が最大 (他以上)", f:(i,a,v)=>v>=i && v>=a }, 
-  { name:"最小値の所在 (≦)", desc:"炎が最小 (他以下)", f:(i,a,v)=>i<=a && i<=v }, 
-  { name:"最小値の所在 (≦)", desc:"水が最小 (他以下)", f:(i,a,v)=>a<=i && a<=v }, 
-  { name:"最小値の所在 (≦)", desc:"風が最小 (他以下)", f:(i,a,v)=>v<=i && v<=a }, 
+  { name:"最大値の所在 (≧)", desc:"炎が最大 (他以上)", f:(i,a,v)=>i>=a && i>=v, diff:2 }, 
+  { name:"最大値の所在 (≧)", desc:"水が最大 (他以上)", f:(i,a,v)=>a>=i && a>=v , diff:2}, 
+  { name:"最大値の所在 (≧)", desc:"風が最大 (他以上)", f:(i,a,v)=>v>=i && v>=a, diff:2 }, 
+  { name:"最小値の所在 (≦)", desc:"炎が最小 (他以下)", f:(i,a,v)=>i<=a && i<=v, diff:2 }, 
+  { name:"最小値の所在 (≦)", desc:"水が最小 (他以下)", f:(i,a,v)=>a<=i && a<=v, diff:2 }, 
+  { name:"最小値の所在 (≦)", desc:"風が最小 (他以下)", f:(i,a,v)=>v<=i && v<=a , diff:2}, 
 
-  { name:"合計の偶奇 (偶数, 奇数)", desc:"合計 = 偶数", f:(i,a,v)=>(i+a+v)%2==0 },
-  { name:"合計の偶奇 (偶数, 奇数)", desc:"合計 = 奇数", f:(i,a,v)=>(i+a+v)%2!=0 },
-  { name:"合計と6の関係 (<, ≧)", desc:"合計 < 6", f:(i,a,v)=>(i+a+v)<6 },
-  { name:"合計と6の関係 (<, ≧)", desc:"合計 ≧ 6", f:(i,a,v)=>(i+a+v)>=6 },
-  { name:"合計と10の関係 (<, ≧)", desc:"合計 < 10", f:(i,a,v)=>(i+a+v)<10 },
-  { name:"合計と10の関係 (<, ≧)", desc:"合計 ≧ 10", f:(i,a,v)=>(i+a+v)>=10 },
+  { name:"合計の偶奇 (偶数, 奇数)", desc:"合計 = 偶数", f:(i,a,v)=>(i+a+v)%2==0 , diff:2},
+  { name:"合計の偶奇 (偶数, 奇数)", desc:"合計 = 奇数", f:(i,a,v)=>(i+a+v)%2!=0 , diff:2},
+  { name:"合計と6の関係 (<, ≧)", desc:"合計 < 6", f:(i,a,v)=>(i+a+v)<6 , diff:2},
+  { name:"合計と6の関係 (<, ≧)", desc:"合計 ≧ 6", f:(i,a,v)=>(i+a+v)>=6 , diff:2},
+  { name:"合計と10の関係 (<, ≧)", desc:"合計 < 10", f:(i,a,v)=>(i+a+v)<10 , diff:2},
+  { name:"合計と10の関係 (<, ≧)", desc:"合計 ≧ 10", f:(i,a,v)=>(i+a+v)>=10, diff:2 },
 
-  { name:"素数の有無 (あり, なし)", desc:"素数を含む", f:(i,a,v)=>[i,a,v].some(n=>[2,3,5].includes(n)) },
-  { name:"素数の有無 (あり, なし)", desc:"素数を含まない", f:(i,a,v)=>![i,a,v].some(n=>[2,3,5].includes(n)) },
+  { name:"素数の有無 (あり, なし)", desc:"素数を含む", f:(i,a,v)=>[i,a,v].some(n=>[2,3,5].includes(n)), diff:2 },
+  { name:"素数の有無 (あり, なし)", desc:"素数を含まない", f:(i,a,v)=>![i,a,v].some(n=>[2,3,5].includes(n)), diff:2 },
 
-  { name:"炎+水と5の関係 (<, =, >)", desc:"炎+水 > 5", f:(i,a,v)=>(i+a)>5 },
-  { name:"炎+水と5の関係 (<, =, >)", desc:"炎+水 < 5", f:(i,a,v)=>(i+a)<5 },
-  { name:"炎+水と5の関係 (<, =, >)", desc:"炎+水 = 5", f:(i,a,v)=>(i+a)==5 },
-  { name:"水+風と5の関係 (<, =, >)", desc:"水+風 > 5", f:(i,a,v)=>(a+v)>5 },
-  { name:"水+風と5の関係 (<, =, >)", desc:"水+風 < 5", f:(i,a,v)=>(a+v)<5 },
-  { name:"水+風と5の関係 (<, =, >)", desc:"水+風 = 5", f:(i,a,v)=>(a+v)==5 },
-  { name:"炎+風と5の関係 (<, =, >)", desc:"炎+風 > 5", f:(i,a,v)=>(i+v)>5 },
-  { name:"炎+風と5の関係 (<, =, >)", desc:"炎+風 < 5", f:(i,a,v)=>(i+v)<5 },
-  { name:"炎+風と5の関係 (<, =, >)", desc:"炎+風 = 5", f:(i,a,v)=>(i+v)==5 },
+  { name:"炎+水と5の関係 (<, =, >)", desc:"炎+水 > 5", f:(i,a,v)=>(i+a)>5 , diff:3},
+  { name:"炎+水と5の関係 (<, =, >)", desc:"炎+水 < 5", f:(i,a,v)=>(i+a)<5  , diff:3},
+  { name:"炎+水と5の関係 (<, =, >)", desc:"炎+水 = 5", f:(i,a,v)=>(i+a)==5  , diff:3},
+  { name:"水+風と5の関係 (<, =, >)", desc:"水+風 > 5", f:(i,a,v)=>(a+v)>5 , diff:3 },
+  { name:"水+風と5の関係 (<, =, >)", desc:"水+風 < 5", f:(i,a,v)=>(a+v)<5  , diff:3},
+  { name:"水+風と5の関係 (<, =, >)", desc:"水+風 = 5", f:(i,a,v)=>(a+v)==5 , diff:3 },
+  { name:"炎+風と5の関係 (<, =, >)", desc:"炎+風 > 5", f:(i,a,v)=>(i+v)>5  , diff:3},
+  { name:"炎+風と5の関係 (<, =, >)", desc:"炎+風 < 5", f:(i,a,v)=>(i+v)<5  , diff:3},
+  { name:"炎+風と5の関係 (<, =, >)", desc:"炎+風 = 5", f:(i,a,v)=>(i+v)==5  , diff:3},
 
-  { name:"偶数の数 (0, 1, 2)", desc:"偶数が0個", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==0 },
-  { name:"偶数の数 (0, 1, 2)", desc:"偶数が1個", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==1 },
-  { name:"偶数の数 (0, 1, 2)", desc:"偶数が2個", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==2 },
-  { name:"1の数 (0, 1, 2, 3)", desc:"1を含まない", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==0 },
-  { name:"1の数 (0, 1, 2, 3)", desc:"1が1個", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==1 },
-  { name:"1の数 (0, 1, 2, 3)", desc:"1が2個", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==2 },
-  { name:"1の数 (0, 1, 2, 3)", desc:"1が3個", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==3 },
-  { name:"3の数 (0, 1, 2, 3)", desc:"3を含まない", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==0 },
-  { name:"3の数 (0, 1, 2, 3)", desc:"3が1個", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==1 },
-  { name:"3の数 (0, 1, 2, 3)", desc:"3が2個", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==2 },
-  { name:"3の数 (0, 1, 2, 3)", desc:"3が3個", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==3 },
+  { name:"偶数の数 (0, 1, 2)", desc:"偶数が0個", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==0  , diff:3},
+  { name:"偶数の数 (0, 1, 2)", desc:"偶数が1個", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==1 , diff:3 },
+  { name:"偶数の数 (0, 1, 2)", desc:"偶数が2個", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==2 , diff:3 },
+  { name:"1の数 (0, 1, 2, 3)", desc:"1を含まない", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==0  , diff:3},
+  { name:"1の数 (0, 1, 2, 3)", desc:"1が1個", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==1  , diff:3},
+  { name:"1の数 (0, 1, 2, 3)", desc:"1が2個", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==2 , diff:3 },
+  { name:"1の数 (0, 1, 2, 3)", desc:"1が3個", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==3 , diff:3 },
+  { name:"3の数 (0, 1, 2, 3)", desc:"3を含まない", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==0 , diff:3 },
+  { name:"3の数 (0, 1, 2, 3)", desc:"3が1個", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==1  , diff:3},
+  { name:"3の数 (0, 1, 2, 3)", desc:"3が2個", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==2 , diff:3 },
+  { name:"3の数 (0, 1, 2, 3)", desc:"3が3個", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==3  , diff:3},
   
   
-  { name:"順序の法則 (昇順, 降順, 順不同)", desc:"昇順 (炎 < 水 < 風)", f:(i,a,v)=> (i < a && a < v) },
-  { name:"順序の法則 (昇順, 降順, 順不同)", desc:"降順 (炎 > 水 > 風)", f:(i,a,v)=> (i > a && a > v) },
-  { name:"順序の法則 (昇順, 降順, 順不同)", desc:"順不同 (バラバラ)", f:(i,a,v)=> !((i < a && a < v) || (i > a && a > v)) },
+  { name:"順序の法則 (昇順, 降順, 順不同)", desc:"昇順 (炎 < 水 < 風)", f:(i,a,v)=> (i < a && a < v)  , diff:3},
+  { name:"順序の法則 (昇順, 降順, 順不同)", desc:"降順 (炎 > 水 > 風)", f:(i,a,v)=> (i > a && a > v)  , diff:3},
+  { name:"順序の法則 (昇順, 降順, 順不同)", desc:"順不同 (バラバラ)", f:(i,a,v)=> !((i < a && a < v) || (i > a && a > v))  , diff:3},
 
 
   { name:"隣接する連番の数(0 , 1 , 2)", desc:"隣接する連番の数(0箇所)", f:(i,a,v)=> {
@@ -1153,44 +1158,44 @@ const POOL = [
       if(Math.abs(i-a) === 1) c++;
       if(Math.abs(a-v) === 1) c++;
       return c === 0;
-  }},
+  } , diff:3},
   { name:"隣接する連番の数(0 , 1 , 2)", desc:"隣接する連番の数(1箇所)", f:(i,a,v)=> {
       let c = 0;
       if(Math.abs(i-a) === 1) c++;
       if(Math.abs(a-v) === 1) c++;
       return c === 1;
-  }},
+  } , diff:3},
   { name:"隣接する連番の数(0 , 1 , 2)", desc:"隣接する連番の数(完全連結)", f:(i,a,v)=> {
       let c = 0;
       if(Math.abs(i-a) === 1) c++;
       if(Math.abs(a-v) === 1) c++;
       return c === 2;
-  }},
+  } , diff:3},
   { name:"2つの同じ数字 (なし, 1組)", desc:"2つの同じ数字はない (すべて異なる)", f:(i,a,v)=> (i!=a && a!=v && i!=v) },
   { name:"2つの同じ数字 (なし, 1組)", desc:"2つ同じは1つ", f:(i,a,v)=> {
       // 3つ同じ(スリーカード)は除外して、厳密に「2つだけ同じ」場合
       if (i===a && a===v) return false; 
       return (i===a || a===v || i===v);
-  }},
+  } , diff:3},
 
-  { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 0 (すべて同じ)", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 0 },
-  { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 1 ", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 1 },
-  { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 2 ", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 2 },
-  { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 3 ", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 3 },
-  { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 4 ", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 4 },
+  { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 0 (すべて同じ)", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 0 , diff:3 },
+  { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 1 ", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 1 , diff:3 },
+  { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 2 ", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 2 , diff:3 },
+  { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 3 ", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 3 , diff:3 },
+  { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 4 ", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 4 , diff:3 },
 
-  { name:"合計が特定の倍数(2, 3, 5)", desc:"合計が 2の倍数 ", f:(i,a,v)=> (i+a+v)%2 === 0 },
-  { name:"合計が特定の倍数(2, 3, 5)", desc:"合計が 3の倍数", f:(i,a,v)=> (i+a+v)%3 === 0 },
-  { name:"合計が特定の倍数(2, 3, 5)", desc:"合計が 5の倍数", f:(i,a,v)=> (i+a+v)%5 === 0 },
+  { name:"合計が特定の倍数(2, 3, 5)", desc:"合計が 2の倍数 ", f:(i,a,v)=> (i+a+v)%2 === 0 , diff:3 },
+  { name:"合計が特定の倍数(2, 3, 5)", desc:"合計が 3の倍数", f:(i,a,v)=> (i+a+v)%3 === 0  , diff:3},
+  { name:"合計が特定の倍数(2, 3, 5)", desc:"合計が 5の倍数", f:(i,a,v)=> (i+a+v)%5 === 0 , diff:3 },
 
   { name:"合計値が素数かどうか", desc:"合計が素数 (3,5,7,11,13)", f:(i,a,v)=> {
       const sum = i+a+v;
       return [3, 5, 7, 11, 13].includes(sum);
-  }},
+  } , diff:3},
   { name:"合計値が素数かどうか", desc:"合計が素数ではない", f:(i,a,v)=> {
       const sum = i+a+v;
       return ![3, 5, 7, 11, 13].includes(sum);
-  }},
+  } , diff:3},
 
 
 ];
@@ -1279,28 +1284,23 @@ function startFromId(mode) {
   initGame(mode, seed);
 }
 
-// ▼▼▼ 修正版 initGame (演出の順序バグ修正済み) ▼▼▼
-
 function initGame(mode, seed) {
   document.getElementById('loading-indicator').style.display = 'block';
 
-  // 1. バグ修正: アクションボタンを再表示させる
+  // UI初期化系
   document.querySelectorAll('.btn-action').forEach(b => b.style.display = '');
 
-  // 2. マナバーの赤色・グリッチ演出を解除する
   const manaBar = document.querySelector('.mana-bar');
   if(manaBar) {
     manaBar.style.color = '';
     manaBar.style.textShadow = '';
     manaBar.classList.remove('glitch-active');
   }
-  // ラウンド表示のグリッチも解除
   const roundDisplay = document.getElementById('ui-round');
   if(roundDisplay && roundDisplay.parentNode) {
       roundDisplay.parentNode.classList.remove('glitch-active');
   }
 
-  // 神々しいフレームが残っていたら消す
   const oldFrame = document.querySelector('.divine-frame');
   if(oldFrame) oldFrame.remove();
   
@@ -1313,9 +1313,39 @@ function initGame(mode, seed) {
     state.mana = 0;
     state.totalChecks = 0;
     
-    state.maxMana = (mode === 'nightmare') ? 2 : 3;
-    state.doomLimit = (mode === 'nightmare') ? 5 : 0; 
-    state.stoneCount = (mode === 'standard') ? 4 : 5;
+    // --- ★難易度別のパラメータ設定 ---
+    switch(mode) {
+      case 'easy':      // 旧Standard (簡単)
+        state.maxMana = 3;
+        state.stoneCount = 4; 
+        state.doomLimit = 0;
+        break;
+      case 'standard':  // 旧Hard (標準)
+        state.maxMana = 3;
+        state.stoneCount = 5; 
+        state.doomLimit = 0;
+        break;
+      case 'hard':      // ★新設 (難しい)
+        state.maxMana = 3;
+        state.stoneCount = 5;
+        state.doomLimit = 0;
+        break;
+      case 'nightmare': // ★強化 (マナ減+死の宣告)
+        state.maxMana = 2; 
+        state.stoneCount = 5;
+        state.doomLimit = 5; 
+        break;
+      case 'chaos':
+        state.maxMana = 3;
+        state.stoneCount = 5;
+        state.doomLimit = 0;
+        break;
+      case 'omega':
+        state.maxMana = 3;
+        state.stoneCount = 5;
+        state.doomLimit = 0;
+        break;
+    }
     state.isOmega = (mode === 'omega');
 
     const resultBtn = document.getElementById('btn-show-result');
@@ -1323,7 +1353,7 @@ function initGame(mode, seed) {
     
     let success = false;
     let attempts = 0;
-    const maxAttempts = 10000; 
+    const maxAttempts = 20000; 
     
     while(!success && attempts < maxAttempts) {
       attempts++;
@@ -1333,9 +1363,31 @@ function initGame(mode, seed) {
         v: Math.floor(rng.next()*5)+1
       };
       
-      let validRules = POOL.filter(r => r.f(state.ans.i, state.ans.a, state.ans.v) === true);
+      // --- ★難易度フィルタリング ---
+      let minDiff = 1;
+      let maxDiff = 3;
+
+      if (mode === 'easy') {
+        maxDiff = 2; // Easy: 難しい問題(Lv3)を出さない
+      } else if (mode === 'hard' || mode === 'nightmare') {
+        minDiff = 2; // Hard以上: 簡単な問題(Lv1)を出さない
+      }
+
+      // 条件に合うルールを抽出
+      let validRules = POOL.filter(r => {
+        // 1. 正解と整合しているか
+        if(r.f(state.ans.i, state.ans.a, state.ans.v) !== true) return false;
+        
+        // 2. 難易度が範囲内か (diff未定義なら1とみなす)
+        let d = r.diff || 1; 
+        if(d < minDiff || d > maxDiff) return false;
+        
+        return true;
+      });
+
       if(validRules.length < state.stoneCount) continue;
 
+      // シャッフルして選出
       let temp = [...validRules];
       for (let i = temp.length - 1; i > 0; i--) {
           const j = Math.floor(rng.next() * (i + 1));
@@ -1350,6 +1402,7 @@ function initGame(mode, seed) {
         if(picked.length === state.stoneCount) break;
       }
 
+      // 足りなければ補充 (重複チェック付き)
       if(picked.length < state.stoneCount) {
         for(let r of temp) {
           if(picked.length === state.stoneCount) break;
@@ -1360,7 +1413,7 @@ function initGame(mode, seed) {
       }
       if(picked.length < state.stoneCount) continue;
 
-      // 検証ロジック（厳密版）
+      // 解の一意性検証
       let matches = 0;
       for(let i=1; i<=5; i++) {
         for(let a=1; a<=5; a++) {
@@ -1371,6 +1424,7 @@ function initGame(mode, seed) {
       }
 
       if(matches === 1) {
+        // Chaosモード判定
         if(mode === 'chaos') {
           const trueLiar = Math.floor(rng.next() * state.stoneCount);
           let solutionsForTrueLiar = countSolutionsWithLiar(picked, trueLiar);
@@ -1392,6 +1446,7 @@ function initGame(mode, seed) {
             }
           }
         } else {
+          // 通常モード
           state.rules = picked;
           state.liarIndex = -1;
           success = true;
@@ -1402,12 +1457,12 @@ function initGame(mode, seed) {
     document.getElementById('loading-indicator').style.display = 'none';
 
     if(!success) {
-      alert("生成失敗: 条件に合うパズルが見つかりませんでした。別のIDを試すか、もう一度やり直してください。");
-      rng = new SeededRandom(generateSeed(5)); 
+      alert("生成失敗: 条件に合うパズルが見つかりませんでした。再試行します。");
+      // 失敗時は再帰せず、シードを変えてリトライさせる等の処理が理想ですが
+      // 簡易的にアラートのみとします
     } else {
-      // --- ゲーム開始成功時のUI処理 ---
+      // 成功時の画面遷移
       document.getElementById('title-screen').style.display = 'none';
-      
       const tutBtn = document.getElementById('top-tut-btn');
       if(tutBtn) tutBtn.style.display = 'none';
 
@@ -1416,7 +1471,6 @@ function initGame(mode, seed) {
       updateHUD();
       document.getElementById('log-container').innerHTML = '';
       
-      // ID表示
       const hud = document.querySelector('.hud');
       const oldId = document.getElementById('current-id-display');
       if(oldId) oldId.remove();
@@ -1425,32 +1479,31 @@ function initGame(mode, seed) {
         `<div id="current-id-display" style="text-align:center; color:#555; font-size:0.7rem; margin-top:-10px;">ID: <span style="font-family:'Cinzel',serif; color:#777;">${state.currentSeed}</span></div>`
       );
 
-      // Omegaルール表示エリア
       document.getElementById('omega-rule-area').style.display = state.isOmega ? 'block' : 'none';
 
-      // ★★★ 修正ポイント: 先に石碑を作ってから、演出を呼ぶ！ ★★★
       initMatrix();
-      renderProphecies(); // これが先！
+      renderProphecies();
 
-      // カオス演出制御（石碑生成のあとに移動）
+      // カオス演出
       const chaosWarn = document.getElementById('chaos-warning');
       if (mode === 'chaos') {
         if(chaosWarn) {
             chaosWarn.style.display = 'none'; 
             chaosWarn.classList.remove('visible');
         }
-        executeChaosIntro(); // 石碑があるので動く！
+        executeChaosIntro();
       } else {
         if(chaosWarn) chaosWarn.style.display = 'none';
       }
 
-      // ナイトメア演出制御
+      // ナイトメア演出
       if (mode === 'nightmare') {
         executeNightmareIntro();
       }
     }
   }, 100);
 }
+
 
 // ヘルパー関数: 指定した石碑が嘘つきだと仮定した場合の解の個数を数える
 function countSolutionsWithLiar(rules, liarIdx) {
@@ -1848,7 +1901,8 @@ function finishGame(isWin, titleOverride) {
     let mGlow = "#fff";
     
     switch(state.currentMode) {
-      case 'standard': mColor = "#3498db"; mGlow = "#2980b9"; break;
+      case 'easy':     mColor = "#3498db"; mGlow = "#2980b9"; break; // 青
+      case 'standard': mColor = "#27ae60"; mGlow = "#2ecc71"; break; // 緑 (新設)
       case 'hard':     mColor = "#e74c3c"; mGlow = "#c0392b"; break;
       case 'nightmare':mColor = "#9b59b6"; mGlow = "#8e44ad"; break;
       case 'chaos':    mColor = "#95a5a6"; mGlow = "#7f8c8d"; break; // 灰色
