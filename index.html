@@ -979,21 +979,30 @@ button, .btn, .hud-btn, .stone, .memo-btn {
   </div>
 
 
-  <div id="id-modal" class="modal-overlay">
+    <div id="id-modal" class="modal-overlay">
     <div style="background:#111; padding:20px; border:1px solid #444; border-radius:10px; width:80%; max-width:300px;">
       <h3 style="color:#fff; margin-top:0;">石碑IDを入力</h3>
       <input type="text" id="input-seed" placeholder="例: A1B2C" style="width:100%; padding:10px; font-size:1.2rem; text-align:center; margin-bottom:15px; background:#222; border:1px solid #555; color:#fff; font-family:'Cinzel', serif; text-transform:uppercase;">
       <div style="color:#aaa; font-size:0.8rem; margin-bottom:10px;">難易度を選択して開始:</div>
+      
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
-        <button class="btn btn-std" style="width:auto; padding:10px; font-size:0.8rem; margin:0;" onclick="startFromId('standard')">Standard</button>
+        <button class="btn btn-std" style="width:auto; padding:10px; font-size:0.8rem; margin:0;" onclick="startFromId('easy')">Easy</button>
+        
+        <button class="btn btn-hard" style="width:auto; padding:10px; font-size:0.8rem; margin:0; border-color:#27ae60; color:#abebc6;" onclick="startFromId('standard')">Standard</button>
+        
         <button class="btn btn-hard" style="width:auto; padding:10px; font-size:0.8rem; margin:0;" onclick="startFromId('hard')">Hard</button>
+        
         <button class="btn btn-night" style="width:auto; padding:10px; font-size:0.8rem; margin:0;" onclick="startFromId('nightmare')">Nightmare</button>
-          <button class="btn btn-chaos" style="width:auto; padding:10px; font-size:0.8rem; margin:0;" onclick="startFromId('chaos')">Chaos</button>
+        
+        <button class="btn btn-chaos" style="width:auto; padding:10px; font-size:0.8rem; margin:0;" onclick="startFromId('chaos')">Chaos</button>
+        
         <button class="btn btn-omega" style="width:auto; padding:10px; font-size:0.8rem; margin:0; border:1px solid #fff;" onclick="startFromId('omega')">Ω</button>
       </div>
+      
       <button class="btn btn-std" style="margin-top:15px; width:100%; border-color:#555; color:#aaa;" onclick="closeIdModal()">閉じる</button>
     </div>
   </div>
+
 
   <div id="history-modal" class="modal-overlay">
     <div id="history-content">
