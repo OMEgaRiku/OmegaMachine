@@ -1279,14 +1279,15 @@ function startFromId(mode) {
   initGame(mode, seed);
 }
 
-// ▼▼▼ 完全版 initGame (論理パズル厳密化 + UI制御統合済) ▼▼▼
+// ▼▼▼ 修正版 initGame (演出の順序バグ修正済み) ▼▼▼
+
 function initGame(mode, seed) {
   document.getElementById('loading-indicator').style.display = 'block';
 
- // 1. バグ①修正: アクションボタンを再表示させる
+  // 1. バグ修正: アクションボタンを再表示させる
   document.querySelectorAll('.btn-action').forEach(b => b.style.display = '');
 
-  // 3. バグ③修正: マナバーの赤色・グリッチ演出を解除する
+  // 2. マナバーの赤色・グリッチ演出を解除する
   const manaBar = document.querySelector('.mana-bar');
   if(manaBar) {
     manaBar.style.color = '';
@@ -1322,7 +1323,7 @@ function initGame(mode, seed) {
     
     let success = false;
     let attempts = 0;
-    const maxAttempts = 10000; // 試行回数
+    const maxAttempts = 10000; 
     
     while(!success && attempts < maxAttempts) {
       attempts++;
@@ -1332,23 +1333,16 @@ function initGame(mode, seed) {
         v: Math.floor(rng.next()*5)+1
       };
       
-      // 1. 今回の答えで「TRUE」になるルールを全抽出
       let validRules = POOL.filter(r => r.f(state.ans.i, state.ans.a, state.ans.v) === true);
-      
-      // 正解ルールが少なすぎる場合はパス
       if(validRules.length < state.stoneCount) continue;
 
-      // シャッフル
       let temp = [...validRules];
       for (let i = temp.length - 1; i > 0; i--) {
           const j = Math.floor(rng.next() * (i + 1));
           [temp[i], temp[j]] = [temp[j], temp[i]];
       }
 
-      // --- 選定ロジック ---
       let picked = [];
-
-      // フェーズ1: 重複（コンフリクト）を避けて選ぶ
       for(let r of temp) {
         if(picked.some(p => p.name === r.name)) continue; 
         if(isConflict(picked, r)) continue; 
@@ -1356,7 +1350,6 @@ function initGame(mode, seed) {
         if(picked.length === state.stoneCount) break;
       }
 
-      // フェーズ2: 補充
       if(picked.length < state.stoneCount) {
         for(let r of temp) {
           if(picked.length === state.stoneCount) break;
@@ -1367,9 +1360,7 @@ function initGame(mode, seed) {
       }
       if(picked.length < state.stoneCount) continue;
 
-      // --- 検証ロジック（厳密版） ---
-
-      // まず「嘘なし」状態で解が1つになるか確認
+      // 検証ロジック（厳密版）
       let matches = 0;
       for(let i=1; i<=5; i++) {
         for(let a=1; a<=5; a++) {
@@ -1381,29 +1372,19 @@ function initGame(mode, seed) {
 
       if(matches === 1) {
         if(mode === 'chaos') {
-          // --- Chaosモード厳密生成 ---
           const trueLiar = Math.floor(rng.next() * state.stoneCount);
-          
-          // 「正解の嘘つき」で解が1つになるか確認
           let solutionsForTrueLiar = countSolutionsWithLiar(picked, trueLiar);
 
           if(solutionsForTrueLiar === 1) {
-            // ★パラレルワールド検証★
-            // 他の石碑を嘘つきだと仮定した時、解が「1つ」になってしまわないか？
             let isAmbiguous = false;
-
             for(let otherLiar = 0; otherLiar < state.stoneCount; otherLiar++) {
-              if(otherLiar === trueLiar) continue; // 本物はスキップ
-
+              if(otherLiar === trueLiar) continue; 
               let solutionsForOther = countSolutionsWithLiar(picked, otherLiar);
-              
-              // 「もしこいつが嘘つきでも、答えが出ちゃう」なら没 (背理法が成立しなくなるため)
               if(solutionsForOther === 1) {
                 isAmbiguous = true;
                 break; 
               }
             }
-
             if(!isAmbiguous) {
               state.rules = picked;
               state.liarIndex = trueLiar;
@@ -1411,7 +1392,6 @@ function initGame(mode, seed) {
             }
           }
         } else {
-          // 通常モード
           state.rules = picked;
           state.liarIndex = -1;
           success = true;
@@ -1428,7 +1408,6 @@ function initGame(mode, seed) {
       // --- ゲーム開始成功時のUI処理 ---
       document.getElementById('title-screen').style.display = 'none';
       
-      // ★追加: チュートリアルボタンを隠す
       const tutBtn = document.getElementById('top-tut-btn');
       if(tutBtn) tutBtn.style.display = 'none';
 
@@ -1437,18 +1416,6 @@ function initGame(mode, seed) {
       updateHUD();
       document.getElementById('log-container').innerHTML = '';
       
-      // カオス演出制御
-      const chaosWarn = document.getElementById('chaos-warning');
-      if (mode === 'chaos') {
-        if(chaosWarn) {
-            chaosWarn.style.display = 'none'; 
-            chaosWarn.classList.remove('visible');
-        }
-        executeChaosIntro();
-      } else {
-        if(chaosWarn) chaosWarn.style.display = 'none';
-      }
-
       // ID表示
       const hud = document.querySelector('.hud');
       const oldId = document.getElementById('current-id-display');
@@ -1458,9 +1425,24 @@ function initGame(mode, seed) {
         `<div id="current-id-display" style="text-align:center; color:#555; font-size:0.7rem; margin-top:-10px;">ID: <span style="font-family:'Cinzel',serif; color:#777;">${state.currentSeed}</span></div>`
       );
 
+      // Omegaルール表示エリア
       document.getElementById('omega-rule-area').style.display = state.isOmega ? 'block' : 'none';
+
+      // ★★★ 修正ポイント: 先に石碑を作ってから、演出を呼ぶ！ ★★★
       initMatrix();
-      renderProphecies();
+      renderProphecies(); // これが先！
+
+      // カオス演出制御（石碑生成のあとに移動）
+      const chaosWarn = document.getElementById('chaos-warning');
+      if (mode === 'chaos') {
+        if(chaosWarn) {
+            chaosWarn.style.display = 'none'; 
+            chaosWarn.classList.remove('visible');
+        }
+        executeChaosIntro(); // 石碑があるので動く！
+      } else {
+        if(chaosWarn) chaosWarn.style.display = 'none';
+      }
 
       // ナイトメア演出制御
       if (mode === 'nightmare') {
