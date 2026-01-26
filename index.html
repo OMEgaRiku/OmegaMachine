@@ -1279,10 +1279,25 @@ function startFromId(mode) {
   initGame(mode, seed);
 }
 
-// ▼▼▼ 修正版 initGame関数 (これを既存のものと入れ替えてください) ▼▼▼
-
+// ▼▼▼ 完全版 initGame (論理パズル厳密化 + UI制御統合済) ▼▼▼
 function initGame(mode, seed) {
   document.getElementById('loading-indicator').style.display = 'block';
+
+ // 1. バグ①修正: アクションボタンを再表示させる
+  document.querySelectorAll('.btn-action').forEach(b => b.style.display = '');
+
+  // 3. バグ③修正: マナバーの赤色・グリッチ演出を解除する
+  const manaBar = document.querySelector('.mana-bar');
+  if(manaBar) {
+    manaBar.style.color = '';
+    manaBar.style.textShadow = '';
+    manaBar.classList.remove('glitch-active');
+  }
+  // ラウンド表示のグリッチも解除
+  const roundDisplay = document.getElementById('ui-round');
+  if(roundDisplay && roundDisplay.parentNode) {
+      roundDisplay.parentNode.classList.remove('glitch-active');
+  }
 
   // 神々しいフレームが残っていたら消す
   const oldFrame = document.querySelector('.divine-frame');
@@ -1305,16 +1320,10 @@ function initGame(mode, seed) {
     const resultBtn = document.getElementById('btn-show-result');
     if(resultBtn) resultBtn.style.display = 'none';
     
-     // ▼▼▼ これを追加！(ゲーム開始時に隠す) ▼▼▼
-      const tutBtn = document.getElementById('top-tut-btn');
-      if(tutBtn) tutBtn.style.display = 'none';
-      // ▲▲▲▲▲▲
-    
     let success = false;
     let attempts = 0;
     const maxAttempts = 10000; // 試行回数
     
-    // --- ここからパズル生成ループ ---
     while(!success && attempts < maxAttempts) {
       attempts++;
       state.ans = {
@@ -1358,7 +1367,9 @@ function initGame(mode, seed) {
       }
       if(picked.length < state.stoneCount) continue;
 
-      // 解が1つに定まるか検証
+      // --- 検証ロジック（厳密版） ---
+
+      // まず「嘘なし」状態で解が1つになるか確認
       let matches = 0;
       for(let i=1; i<=5; i++) {
         for(let a=1; a<=5; a++) {
@@ -1370,26 +1381,34 @@ function initGame(mode, seed) {
 
       if(matches === 1) {
         if(mode === 'chaos') {
-          // カオスモード処理
-          const tempLiar = Math.floor(rng.next()*state.stoneCount);
-          let chaosSolutions = 0;
-          for(let i=1; i<=5; i++) {
-            for(let a=1; a<=5; a++) {
-              for(let v=1; v<=5; v++) {
-                 let trueCount = 0;
-                 picked.forEach((r, idx) => {
-                   let res = r.f(i, a, v);
-                   if(idx === tempLiar) res = !res;
-                   if(res) trueCount++;
-                 });
-                 if(trueCount === state.stoneCount) chaosSolutions++;
+          // --- Chaosモード厳密生成 ---
+          const trueLiar = Math.floor(rng.next() * state.stoneCount);
+          
+          // 「正解の嘘つき」で解が1つになるか確認
+          let solutionsForTrueLiar = countSolutionsWithLiar(picked, trueLiar);
+
+          if(solutionsForTrueLiar === 1) {
+            // ★パラレルワールド検証★
+            // 他の石碑を嘘つきだと仮定した時、解が「1つ」になってしまわないか？
+            let isAmbiguous = false;
+
+            for(let otherLiar = 0; otherLiar < state.stoneCount; otherLiar++) {
+              if(otherLiar === trueLiar) continue; // 本物はスキップ
+
+              let solutionsForOther = countSolutionsWithLiar(picked, otherLiar);
+              
+              // 「もしこいつが嘘つきでも、答えが出ちゃう」なら没 (背理法が成立しなくなるため)
+              if(solutionsForOther === 1) {
+                isAmbiguous = true;
+                break; 
               }
             }
-          }
-          if(chaosSolutions === 1) {
-            state.rules = picked;
-            state.liarIndex = tempLiar;
-            success = true;
+
+            if(!isAmbiguous) {
+              state.rules = picked;
+              state.liarIndex = trueLiar;
+              success = true;
+            }
           }
         } else {
           // 通常モード
@@ -1399,7 +1418,6 @@ function initGame(mode, seed) {
         }
       }
     }
-    // --- ループ終了 ---
 
     document.getElementById('loading-indicator').style.display = 'none';
 
@@ -1407,14 +1425,31 @@ function initGame(mode, seed) {
       alert("生成失敗: 条件に合うパズルが見つかりませんでした。別のIDを試すか、もう一度やり直してください。");
       rng = new SeededRandom(generateSeed(5)); 
     } else {
-      // ▼ 生成成功時の処理 ▼
+      // --- ゲーム開始成功時のUI処理 ---
       document.getElementById('title-screen').style.display = 'none';
+      
+      // ★追加: チュートリアルボタンを隠す
+      const tutBtn = document.getElementById('top-tut-btn');
+      if(tutBtn) tutBtn.style.display = 'none';
+
       document.getElementById('game-screen').style.display = 'block';
       setBackground(mode);
       updateHUD();
       document.getElementById('log-container').innerHTML = '';
-      document.getElementById('chaos-warning').style.display = (mode === 'chaos') ? 'block' : 'none';
       
+      // カオス演出制御
+      const chaosWarn = document.getElementById('chaos-warning');
+      if (mode === 'chaos') {
+        if(chaosWarn) {
+            chaosWarn.style.display = 'none'; 
+            chaosWarn.classList.remove('visible');
+        }
+        executeChaosIntro();
+      } else {
+        if(chaosWarn) chaosWarn.style.display = 'none';
+      }
+
+      // ID表示
       const hud = document.querySelector('.hud');
       const oldId = document.getElementById('current-id-display');
       if(oldId) oldId.remove();
@@ -1426,35 +1461,35 @@ function initGame(mode, seed) {
       document.getElementById('omega-rule-area').style.display = state.isOmega ? 'block' : 'none';
       initMatrix();
       renderProphecies();
-      
-          // ★ここを修正
-      const chaosWarn = document.getElementById('chaos-warning');
-      if (mode === 'chaos') {
-        // カオスモードなら、最初は非表示(display:none)ではなく
-        // 透明(opacity:0)にして、場所だけ確保しておくか、あるいは演出関数に任せる
-        if(chaosWarn) {
-            chaosWarn.style.display = 'none'; // 一旦隠す
-            chaosWarn.classList.remove('visible');
-        }
-        // カオス演出開始！
-        executeChaosIntro();
-      } else {
-        // カオス以外なら警告は消す
-        if(chaosWarn) chaosWarn.style.display = 'none';
-      }
 
-      // ナイトメア演出
-      if (mode === 'nightmare') {
-        executeNightmareIntro();
-      }
-
-      // ★★★ ここで演出関数を呼び出します ★★★
+      // ナイトメア演出制御
       if (mode === 'nightmare') {
         executeNightmareIntro();
       }
     }
   }, 100);
 }
+
+// ヘルパー関数: 指定した石碑が嘘つきだと仮定した場合の解の個数を数える
+function countSolutionsWithLiar(rules, liarIdx) {
+  let count = 0;
+  for(let i=1; i<=5; i++) {
+    for(let a=1; a<=5; a++) {
+      for(let v=1; v<=5; v++) {
+         let validCount = 0;
+         rules.forEach((r, idx) => {
+           let res = r.f(i, a, v);
+           if(idx === liarIdx) res = !res; // こいつが嘘つきだと反転
+           if(res) validCount++;
+         });
+         // 全てのルールを満たすならカウント
+         if(validCount === rules.length) count++;
+      }
+    }
+  }
+  return count;
+}
+
 
 // ▼▼▼ initGameの外に出した演出用関数 ▼▼▼
 
@@ -1693,37 +1728,46 @@ function isConflict(pickedList, newRule) {
 
 
 function checkProphecy(idx, rule, el) {
+  // チュートリアル制御
   if(isTutorialMode && tutStep !== 6 && tutStep !== 12 && tutStep !== 15) return;
+  
+  // マナ切れチェック
   if(state.mana >= state.maxMana) return;
+  
+  // 入力チェック
   const i = +document.getElementById('r1').value;
   const a = +document.getElementById('r2').value;
   const v = +document.getElementById('r3').value;
   if(!i || !a || !v) return;
   
-  // ★ここを修正: 最初の判定時にロック＆メッセージ表示
+  // 最初の判定時にロック＆メッセージ表示
   if(state.mana === 0) {
     document.getElementById('r1').disabled = true;
     document.getElementById('r2').disabled = true;
     document.getElementById('r3').disabled = true;
-    
-    // メッセージを表示
     const msg = document.getElementById('rune-lock-msg');
     if(msg) msg.style.display = 'block';
   }
 
+  // 判定ロジック
   let isTrue = rule.f(i, a, v);
   if(idx === state.liarIndex) isTrue = !isTrue;
 
+  // マナ消費と更新
   state.mana++;
-  state.totalChecks++; // ★追加: 検証回数をプラス
+  state.totalChecks++; 
   updateHUD();
   
+  // ★★★ ここに追加！ (押した石碑を即座にグレーアウト＆クリック禁止) ★★★
+  if(el) el.classList.add('disabled'); 
+  // ▲▲▲▲▲▲
+
+  // ログ出力
   const log = document.getElementById('log-container');
   const entry = document.createElement('div');
   const names = ["α", "β", "γ", "δ", "ε"];
   entry.className = isTrue ? 'log-entry log-true' : 'log-entry log-false';
   
-  // ★修正: ログに予言名を表示し、見やすくレイアウト
   entry.innerHTML = `
     <div style="width:100%;">
       <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1740,6 +1784,7 @@ function checkProphecy(idx, rule, el) {
   `;
   log.prepend(entry);
 
+  // マナが尽きたら残り全部を無効化（これは既存の処理）
   if(state.mana >= state.maxMana) {
     document.querySelectorAll('.stone').forEach(s => s.classList.add('disabled'));
   }
@@ -2680,6 +2725,10 @@ function softResetGame() {
   document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
   const frame = document.querySelector('.divine-frame');
   if(frame) frame.remove();
+  
+   // ▼▼▼ 追加修正: バグ② 背景色をタイトル画面（CSSのデフォルト）に戻す ▼▼▼
+  document.body.style.backgroundImage = ""; 
+  // ▲▲▲▲▲▲
 
   // 2. 画面切り替え（ゲーム画面を隠してタイトルを出す）
   document.getElementById('game-screen').style.display = 'none';
