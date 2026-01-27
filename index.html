@@ -171,8 +171,43 @@
     margin-top: 20px; border-top: 1px solid #444; padding-top: 10px; max-height: 200px; overflow-y: auto; text-align: left; font-size: 0.9rem;
   }
   .log-entry { margin-bottom: 5px; padding: 8px 10px; border-radius: 4px; background: rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
-  .log-true { border-left: 3px solid #2ecc71; color: #aaffaa; }
-  .log-false { border-left: 3px solid #e74c3c; color: #ffaaaa; }
+    /* --- 変更点: ログの配色 (数字の色と被らないように変更) --- */
+  /* TRUE: 緑→金 (神聖な正解) */
+  .log-true { border-left: 3px solid #d4af37; color: #ffd700; background: rgba(212, 175, 55, 0.1); }
+  /* FALSE: 赤→紫 (虚無・不正解) */
+  .log-false { border-left: 3px solid #9b59b6; color: #d7bde2; background: rgba(155, 89, 182, 0.1); }
+  
+  /* 数字の強調用クラス */
+  .num-fire { color: #ff9999; font-weight: bold; }
+  .num-water { color: #99ccff; font-weight: bold; }
+  .num-wind { color: #99ffcc; font-weight: bold; }
+
+  /* --- 変更点: メモ欄をフリーテキスト化 --- */
+  .memo-textarea {
+    width: 100%;
+    height: 120px;
+    background: #000;
+    border: 1px solid #444;
+    color: #e0d0b0;
+    padding: 10px;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.9rem;
+    resize: none;
+    box-sizing: border-box;
+    border-radius: 4px;
+    line-height: 1.5;
+    transition: 0.3s;
+  }
+  .memo-textarea:focus {
+    outline: none;
+    border-color: #d4af37;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+    background: #111;
+  }
+  .memo-textarea::placeholder {
+    color: #444;
+    font-style: italic;
+  }
   .log-nums { font-family: 'Cinzel', serif; font-weight: bold; background: #000; padding: 1px 6px; border-radius: 3px; letter-spacing: 1px; font-size: 0.8rem;}
 
   /* Action Bar */
@@ -854,29 +889,13 @@ button, .btn, .hud-btn, .stone, .memo-btn {
 
     <div style="text-align:left; color:#666; font-size:0.7rem; margin-bottom:5px; margin-left:5px;">LOGIC MATRIX & MEMO</div>
     <div class="logic-grid" id="logic-matrix"></div>
-
-    <button class="memo-toggle-btn" onclick="toggleMemoArea()">📝 MEMO PAD (Show/Hide)</button>
+    
+        <button class="memo-toggle-btn" onclick="toggleMemoArea()">📝 MEMO PAD (Show/Hide)</button>
     
     <div class="memo-area closed" id="memo-pad">
-      <div class="memo-label">合計メモ</div>
-      <div class="memo-row">
-        <div class="memo-btn" onclick="toggleMemo(this)">偶数</div>
-        <div class="memo-btn" onclick="toggleMemo(this)">奇数</div>
-        <div class="memo-btn" onclick="toggleMemo(this)">&lt; 6</div>
-        <div class="memo-btn" onclick="toggleMemo(this)">≧ 6</div>
-        <div class="memo-btn" onclick="toggleMemo(this)">&lt; 10</div>
-        <div class="memo-btn" onclick="toggleMemo(this)">≧ 10</div>
-      </div>
-      <div class="memo-label">大小メモ (値 ≧ 他)</div>
-      <div class="memo-row">
-        <div class="memo-btn" onclick="toggleMemo(this)">Max<span style="color:#ff9999">炎</span></div>
-        <div class="memo-btn" onclick="toggleMemo(this)">Max<span style="color:#99ccff">水</span></div>
-        <div class="memo-btn" onclick="toggleMemo(this)">Max<span style="color:#99ffcc">風</span></div>
-        <div class="memo-btn" onclick="toggleMemo(this)">Min<span style="color:#ff9999">炎</span></div>
-        <div class="memo-btn" onclick="toggleMemo(this)">Min<span style="color:#99ccff">水</span></div>
-        <div class="memo-btn" onclick="toggleMemo(this)">Min<span style="color:#99ffcc">風</span></div>
-      </div>
+      <textarea class="memo-textarea" placeholder="推理メモ&#13;&#10;例: 炎は偶数ではない...&#13;&#10;合計は10以上..."></textarea>
     </div>
+
     <div id="prophecy-container" class="prophecy-list"></div>
 
     <div id="omega-rule-area">
@@ -1810,25 +1829,31 @@ function checkProphecy(idx, rule, el) {
   const log = document.getElementById('log-container');
   const entry = document.createElement('div');
   const names = ["α", "β", "γ", "δ", "ε"];
+  
+   // クラスによる配色はCSS側で制御 (TRUE=金, FALSE=紫)
   entry.className = isTrue ? 'log-entry log-true' : 'log-entry log-false';
   
+  // 数字の色分け用HTML生成
+  const numsHtml = `
+    <span class="num-fire">${i}</span>-<span class="num-water">${a}</span>-<span class="num-wind">${v}</span>
+  `;
+
   entry.innerHTML = `
     <div style="width:100%;">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <span style="font-weight:bold;">R${state.round} 予言${names[idx]}</span>
         <strong>${isTrue ? "TRUE" : "FALSE"}</strong>
       </div>
-      <div style="font-size:0.85rem; margin:4px 0; color:#ddd; padding-left:8px; border-left:2px solid rgba(255,255,255,0.2);">
+      <div style="font-size:0.85rem; margin:4px 0; color:rgba(255,255,255,0.7); padding-left:8px; border-left:2px solid rgba(255,255,255,0.1);">
         ${state.isOmega ? "???" : colorize(rule.name)}
       </div>
       <div style="text-align:right;">
-        <span class="log-nums">${i}-${a}-${v}</span>
+        <span class="log-nums" style="background:#000; padding:2px 8px; border-radius:4px; font-family:'Cinzel',serif;">${numsHtml}</span>
       </div>
     </div>
   `;
   log.prepend(entry);
 
-  // マナが尽きたら残り全部を無効化（これは既存の処理）
   if(state.mana >= state.maxMana) {
     document.querySelectorAll('.stone').forEach(s => s.classList.add('disabled'));
   }
@@ -1976,7 +2001,12 @@ function saveHistory(isWin) {
   localStorage.setItem('omega_history', JSON.stringify(history));
 }
 
+// --- 履歴モーダル制御 ---
 function showHistory() {
+  // iPhone対策: 右上のチュートリアルボタンを隠す
+  const tutBtn = document.getElementById('top-tut-btn');
+  if(tutBtn) tutBtn.style.display = 'none';
+
   const modal = document.getElementById('history-modal');
   const list = document.getElementById('history-list');
   const history = JSON.parse(localStorage.getItem('omega_history') || '[]');
@@ -2669,19 +2699,27 @@ function closeHelp() {
   document.getElementById('help-modal').style.display = 'none';
 }
 
-// 履歴を閉じる
 function closeHistory() {
   document.getElementById('history-modal').style.display = 'none';
+  // 閉じたときにチュートリアルボタンを復活させる
+  const tutBtn = document.getElementById('top-tut-btn');
+  if(tutBtn) tutBtn.style.display = 'flex';
 }
 
-// ID入力画面を表示する
+// --- ID入力モーダル制御 ---
 function showInputId() {
+  // iPhone対策: 隠す
+  const tutBtn = document.getElementById('top-tut-btn');
+  if(tutBtn) tutBtn.style.display = 'none';
+  
   document.getElementById('id-modal').style.display = 'flex';
 }
 
-// ID入力画面を閉じる
 function closeIdModal() {
   document.getElementById('id-modal').style.display = 'none';
+  // 復活させる
+  const tutBtn = document.getElementById('top-tut-btn');
+  if(tutBtn) tutBtn.style.display = 'flex';
 }
 
 // --- ▼▼▼ ここから追加 (封印解除の演出用) ▼▼▼ ---
