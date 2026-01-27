@@ -277,10 +277,15 @@
   .res-row { font-size: 0.8rem; border-bottom: 1px solid #444; padding: 5px 0; color: #ccc; }
   .res-liar-txt { color: #e74c3c; font-weight:bold; }
 
-  /* Omega Rule List */
+    /* Omega Rule List */
   #omega-rule-area {
     margin-top: 15px; padding: 10px; border: 1px solid #444; border-radius: 8px;
     background: rgba(0,0,0,0.8); display: none; text-align: left;
+    
+       /* ▼▼▼ 修正点: 枠の外も表示させる最強の呪文 ▼▼▼ */
+    position: relative;
+    z-index: 90000;
+    overflow: visible !important; /* ← これがないとiPhoneで消えます！ */
   }
   .omega-label { color: #fff; font-size: 0.9rem; margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 5px; }
   .omega-list-item {
@@ -824,6 +829,42 @@ button, .btn, .hud-btn, .stone, .memo-btn {
   touch-action: manipulation;
 }
 
+       /* アニメーション定義（テスト用に高さを半分に） */
+  @keyframes dropInBounce {
+    0% {
+      opacity: 1; /* ★テスト用: 最初から不透明に */
+      transform: translateY(-150vh) scale(0.9); /* ★テスト用: 半分の高さから */
+    }
+    70% { opacity: 1; transform: translateY(20px) scale(1.05); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* リスト項目のスタイル */
+  .omega-list-item {
+    opacity: 0; 
+    position: relative;
+    z-index: 90000; /* 9万のまま維持 */
+  }
+  
+   /* その下の .omega-list-item.falling を探してください */
+
+/* 降ってくる時のスタイル */
+.omega-list-item.falling {
+  /* ▼▼▼ ここを書き換え！赤を消して黄金にする ▼▼▼ */
+  
+  /* 薄い黄金色の背景（透明度25%） */
+  background: rgba(212, 175, 55, 0.25);
+  /* はっきりした金の枠線 */
+  border: 1px solid #ffd700;
+  /* ぼんやり黄金色に光らせる */
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+  
+  /* アニメーション設定（そのまま） */
+  animation: dropInBounce 3.0s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+
+
 
 </style>
 </head>
@@ -864,7 +905,12 @@ button, .btn, .hud-btn, .stone, .memo-btn {
 
     <div style="text-align:right; font-size:0.8rem; color:#aaa; margin-top:-15px; margin-bottom:15px; margin-right:5px;">ROUND <span id="ui-round" class="en-font" style="color:#fff; font-size:1.1rem;">1</span></div>
 
-    <div id="chaos-warning" class="chaos-bar">⚠ 常に嘘をつく偽りの予言が1つ含まれています</div>
+        <div id="chaos-warning" class="chaos-bar">⚠ 常に嘘をつく偽りの予言が1つ含まれています</div>
+
+    <div id="nightmare-warning" class="chaos-bar" style="background: #4a1c8a; border: 1px solid #9b59b6; box-shadow: 0 0 10px #4a1c8a;">
+      ⚠ MANAは2に減り、5ラウンド以内に封印を解除する必要があります(回答含む)
+    </div>
+
 
         <div class="rune-container" style="flex-direction:column; gap:5px;">
       <div style="display:flex; justify-content:center; gap:12px;">
@@ -1524,10 +1570,19 @@ function initGame(mode, seed) {
         if(chaosWarn) chaosWarn.style.display = 'none';
       }
 
+      // ▼▼▼ ★追加: Nightmare警告の初期化 ▼▼▼
+      const nmWarn = document.getElementById('nightmare-warning');
+      if(nmWarn) {
+        nmWarn.style.display = 'none';
+        nmWarn.classList.remove('visible');
+      }
+      // ▲▲▲▲▲▲
+
       // ナイトメア演出
       if (mode === 'nightmare') {
         executeNightmareIntro();
       }
+
     }
   }, 100);
 }
@@ -1559,7 +1614,6 @@ function countSolutionsWithLiar(rules, liarIdx) {
 async function executeNightmareIntro() {
   const slash = document.getElementById('nightmare-slash');
   const manaBar = document.querySelector('.mana-bar');
-  // ROUND表示の取得（構造依存なので注意）
   const roundDisplay = document.getElementById('ui-round').parentNode;
 
   // 1. 一瞬の静寂と暗転
@@ -1594,9 +1648,21 @@ async function executeNightmareIntro() {
           manaBar.style.textShadow = "0 0 10px #ff0000";
       }
       if(roundDisplay) roundDisplay.classList.remove('glitch-active');
+      
+      // ▼▼▼ ★追加: 警告文をじわっと出す処理 ▼▼▼
+      const nmWarn = document.getElementById('nightmare-warning');
+      if(nmWarn) {
+        nmWarn.style.display = 'block'; // まず枠を作る
+        setTimeout(() => {
+           nmWarn.classList.add('visible'); // じわっと不透明度を上げる
+        }, 100);
+      }
+      // ▲▲▲▲▲▲▲▲▲▲
+
     }, 1000);
   }, 500);
 }
+
 
 function executeChaosIntro() {
   const stones = document.querySelectorAll('.stone');
@@ -1680,10 +1746,20 @@ function renderProphecies() {
     let displayRules = [...state.rules];
     displayRules.sort(() => Math.random() - 0.5); // 簡易シャッフル
 
-    displayRules.forEach(r => {
+    displayRules.forEach((r,idx) => {
       const item = document.createElement('div');
       item.className = 'omega-list-item';
       item.innerHTML = colorize(r.name);
+      
+        // ▼▼▼ ★追加: 落下アニメーションの遅延設定 ▼▼▼
+      // 石碑が降り終わるのが約3秒後なので、3000ms + インデックスごとのズレを加算
+      // これにより「石碑ドーン！ → (一呼吸) → リストがバラバラと降ってくる」演出になります
+      const delay = 3000 + (idx * 100); 
+      
+      // クラスを付与してアニメーション開始（delay付き）
+      item.classList.add('falling');
+      item.style.animationDelay = `${delay}ms`;
+      // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
       
       // クリック時の挙動
       item.onclick = () => {
@@ -2373,7 +2449,7 @@ function handleTutClick(type, idx) {
     nextTutorialStep(); 
   }
   // ステップ12: 石碑β
-  if(tutStep === 12. && type === 'stone' && idx === 1) {
+  if(tutStep === 12 && type === 'stone' && idx === 1) {
     checkProphecy(1, state.rules[1], document.getElementById('stone-1'));
     nextTutorialStep(); 
   }
@@ -2845,7 +2921,15 @@ function softResetGame() {
     chaosWarn.style.display = 'none';
     chaosWarn.classList.remove('visible');
   }
+
+  // ▼▼▼ ★追加: Nightmare警告のリセット ▼▼▼
+  const nmWarn = document.getElementById('nightmare-warning');
+  if(nmWarn) {
+    nmWarn.style.display = 'none';
+    nmWarn.classList.remove('visible');
+  }
 }
+
 
 // MENUボタンを押したとき
 function openMenuModal() {
