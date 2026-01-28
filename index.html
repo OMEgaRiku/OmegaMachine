@@ -947,31 +947,276 @@ button, .btn, .hud-btn, .stone, .memo-btn {
   animation: dropInBounce 3.0s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
+  /* Awakened Omega Style */
+  .btn-awakened {
+    border-color: #ff0000;
+    color: #ff0000;
+    background: #000;
+    font-family: 'Cinzel', serif;
+    box-shadow: 0 0 10px #500;
+    border-style: double;
+    border-width: 3px;
+    letter-spacing: 1px;
+    animation: awakenedPulse 2s infinite alternate;
+  }
+  .btn-awakened:hover {
+    background: #200;
+    box-shadow: 0 0 20px #f00;
+  }
 
+  @keyframes awakenedPulse {
+    0% { text-shadow: 0 0 5px #500; border-color: #800; }
+    100% { text-shadow: 0 0 15px #f00; border-color: #f00; }
+  }
+
+
+/* --- 覚醒解放アニメーション --- */
+#awakened-unlock-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 10000; /* 最前面 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  animation: overlayFadeIn 1s forwards;
+}
+
+.unlock-content {
+  text-align: center;
+  color: #ff0000;
+  font-family: 'Cinzel', serif;
+}
+
+.unlock-icon {
+  font-size: 5rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px #f00;
+  opacity: 0;
+  transform: scale(3);
+  animation: iconDrop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.5s;
+}
+
+.unlock-text-main {
+  font-size: 1.5rem;
+  color: #fff;
+  margin-bottom: 10px;
+  opacity: 0;
+  letter-spacing: 5px;
+  animation: textSlideUp 1s ease-out forwards 1.5s;
+}
+
+.unlock-text-sub {
+  font-size: 1.2rem;
+  color: #ff0000;
+  text-shadow: 0 0 10px #800;
+  opacity: 0;
+  animation: textBlink 2s infinite alternate 2.5s, fadeIn 1s forwards 2.5s;
+}
+
+/* Keyframes */
+@keyframes overlayFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes iconDrop { 
+  to { opacity: 1; transform: scale(1); text-shadow: 0 0 30px #ff0000; } 
+}
+@keyframes textSlideUp { 
+  from { opacity: 0; transform: translateY(20px); } 
+  to { opacity: 1; transform: translateY(0); } 
+}
+@keyframes textBlink {
+  0% { text-shadow: 0 0 10px #500; }
+  100% { text-shadow: 0 0 20px #f00, 0 0 40px #f00; }
+}
+
+  /* ボタン横並び用のコンテナ */
+  .mode-row {
+    display: flex;
+    width: 90%;
+    max-width: 350px;
+    gap: 8px; /* ボタン間の隙間 */
+    margin: 8px 0;
+  }
+  
+  /* モードボタンのスタイル上書き (flexアイテム化) */
+  .mode-row .btn {
+    margin: 0; /* ラッパー側で制御するのでマージン削除 */
+    flex: 1;   /* 横幅いっぱいに広げる */
+  }
+
+  /* ブーストボタン (ドクロ) */
+  .btn-boost {
+    width: 50px; /* 正方形に近い形 */
+    background: #111;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: #444;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.3s;
+    user-select: none;
+  }
+  
+  /* ONになった時のスタイル (赤く光る) */
+  .btn-boost.active {
+    border-color: #ff0000;
+    color: #ff0000;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.4);
+    background: rgba(50, 0, 0, 0.5);
+    animation: boostPulse 1.5s infinite alternate;
+  }
+  
+  @keyframes boostPulse {
+    from { text-shadow: 0 0 5px #f00; }
+    to { text-shadow: 0 0 15px #f00; transform: scale(1.05); }
+  }
+  
+      /* --- Easy & Standard 完全整列スタイル --- */
+  
+  /* デフォルト（未解放）：縦積み＆全幅 */
+  #easy-std-wrapper {
+    display: flex;
+    flex-direction: column; /* 縦に積む */
+    width: 90%;             /* 下のボタンたちと同じ幅 (90%) */
+    max-width: 350px;       /* 下のボタンたちと同じ最大幅 */
+    gap: 8px;               /* ボタン同士の間隔 */
+    margin: 8px 0;          /* 上下の間隔 */
+  }
+
+  /* 縦積みの時、中のボタンを親要素(wrapper)いっぱいに広げる */
+  #easy-std-wrapper .btn {
+    width: 100% !important;     /* 親の幅に合わせる */
+    max-width: none !important; /* ボタン自体の制限を解除 */
+    margin: 0 !important;       /* 余計なマージンを消す */
+    flex: none;                 /* 縦積み時は伸縮させない */
+  }
+
+  /* 解放時：横並び（JSでこのクラスが付く） */
+  #easy-std-wrapper.unlocked-row {
+    flex-direction: row;        /* 横並びにする */
+  }
+  
+  /* 横並びの時だけ、幅を半分こにする */
+  #easy-std-wrapper.unlocked-row .btn {
+    flex: 1; 
+  }
+
+
+
+  /* ブースト時の警告メッセージ */
+  .boost-popup {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    text-align: center;
+    
+    color: #ff0000;
+    font-family: 'Shippori Mincho', serif;
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-shadow: 0 0 5px #000, 0 0 10px #500;
+    background: rgba(0,0,0,0.7); /* 文字が見やすいように背景を敷く */
+    padding: 5px 0;
+    
+    pointer-events: none; /* クリックを邪魔しない */
+    opacity: 0;
+    z-index: 100;
+    
+    animation: boostMsgFade 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @keyframes boostMsgFade {
+    0% { opacity: 0; transform: translate(-50%, -40%) scale(0.9); }
+    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -60%); }
+  }
+
+  /* --- Easy & Standard ラッパーのスタイル (完全版) --- */
+  
+  /* デフォルト状態（未解放）：縦積み */
+  #easy-std-wrapper {
+    display: flex;
+    flex-direction: column; /* 縦に積む */
+    align-items: center;    /* 真ん中に揃える */
+    width: 100%;            /* 横幅は画面いっぱい使う */
+    /* ボタン自体にマージンがあるので、ここではgap不要 */
+  }
+
+  /* 解放された状態：横並び（JSでこのクラスが付く） */
+  #easy-std-wrapper.unlocked-row {
+    flex-direction: row;       /* 横に並べる */
+    width: 90%;                /* ラッパー自体の幅をボタンに合わせる */
+    max-width: 350px;
+    gap: 8px;                  /* ボタン間の隙間 */
+    margin: 8px 0;             /* 上下の隙間 */
+  }
+
+  /* 横並びになった時の、中身のボタンの調整 */
+  #easy-std-wrapper.unlocked-row .btn {
+    margin: 0;        /* 横並び時は個別のマージンを消す */
+    flex: 1;          /* 仲良く幅を半分こにする */
+    width: auto;      /* 幅指定を解除してflexに任せる */
+  }
 
 
 </style>
 </head>
 <body>
-  <div id="top-tut-btn" class="title-top-right">
-  <div class="btn-tutorial" onclick="startTutorial()">Tutorial</div>
-</div>
-  <div id="title-screen">
+    <div id="title-screen">
       <div class="game-title">OMEGA STONE</div>
     <div style="color:#aaa; margin-bottom:40px; letter-spacing:2px; font-size:0.9rem;">Logical Deduction</div>
     
-<div class="btn btn-std" onclick="startGame('easy')"><span>Easy</span><span class="en-font">I</span></div>
-<div class="btn btn-hard" style="border-color:#27ae60; color:#abebc6;" onclick="startGame('standard')"><span>Standard</span><span class="en-font">II</span></div>
-<div class="btn btn-hard" onclick="startGame('hard')"><span>Hard</span><span class="en-font">III</span></div>
-<div class="btn btn-night" onclick="startGame('nightmare')"><span>Nightmare</span><span class="en-font">IV</span></div>
-<div class="btn btn-chaos" onclick="startGame('chaos')"><span>Chaos</span><span class="en-font">∞</span></div>
-<div class="btn btn-omega" onclick="startGame('omega')"><span>Omega</span><span class="en-font">?</span></div>
+          <div class="mode-row">
+      <div class="btn btn-std" onclick="startGame('easy')"><span>Easy</span><span class="en-font">I</span></div>
+      <div id="spacer-easy" class="btn-boost" style="display:none; visibility:hidden; border:none; background:transparent; cursor:default;"></div>
+    </div>
+
+    <div class="mode-row">
+      <div class="btn btn-hard" style="border-color:#27ae60; color:#abebc6;" onclick="startGame('standard')"><span>Standard</span><span class="en-font">II</span></div>
+      <div id="spacer-std" class="btn-boost" style="display:none; visibility:hidden; border:none; background:transparent; cursor:default;"></div>
+    </div>
+
+    <div class="mode-row">
+      <div class="btn btn-hard" onclick="startGame('hard')"><span>Hard</span><span class="en-font">III</span></div>
+      <div id="boost-hard" class="btn-boost" onclick="toggleBoost('hard')" style="display:none;">💀</div>
+    </div>
+
+    <div class="mode-row">
+      <div class="btn btn-night" onclick="startGame('nightmare')"><span>Nightmare</span><span class="en-font">IV</span></div>
+      <div id="boost-nightmare" class="btn-boost" onclick="toggleBoost('nightmare')" style="display:none;">💀</div>
+    </div>
+
+    <div class="mode-row">
+      <div class="btn btn-chaos" onclick="startGame('chaos')"><span>Chaos</span><span class="en-font">∞</span></div>
+      <div id="boost-chaos" class="btn-boost" onclick="toggleBoost('chaos')" style="display:none;">💀</div>
+    </div>
+
+    <div class="mode-row">
+      <div class="btn btn-omega" onclick="startGame('omega')"><span>Omega</span><span class="en-font">?</span></div>
+      <div id="boost-omega" class="btn-boost" onclick="toggleBoost('omega')" style="display:none;">💀</div>
+    </div>
 
 
-    <div style="display:flex; gap:10px; width:90%; max-width:350px; margin-top:10px;">
+    <div id="btn-awakened" class="btn btn-awakened" style="display:none;" onclick="confirmAwakened()">
+      <span>Awakened Omega</span><span class="en-font">Ω+</span>
+    </div>
+
+
+        <div style="display:flex; gap:10px; width:90%; max-width:350px; margin-top:10px;">
       <div class="btn btn-std" style="font-size:0.9rem; padding:12px;" onclick="showHistory()">📜 履歴</div>
       <div class="btn btn-std" style="font-size:0.9rem; padding:12px; border-color:#aaa; color:#eee;" onclick="showInputId()">🔑 ID入力</div>
     </div>
+    
+    <div class="btn btn-std" style="width:90%; max-width:350px; margin-top:8px; padding:10px; font-size:0.9rem; border-color:#2ecc71; color:#2ecc71;" onclick="startTutorial()">
+       Tutorial
+    </div>
+
     
     <div id="loading-indicator">生成中...</div>
   </div>
@@ -1287,6 +1532,94 @@ const POOL = [
       const sum = i+a+v;
       return ![3, 5, 7, 11, 13].includes(sum);
   } , diff:3},
+  // --- ★追加: Diff 4 (Awakened Mode用) ---
+
+  //  1 or 3の個数
+  { name:"1か3の個数 (0, 1, 2, 3)", desc:"1が0個", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==0, diff:4 },
+  { name:"1か3の個数 (0, 1, 2, 3)", desc:"1が1個", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==1, diff:4 },
+  { name:"1か3の個数 (0, 1, 2, 3)", desc:"1が2個", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==2, diff:4 },
+  { name:"1か3の個数 (0, 1, 2, 3)", desc:"1が3個", f:(i,a,v)=>[i,a,v].filter(n=>n==1).length==3, diff:4 },
+  { name:"1か3の個数 (0, 1, 2, 3)", desc:"3が0個", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==0, diff:4 },
+  { name:"1か3の個数 (0, 1, 2, 3)", desc:"3が1個", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==1, diff:4 },
+  { name:"1か3の個数 (0, 1, 2, 3)", desc:"3が2個", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==2, diff:4 },
+  { name:"1か3の個数 (0, 1, 2, 3)", desc:"3が3個", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==3, diff:4 },
+
+  //  2 or 4の個数
+  { name:"2か4の個数 (0, 1, 2, 3)", desc:"2が0個", f:(i,a,v)=>[i,a,v].filter(n=>n==2).length==0, diff:4 },
+  { name:"2か4の個数 (0, 1, 2, 3)", desc:"2が1個", f:(i,a,v)=>[i,a,v].filter(n=>n==2).length==1, diff:4 },
+  { name:"2か4の個数 (0, 1, 2, 3)", desc:"2が2個", f:(i,a,v)=>[i,a,v].filter(n=>n==2).length==2, diff:4 },
+  { name:"2か4の個数 (0, 1, 2, 3)", desc:"2が3個", f:(i,a,v)=>[i,a,v].filter(n=>n==2).length==3, diff:4 },
+  { name:"2か4の個数 (0, 1, 2, 3)", desc:"4が0個", f:(i,a,v)=>[i,a,v].filter(n=>n==4).length==0, diff:4 },
+  { name:"2か4の個数 (0, 1, 2, 3)", desc:"4が1個", f:(i,a,v)=>[i,a,v].filter(n=>n==4).length==1, diff:4 },
+  { name:"2か4の個数 (0, 1, 2, 3)", desc:"4が2個", f:(i,a,v)=>[i,a,v].filter(n=>n==4).length==2, diff:4 },
+  { name:"2か4の個数 (0, 1, 2, 3)", desc:"4が3個", f:(i,a,v)=>[i,a,v].filter(n=>n==4).length==3, diff:4 },
+
+  //  唯一の最大値・最小値 (Strict inequality)
+  { name:"唯一の最大値 (あり, なし)", desc:"炎が唯一の最大 (他より大きい)", f:(i,a,v)=> i > a && i > v, diff:4 },
+  { name:"唯一の最大値 (あり, なし)", desc:"水が唯一の最大 (他より大きい)", f:(i,a,v)=> a > i && a > v, diff:4 },
+  { name:"唯一の最大値 (あり, なし)", desc:"風が唯一の最大 (他より大きい)", f:(i,a,v)=> v > i && v > a, diff:4 },
+  { name:"唯一の最小値 (あり, なし)", desc:"炎が唯一の最小 (他より小さい)", f:(i,a,v)=> i < a && i < v, diff:4 },
+  { name:"唯一の最小値 (あり, なし)", desc:"水が唯一の最小 (他より小さい)", f:(i,a,v)=> a < i && a < v, diff:4 },
+  { name:"唯一の最小値 (あり, なし)", desc:"風が唯一の最小 (他より小さい)", f:(i,a,v)=> v < i && v < a, diff:4 },
+
+  //  属性同士の比較 (Diff4枠として再定義)
+  // 炎 vs 水
+  { name:"炎と特定の属性の比較 (<, =, >)", desc:"炎 > 水", f:(i,a,v)=> i > a, diff:4 },
+  { name:"炎と特定の属性の比較(<, =, >)", desc:"炎 = 水", f:(i,a,v)=> i == a, diff:4 },
+  { name:"炎と特定の属性の比較(<, =, >)", desc:"炎 < 水", f:(i,a,v)=> i < a, diff:4 },
+  // 炎 vs 風
+  { name:"炎と特定の属性の比較 (<, =, >)", desc:"炎 > 風", f:(i,a,v)=> i > v, diff:4 },
+  { name:"炎と特定の属性の比較 (<, =, >)", desc:"炎 = 風", f:(i,a,v)=> i == v, diff:4 },
+  { name:"炎と特定の属性の比較 (<, =, >)", desc:"炎 < 風", f:(i,a,v)=> i < v, diff:4 },
+  // 水 vs 炎
+  { name:"水と特定の属性の比較 (<, =, >)", desc:"水 > 炎", f:(i,a,v)=> a > i, diff:4 },
+  { name:"水と特定の属性の比較 (<, =, >)", desc:"水 = 炎", f:(i,a,v)=> a == i, diff:4 },
+  { name:"水と特定の属性の比較 (<, =, >)", desc:"水 < 炎", f:(i,a,v)=> a < i, diff:4 },
+  // 水 vs 風
+  { name:"水と特定の属性の比較 (<, =, >)", desc:"水 > 風", f:(i,a,v)=> a > v, diff:4 },
+  { name:"水と特定の属性の比較 (<, =, >)", desc:"水 = 風", f:(i,a,v)=> a == v, diff:4 },
+  { name:"水と特定の属性の比較 (<, =, >)", desc:"水 < 風", f:(i,a,v)=> a < v, diff:4 },
+  // 風 vs 炎
+  { name:"風と特定の属性の比較 (<, =, >)", desc:"風 > 炎", f:(i,a,v)=> v > i, diff:4 },
+  { name:"風と特定の属性の比較 (<, =, >)", desc:"風 = 炎", f:(i,a,v)=> v == i, diff:4 },
+  { name:"風と特定の属性の比較 (<, =, >)", desc:"風 < 炎", f:(i,a,v)=> v < i, diff:4 },
+  // 風 vs 水
+  { name:"風と特定の属性の比較 (<, =, >)", desc:"風 > 水", f:(i,a,v)=> v > a, diff:4 },
+  { name:"風と特定の属性の比較 (<, =, >)", desc:"風 = 水", f:(i,a,v)=> v == a, diff:4 },
+  { name:"風と特定の属性の比較 (<, =, >)", desc:"風 < 水", f:(i,a,v)=> v < a, diff:4 },
+
+  // 2と特定の属性の比較
+  { name:"2と特定の属性の比較 (<, =, >)", desc:"2 > 炎", f:(i,a,v)=> 2 > i, diff:4 },
+  { name:"2と特定の属性の比較 (<, =, >)", desc:"2 = 炎", f:(i,a,v)=> 2 == i, diff:4 },
+  { name:"2と特定の属性の比較 (<, =, >)", desc:"2 < 炎", f:(i,a,v)=> 2 < i, diff:4 },
+  { name:"2と特定の属性の比較 (<, =, >)", desc:"2 > 水", f:(i,a,v)=> 2 > a, diff:4 },
+  { name:"2と特定の属性の比較 (<, =, >)", desc:"2 = 水", f:(i,a,v)=> 2 == a, diff:4 },
+  { name:"2と特定の属性の比較 (<, =, >)", desc:"2 < 水", f:(i,a,v)=> 2 < a, diff:4 },
+  { name:"2と特定の属性の比較 (<, =, >)", desc:"2 > 風", f:(i,a,v)=> 2 > v, diff:4 },
+  { name:"2と特定の属性の比較 (<, =, >)", desc:"2 = 風", f:(i,a,v)=> 2 == v, diff:4 },
+  { name:"2と特定の属性の比較 (<, =, >)", desc:"2 < 風", f:(i,a,v)=> 2 < v, diff:4 },
+
+  // 3と特定の属性の比較
+  { name:"3と特定の属性の比較 (<, =, >)", desc:"3 > 炎", f:(i,a,v)=> 3 > i, diff:4 },
+  { name:"3と特定の属性の比較 (<, =, >)", desc:"3 = 炎", f:(i,a,v)=> 3 == i, diff:4 },
+  { name:"3と特定の属性の比較 (<, =, >)", desc:"3 < 炎", f:(i,a,v)=> 3 < i, diff:4 },
+  { name:"3と特定の属性の比較 (<, =, >)", desc:"3 > 水", f:(i,a,v)=> 3 > a, diff:4 },
+  { name:"3と特定の属性の比較 (<, =, >)", desc:"3 = 水", f:(i,a,v)=> 3 == a, diff:4 },
+  { name:"3と特定の属性の比較 (<, =, >)", desc:"3 < 水", f:(i,a,v)=> 3 < a, diff:4 },
+  { name:"3と特定の属性の比較 (<, =, >)", desc:"3 > 風", f:(i,a,v)=> 3 > v, diff:4 },
+  { name:"3と特定の属性の比較 (<, =, >)", desc:"3 = 風", f:(i,a,v)=> 3 == v, diff:4 },
+  { name:"3と特定の属性の比較 (<, =, >)", desc:"3 < 風", f:(i,a,v)=> 3 < v, diff:4 },
+
+  // 4と特定の属性の比較
+  { name:"4と特定の属性の比較 (<, =, >)", desc:"4 > 炎", f:(i,a,v)=> 4 > i, diff:4 },
+  { name:"4と特定の属性の比較 (<, =, >)", desc:"4 = 炎", f:(i,a,v)=> 4 == i, diff:4 },
+  { name:"4と特定の属性の比較 (<, =, >)", desc:"4 < 炎", f:(i,a,v)=> 4 < i, diff:4 },
+  { name:"4と特定の属性の比較 (<, =, >)", desc:"4 > 水", f:(i,a,v)=> 4 > a, diff:4 },
+  { name:"4と特定の属性の比較 (<, =, >)", desc:"4 = 水", f:(i,a,v)=> 4 == a, diff:4 },
+  { name:"4と特定の属性の比較 (<, =, >)", desc:"4 < 水", f:(i,a,v)=> 4 < a, diff:4 },
+  { name:"4と特定の属性の比較 (<, =, >)", desc:"4 > 風", f:(i,a,v)=> 4 > v, diff:4 },
+  { name:"4と特定の属性の比較 (<, =, >)", desc:"4 = 風", f:(i,a,v)=> 4 == v, diff:4 },
+  { name:"4と特定の属性の比較 (<, =, >)", desc:"4 < 風", f:(i,a,v)=> 4 < v, diff:4 },
 
 
 ];
@@ -1377,6 +1710,11 @@ function setBackground(mode) {
             // Omega: 漆黒と微かな金
             body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #1a1505 0%, #000000 100%)"; 
             break;
+        case 'awakened':
+            // 覚醒: 血のような赤と黒
+            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #300 0%, #000 100%)";
+            break;
+           
         default:
             // タイトル画面など
             body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #1a150e 0%, #000000 100%)";
@@ -1385,36 +1723,50 @@ function setBackground(mode) {
 
 
  function startGame(mode) {
-  isTutorialMode = false; // ★追加: 通常モードであることを明示
-  const newSeed = generateSeed(5);
-  initGame(mode, newSeed);
+  isTutorialMode = false;
+  let newSeed = generateSeed(5);
+  
+  // ブーストONなら、IDの末尾に「+」を付ける！
+  const isBoosted = boostState[mode] || false;
+  if (isBoosted) {
+    newSeed += "+";
+  }
+  
+  initGame(mode, newSeed, isBoosted);
 }
 
 function startFromId(mode) {
   const input = document.getElementById('input-seed');
-  const seed = input.value.trim().toUpperCase();
+  let seed = input.value.trim().toUpperCase();
   if(!seed) { alert("IDを入力してください"); return; }
   closeIdModal();
-  initGame(mode, seed);
+  
+  // ★重要変更: IDのお尻に「+」がついていたら、強制的にブーストONにする
+  let isBoosted = boostState[mode] || false;
+  
+  if (seed.endsWith('+')) {
+    isBoosted = true;
+    // 「+」がついたままシードとして使うので、通常版とは全く違う乱数が生まれます
+  } else if (isBoosted) {
+    // UIでブーストONにしているのに「+」がない場合、付けてあげる
+    seed += "+";
+  }
+  
+  initGame(mode, seed, isBoosted);
 }
 
-function initGame(mode, seed) {
+
+
+// 引数に isBoosted を追加
+function initGame(mode, seed, isBoosted = false) {
   document.getElementById('loading-indicator').style.display = 'block';
 
-  // UI初期化系
+  // (中略: UI初期化系はそのまま)
   document.querySelectorAll('.btn-action').forEach(b => b.style.display = '');
-
   const manaBar = document.querySelector('.mana-bar');
-  if(manaBar) {
-    manaBar.style.color = '';
-    manaBar.style.textShadow = '';
-    manaBar.classList.remove('glitch-active');
-  }
+  if(manaBar) { /*...*/ manaBar.classList.remove('glitch-active'); }
   const roundDisplay = document.getElementById('ui-round');
-  if(roundDisplay && roundDisplay.parentNode) {
-      roundDisplay.parentNode.classList.remove('glitch-active');
-  }
-
+  if(roundDisplay && roundDisplay.parentNode) { roundDisplay.parentNode.classList.remove('glitch-active'); }
   const oldFrame = document.querySelector('.divine-frame');
   if(oldFrame) oldFrame.remove();
   
@@ -1427,40 +1779,17 @@ function initGame(mode, seed) {
     state.mana = 0;
     state.totalChecks = 0;
     
-    // --- ★難易度別のパラメータ設定 ---
+    // パラメータ設定 (変更なし)
     switch(mode) {
-      case 'easy':      // 旧Standard (簡単)
-        state.maxMana = 3;
-        state.stoneCount = 4; 
-        state.doomLimit = 0;
-        break;
-      case 'standard':  // 旧Hard (標準)
-        state.maxMana = 3;
-        state.stoneCount = 5; 
-        state.doomLimit = 0;
-        break;
-      case 'hard':      // ★新設 (難しい)
-        state.maxMana = 3;
-        state.stoneCount = 5;
-        state.doomLimit = 0;
-        break;
-      case 'nightmare': // ★強化 (マナ減+死の宣告)
-        state.maxMana = 2; 
-        state.stoneCount = 5;
-        state.doomLimit = 5; 
-        break;
-      case 'chaos':
-        state.maxMana = 3;
-        state.stoneCount = 5;
-        state.doomLimit = 0;
-        break;
-      case 'omega':
-        state.maxMana = 3;
-        state.stoneCount = 5;
-        state.doomLimit = 0;
-        break;
+      case 'easy': state.maxMana = 3; state.stoneCount = 4; state.doomLimit = 0; break;
+      case 'standard': state.maxMana = 3; state.stoneCount = 5; state.doomLimit = 0; break;
+      case 'hard': state.maxMana = 3; state.stoneCount = 5; state.doomLimit = 0; break;
+      case 'nightmare': state.maxMana = 2; state.stoneCount = 5; state.doomLimit = 5; break;
+      case 'chaos': state.maxMana = 3; state.stoneCount = 5; state.doomLimit = 0; break;
+      case 'omega': state.maxMana = 3; state.stoneCount = 5; state.doomLimit = 0; break;
+      case 'awakened': state.maxMana = 3; state.stoneCount = 5; state.doomLimit = 0; break;
     }
-    state.isOmega = (mode === 'omega');
+    state.isOmega = (mode === 'omega' || mode === 'awakened');
 
     const resultBtn = document.getElementById('btn-show-result');
     if(resultBtn) resultBtn.style.display = 'none';
@@ -1477,56 +1806,86 @@ function initGame(mode, seed) {
         v: Math.floor(rng.next()*5)+1
       };
       
-      // --- ★難易度フィルタリング ---
-      let minDiff = 1;
-      let maxDiff = 3;
-
-      if (mode === 'easy') {
-        maxDiff = 2; // Easy: 難しい問題(Lv3)を出さない
-      } else if (mode === 'hard' || mode === 'nightmare') {
-        minDiff = 2; // Hard以上: 簡単な問題(Lv1)を出さない
-      }
-
-      // 条件に合うルールを抽出
-      let validRules = POOL.filter(r => {
-        // 1. 正解と整合しているか
-        if(r.f(state.ans.i, state.ans.a, state.ans.v) !== true) return false;
-        
-        // 2. 難易度が範囲内か (diff未定義なら1とみなす)
-        let d = r.diff || 1; 
-        if(d < minDiff || d > maxDiff) return false;
-        
-        return true;
-      });
-
-      if(validRules.length < state.stoneCount) continue;
-
-      // シャッフルして選出
-      let temp = [...validRules];
-      for (let i = temp.length - 1; i > 0; i--) {
-          const j = Math.floor(rng.next() * (i + 1));
-          [temp[i], temp[j]] = [temp[j], temp[i]];
-      }
-
       let picked = [];
-      for(let r of temp) {
-        if(picked.some(p => p.name === r.name)) continue; 
-        if(isConflict(picked, r)) continue; 
-        picked.push(r);
-        if(picked.length === state.stoneCount) break;
-      }
 
-      // 足りなければ補充 (重複チェック付き)
-      if(picked.length < state.stoneCount) {
-        for(let r of temp) {
-          if(picked.length === state.stoneCount) break;
-          if(!picked.some(p => p.name === r.name)) {
-            picked.push(r);
-          }
+      // 共通Helper: ランダム抽出関数
+      const pickFromPool = (pool, count, currentPicked) => {
+           let candidates = [...pool];
+           for (let k = candidates.length - 1; k > 0; k--) {
+               const j = Math.floor(rng.next() * (k + 1));
+               [candidates[k], candidates[j]] = [candidates[j], candidates[k]];
+           }
+           let selected = [];
+           for(let r of candidates) {
+             if(selected.length >= count) break;
+             const totalList = [...currentPicked, ...selected];
+             if(totalList.some(p => p.name === r.name)) continue;
+             if(isConflict(totalList, r)) continue;
+             selected.push(r);
+           }
+           return selected;
+      };
+
+
+      // ★★★ 生成ロジック分岐 ★★★
+      
+      if (mode === 'awakened') {
+        // --- Awakened (元々のDiff4モード) ---
+        const allValid = POOL.filter(r => r.f(state.ans.i, state.ans.a, state.ans.v) === true);
+        const poolD2 = allValid.filter(r => (r.diff||1) === 2);
+        const poolD3 = allValid.filter(r => (r.diff||1) === 3);
+        const poolD4 = allValid.filter(r => (r.diff||1) === 4);
+
+        if(poolD2.length < 1 || poolD3.length < 2 || poolD4.length < 2) continue;
+
+        const p2 = pickFromPool(poolD2, 1, picked); if(p2.length < 1) continue; picked.push(...p2);
+        const p3 = pickFromPool(poolD3, 2, picked); if(p3.length < 2) continue; picked.push(...p3);
+        const p4 = pickFromPool(poolD4, 2, picked); if(p4.length < 2) continue; picked.push(...p4);
+
+      } else {
+        // --- 通常モード (Easy, Std, Hard, Night, Chaos, Omega) ---
+        
+        let minDiff = 1;
+        let maxDiff = 3;
+        if (mode === 'easy') maxDiff = 2;
+        if (mode === 'hard' || mode === 'nightmare' || mode === 'omega') minDiff = 2;
+
+        const allValid = POOL.filter(r => r.f(state.ans.i, state.ans.a, state.ans.v) === true);
+
+        // ★★★ ブースト判定 (Diff4 を 1つ混ぜる) ★★★
+        if (isBoosted) {
+           // 1. Diff4のプールを作成
+           const poolD4 = allValid.filter(r => (r.diff||1) === 4);
+           // Diff4が足りない(条件に合うものがない)なら生成失敗してやり直し
+           if (poolD4.length === 0) continue; 
+           
+           // 2. Diff4から1つ選ぶ
+           const p4 = pickFromPool(poolD4, 1, picked);
+           if (p4.length < 1) continue;
+           picked.push(...p4);
+           
+           // 残りの枠 (stoneCount - 1)
+           // 既存の「minDiff〜maxDiff」の範囲で選ぶ
         }
-      }
-      if(picked.length < state.stoneCount) continue;
 
+        // --- 残りのルールを選出 ---
+        let normalPool = allValid.filter(r => {
+           let d = r.diff || 1;
+           if(d < minDiff || d > maxDiff) return false;
+           return true;
+        });
+        
+        // 足りなければやり直し
+        if (normalPool.length < (state.stoneCount - picked.length)) continue;
+
+        const needed = state.stoneCount - picked.length;
+        const pNormal = pickFromPool(normalPool, needed, picked);
+        
+        if (pNormal.length < needed) continue;
+        picked.push(...pNormal);
+      }
+      
+      // (以下、解の一意性チェックなどは変更なし)
       // 解の一意性検証
       let matches = 0;
       for(let i=1; i<=5; i++) {
@@ -1538,8 +1897,8 @@ function initGame(mode, seed) {
       }
 
       if(matches === 1) {
-        // Chaosモード判定
         if(mode === 'chaos') {
+          // Chaos: 嘘つき判定ロジック
           const trueLiar = Math.floor(rng.next() * state.stoneCount);
           let solutionsForTrueLiar = countSolutionsWithLiar(picked, trueLiar);
 
@@ -1549,21 +1908,15 @@ function initGame(mode, seed) {
               if(otherLiar === trueLiar) continue; 
               let solutionsForOther = countSolutionsWithLiar(picked, otherLiar);
               if(solutionsForOther === 1) {
-                isAmbiguous = true;
-                break; 
+                isAmbiguous = true; break; 
               }
             }
             if(!isAmbiguous) {
-              state.rules = picked;
-              state.liarIndex = trueLiar;
-              success = true;
+              state.rules = picked; state.liarIndex = trueLiar; success = true;
             }
           }
         } else {
-          // 通常モード
-          state.rules = picked;
-          state.liarIndex = -1;
-          success = true;
+          state.rules = picked; state.liarIndex = -1; success = true;
         }
       }
     }
@@ -1571,11 +1924,9 @@ function initGame(mode, seed) {
     document.getElementById('loading-indicator').style.display = 'none';
 
     if(!success) {
-      alert("生成失敗: 条件に合うパズルが見つかりませんでした。再試行します。");
-      // 失敗時は再帰せず、シードを変えてリトライさせる等の処理が理想ですが
-      // 簡易的にアラートのみとします
+      alert("生成失敗: 再試行します。");
     } else {
-      // 成功時の画面遷移
+      // 成功時処理 (変更なし)
       document.getElementById('title-screen').style.display = 'none';
       const tutBtn = document.getElementById('top-tut-btn');
       if(tutBtn) tutBtn.style.display = 'none';
@@ -1589,8 +1940,11 @@ function initGame(mode, seed) {
       const oldId = document.getElementById('current-id-display');
       if(oldId) oldId.remove();
       
+      // ★修正: ブースト中はIDの横にマークを付けるなどしても良いかも？
+      const boostMark = isBoosted ? ' <span style="color:#ff0000; font-weight:bold;">(💀BOOST)</span>' : '';
+      
       hud.insertAdjacentHTML('afterend', 
-        `<div id="current-id-display" style="text-align:center; color:#555; font-size:0.7rem; margin-top:-10px;">ID: <span style="font-family:'Cinzel',serif; color:#777;">${state.currentSeed}</span></div>`
+        `<div id="current-id-display" style="text-align:center; color:#555; font-size:0.7rem; margin-top:-10px;">ID: <span style="font-family:'Cinzel',serif; color:#777;">${state.currentSeed}</span>${boostMark}</div>`
       );
 
       document.getElementById('omega-rule-area').style.display = state.isOmega ? 'block' : 'none';
@@ -1598,34 +1952,24 @@ function initGame(mode, seed) {
       initMatrix();
       renderProphecies();
 
-      // カオス演出
       const chaosWarn = document.getElementById('chaos-warning');
       if (mode === 'chaos') {
-        if(chaosWarn) {
-            chaosWarn.style.display = 'none'; 
-            chaosWarn.classList.remove('visible');
-        }
+        if(chaosWarn) { chaosWarn.style.display = 'none'; chaosWarn.classList.remove('visible'); }
         executeChaosIntro();
       } else {
         if(chaosWarn) chaosWarn.style.display = 'none';
       }
 
-      // ▼▼▼ ★追加: Nightmare警告の初期化 ▼▼▼
       const nmWarn = document.getElementById('nightmare-warning');
-      if(nmWarn) {
-        nmWarn.style.display = 'none';
-        nmWarn.classList.remove('visible');
-      }
-      // ▲▲▲▲▲▲
+      if(nmWarn) { nmWarn.style.display = 'none'; nmWarn.classList.remove('visible'); }
 
-      // ナイトメア演出
       if (mode === 'nightmare') {
         executeNightmareIntro();
       }
-
     }
   }, 100);
 }
+
 
 
 // ヘルパー関数: 指定した石碑が嘘つきだと仮定した場合の解の個数を数える
@@ -2078,8 +2422,16 @@ function finishGame(isWin, titleOverride) {
   
    const modeBadge = document.getElementById('result-mode-badge');
   if(modeBadge) {
-    // モード名を表示 (大文字に変換)
-    modeBadge.innerText = state.currentMode.toUpperCase();
+    // 基本のモード名 (EASY, HARD etc)
+    let modeText = state.currentMode.toUpperCase();
+    
+    // もしIDのお尻に「+」がついていたら（＝ブースト状態なら）、表示にも「+」を足す！
+    if (state.currentSeed && state.currentSeed.endsWith('+')) {
+      modeText += "+";
+    }
+    
+    // 画面にセット
+    modeBadge.innerText = modeText;
 
     // モードごとの色設定
     let mColor = "#fff"; // デフォルト
@@ -2141,7 +2493,19 @@ function finishGame(isWin, titleOverride) {
 function saveHistory(isWin) {
   // ★変更: チュートリアルモードなら保存せずに終了
   if (isTutorialMode) return;
-
+  
+   // ★変更: 初回クリア判定と演出のトリガー
+  if (state.currentMode === 'omega' && isWin) {
+    // まだ解放されていない場合のみ実行
+    if (localStorage.getItem('omega_awakened_unlocked') !== 'true') {
+        localStorage.setItem('omega_awakened_unlocked', 'true');
+        
+        // 少し遅らせて演出開始 (リザルト画面が出るのと被らないように調整)
+        setTimeout(() => {
+            playUnlockAnimation();
+        }, 500);
+    }
+  }
   const historyItem = {
     seed: state.currentSeed,
     mode: state.currentMode,
@@ -2154,6 +2518,82 @@ function saveHistory(isWin) {
   if(history.length > 30) history.pop();
   localStorage.setItem('omega_history', JSON.stringify(history));
 }
+
+// ブースト状態を管理するオブジェクト
+let boostState = {
+  hard: false,
+  nightmare: false,
+  chaos: false,
+  omega: false
+};
+
+// ★修正: 閉じカッコ不足を修正し、横並びクラスの付け替えを実装
+function checkAwakenedUnlock() {
+  const isUnlocked = localStorage.getItem('omega_awakened_unlocked') === 'true';
+  const btn = document.getElementById('btn-awakened');
+  
+  // Awakenedボタン制御
+  if(btn) btn.style.display = isUnlocked ? 'flex' : 'none';
+
+  // ブーストボタン（ドクロ）制御
+  ['hard', 'nightmare', 'chaos', 'omega'].forEach(m => {
+    const bBtn = document.getElementById(`boost-${m}`);
+    if(bBtn) bBtn.style.display = isUnlocked ? 'flex' : 'none';
+  });
+
+  // ★追加修正: EasyとStandardの「透明スペーサー」も連動させる
+  // これにより、ドクロが出ている時だけ、Easy/Stdも幅を合わせて縮みます
+  const spacerEasy = document.getElementById('spacer-easy');
+  const spacerStd = document.getElementById('spacer-std');
+  
+  if(spacerEasy) spacerEasy.style.display = isUnlocked ? 'flex' : 'none';
+  if(spacerStd) spacerStd.style.display = isUnlocked ? 'flex' : 'none';
+  
+  
+}
+
+
+// ブースト切り替え & 演出
+function toggleBoost(mode) {
+  boostState[mode] = !boostState[mode]; // ON/OFF反転
+  
+  const boostBtn = document.getElementById(`boost-${mode}`);
+  
+  if(boostState[mode]) {
+    boostBtn.classList.add('active');
+    
+    // ★追加: じんわり警告メッセージを出す
+    // ブーストボタンの隣にある「難易度ボタン」を探す
+    const parentRow = boostBtn.parentElement;
+    const modeBtn = parentRow.querySelector('.btn'); // 兄弟要素のボタン
+    
+    if(modeBtn) {
+      // 既存のポップアップがあれば消す
+      const oldMsg = modeBtn.querySelector('.boost-popup');
+      if(oldMsg) oldMsg.remove();
+
+      // メッセージ作成
+      const msg = document.createElement('div');
+      msg.className = 'boost-popup';
+      
+      // モード名を大文字で取得 (例: HARD)
+      const modeName = mode.charAt(0).toUpperCase() + mode.slice(1);
+      msg.innerText = `${modeName} 難易度上昇`;
+      
+      modeBtn.appendChild(msg);
+
+      // アニメーションが終わったら消す
+      setTimeout(() => {
+        if(msg.parentNode) msg.remove();
+      }, 2600);
+    }
+
+  } else {
+    boostBtn.classList.remove('active');
+  }
+}
+
+
 
 // --- 履歴モーダル制御 ---
 function showHistory() {
@@ -3054,6 +3494,7 @@ function softResetGame() {
     nmWarn.style.display = 'none';
     nmWarn.classList.remove('visible');
   }
+  checkAwakenedUnlock();
 }
 
 
@@ -3107,6 +3548,52 @@ function quitTutorial() {
   softResetGame();
 }
 
+window.onload = () => { checkAwakenedUnlock(); };
+
+// ★新規: 解放アニメーションの実行
+function playUnlockAnimation() {
+  const overlay = document.getElementById('awakened-unlock-overlay');
+  if(!overlay) return;
+  
+  // リザルト画面などを一時的に隠す（没入感を高めるため）
+  const resultModal = document.getElementById('result-modal');
+  if(resultModal) resultModal.style.opacity = '0';
+
+  // 効果音の代わり（振動APIがあれば揺らす）
+  if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+  overlay.style.display = 'flex';
+
+  // 5秒後に消して、リザルト画面を戻す
+  setTimeout(() => {
+    overlay.style.transition = 'opacity 1s';
+    overlay.style.opacity = '0';
+    
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      overlay.style.opacity = '1'; // 次回用にリセット
+      
+      // リザルト画面をふわっと戻す
+      if(resultModal) {
+          resultModal.style.transition = 'opacity 1s';
+          resultModal.style.opacity = '1';
+      }
+      
+      // ここでアラートを出してもいい
+      alert("【 Awakened Omega Mode 】 unlocked.\nタイトル画面に新たな扉が開かれました。");
+      
+    }, 1000);
+  }, 5000); // 演出時間
+ }
+  
+  // 真OMEGAモード開始の確認関数
+function confirmAwakened() {
+  // そのままスタートさせるか、確認を挟むか選べます。
+  // ここでは雰囲気を出すために確認ダイアログを出します。
+  if(confirm("【警告】\nこれより先は、論理の深淵「Awakened Omega」です。\n非常に難易度が高いですが、挑戦しますか？")) {
+    startGame('awakened');
+  }
+}
 
 </script>
 <div id="confirm-modal" class="modal-overlay">
@@ -3165,6 +3652,14 @@ function quitTutorial() {
       <button class="btn btn-std" style="flex:1; padding:10px; border-color:#777; color:#ccc;" onclick="closeMenuModal()">キャンセル</button>
       <button class="btn btn-std" style="flex:1; padding:10px; border-color:#e74c3c; color:#e74c3c; font-weight:bold;" onclick="executeBackToTitle()">終了する</button>
     </div>
+  </div>
+</div>
+
+<div id="awakened-unlock-overlay" style="display:none;">
+  <div class="unlock-content">
+    <div class="unlock-icon">Ω+</div>
+    <div class="unlock-text-main">禁忌の封印が解かれた</div>
+    <div class="unlock-text-sub">Awakened Omega Unlocked</div>
   </div>
 </div>
 
