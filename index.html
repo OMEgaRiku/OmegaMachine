@@ -53,7 +53,13 @@
   .btn-std { border-color: #3498db; color: #aed6f1; box-shadow: 0 0 10px rgba(52, 152, 219, 0.2); }
   .btn-hard { border-color: #e74c3c; color: #f5b7b1; box-shadow: 0 0 10px rgba(231, 76, 60, 0.2); }
   .btn-night { border-color: #9b59b6; color: #d7bde2; box-shadow: 0 0 10px rgba(155, 89, 182, 0.2); }
-  .btn-chaos { border-color: #95a5a6; color: #d0d0d0; box-shadow: 0 0 10px rgba(255, 255, 255, 0.1); border-style: dashed;}
+    /* Chaos Button - 茶色に変更 */
+  .btn-chaos { border-color: #8d6e63; color: #d7ccc8; box-shadow: 0 0 10px rgba(141, 110, 99, 0.2); 
+  }
+  
+  /* 履歴のラベル色 - 茶色 */
+  .mode-chaos { background: #4e342e; color: #d7ccc8; }
+
   
   /* Omega Mode Styles */
   .btn-omega { 
@@ -156,15 +162,61 @@
   .stone-text { font-size: 1rem; color: #fff; font-weight: bold; letter-spacing: 0.5px; }
   .stone-id { font-family: 'Cinzel', serif; font-size: 1.4rem; color: #444; margin-left: 10px;}
   
-  /* Mystery Stone (Omega) */
+      /* Mystery Stone (Omega) - 基本スタイル（アニメーションなし） */
   .stone.is-mystery {
-    color: #fff; background: #000; border: 1px solid #555;
+    color: #d4af37;
+    background: radial-gradient(circle, #1a1505 0%, #000 100%);
+    border: 1px solid #d4af37;
     display: flex; justify-content: center; align-items: center;
+    
+    /* ここにあった animation を削除しました！ */
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+    transition: all 0.5s ease;
   }
-  .stone.is-mystery .stone-title { display: none; }
+
+  /* 着地した後に追加するクラス（ここで光らせる） */
+  .stone.is-mystery.omega-pulsing {
+    animation: omegaPulse 3s infinite alternate;
+  }
+
+  /* 判定済み（disabled）のスタイル */
+  .stone.is-mystery.disabled {
+    animation: none; /* 光を止める */
+    border-color: #333;
+    color: #333;
+    background: #050505;
+    box-shadow: none;
+    opacity: 0.3;
+    filter: grayscale(100%);
+    cursor: not-allowed;
+  }
+
   .stone.is-mystery .stone-text { 
-    font-family: 'Cinzel', serif; font-size: 1.5rem; letter-spacing: 5px; color: #888; 
+    font-family: 'Cinzel', serif; 
+    font-size: 1.5rem; 
+    letter-spacing: 5px; 
+    color: #d4af37;
+    text-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
   }
+  
+  .stone.is-mystery.disabled .stone-text {
+    color: #333;
+    text-shadow: none;
+  }
+
+  /* 黄金の呼吸アニメーション */
+  @keyframes omegaPulse {
+    0% {
+      box-shadow: 0 0 5px rgba(212, 175, 55, 0.2), inset 0 0 10px rgba(0,0,0,0.8);
+      border-color: #8a7326;
+    }
+    100% {
+      box-shadow: 0 0 25px rgba(212, 175, 55, 0.5), inset 0 0 20px rgba(212, 175, 55, 0.1);
+      border-color: #ffe066;
+    }
+  }
+
+
 
   /* Log */
   .log-area {
@@ -476,6 +528,10 @@
   max-width: 100% !important;
   margin: 0 0 20px 0 !important;
   
+  /* ▼▼▼ 追加修正: これがないとpadding分だけ膨らんで右にはみ出します！ ▼▼▼ */
+  box-sizing: border-box !important; 
+  /* ▲▲▲▲▲▲ */
+  
   background: rgba(20, 20, 25, 0.95) !important;
   border: 1px solid #d4af37 !important;
   border-radius: 8px !important;
@@ -505,17 +561,23 @@
   border-radius: 4px;
 }
 
-/* --- オメガモード用メモ欄 --- */
+/* --- Ωモード用メモ欄 (改修版) --- */
 .omega-memo-box {
   margin-top: 5px;
   padding: 0 5px;
+  /* Flexboxにして入力欄とボタンを横並びに */
+  display: flex; 
+  gap: 5px;
+  align-items: center;
 }
+
 .omega-memo-input {
-  width: 100%;
+  /* width: 100% を削除し、flex: 1 で残りの幅を埋める */
+  flex: 1; 
   box-sizing: border-box;
   background: #000;
   border: 1px solid #444;
-  color: #d4af37; /* 金色文字 */
+  color: #d4af37;
   font-size: 0.8rem;
   padding: 5px;
   border-radius: 4px;
@@ -528,9 +590,31 @@
   box-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
   background: #111;
 }
-.omega-memo-input::placeholder {
-  color: #444;
-  font-style: italic;
+
+/* クリップボードコピーボタン */
+.btn-omega-copy {
+  width: 30px;
+  height: 30px;
+  background: #222;
+  border: 1px solid #555;
+  border-radius: 4px;
+  color: #aaa;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1rem;
+  transition: 0.2s;
+}
+.btn-omega-copy:active {
+  transform: scale(0.9);
+  background: #444;
+}
+/* コピー成功時の演出用クラス */
+.copy-success {
+  border-color: #2ecc71 !important;
+  color: #2ecc71 !important;
+  background: rgba(46, 204, 113, 0.1) !important;
 }
 
 /* --- ロック状態のスタイル --- */
@@ -896,7 +980,6 @@ button, .btn, .hud-btn, .stone, .memo-btn {
     <div class="hud">
       <div class="hud-left">
         <div class="hud-btn" onclick="openMenuModal()">MENU</div>
-        <div class="hud-btn btn-guide" onclick="showHelp()">GUIDE&RULE</div>
          <div class="hud-btn" onclick="showProphecyList()" style="margin-left:5px;">予言書</div>
         <div id="btn-show-result" class="hud-btn" style="display:none; border-color:#2ecc71; color:#2ecc71; font-weight:bold;" onclick="showResult()">RESULT</div>
       </div>
@@ -957,69 +1040,6 @@ button, .btn, .hud-btn, .stone, .memo-btn {
 
     <div id="log-container" class="log-area">
       <div style="color:#666; text-align:center; font-style:italic; font-size:0.8rem;">-- 解析の記録 --</div>
-    </div>
-  </div>
-
-  <div id="help-modal" class="modal-overlay">
-    <div id="help-content">
-      <div class="close-help" onclick="closeHelp()">×</div>
-      <h2 style="text-align:center; margin-top:0; color:#fff; border-bottom:1px solid #333; padding-bottom:15px;">遺跡解析ガイド</h2>
-      <div class="help-section">
-        <div class="help-title">1. このゲームの目的</div>
-        <div class="help-text">
-          あなたの目的は、3つのルーン（<span class="t-highlight">炎</span>・<span class="t-highlight-b">水</span>・<span style="color:#99ffcc; font-weight:bold;">風</span>）に設定された<strong>「正解の数字 (1〜5)」</strong>を特定することです。<br><br>
-          しかし、いきなり数字を当てることはできません。<br>
-          まずは石碑に質問をして<strong>「隠されたルール」</strong>を暴く必要があります。
-        </div>
-      </div>
-      <div class="help-section">
-        <div class="help-title">2. 例題でわかる「解析」の流れ</div>
-        <div class="help-text" style="margin-bottom:15px;">
-          ある石碑に<strong>「炎と水の比較 (<, =, >)」</strong>と書いてあります。<br>
-          これは、「炎が大きい」のか「同じ」なのか「水が大きい」のか、<strong>ルールがまだ不明</strong>な状態です。<br>
-          これを特定するために、数字を入力して石碑の反応を見ます。
-        </div>
-        <div class="t-container">
-          <div class="t-step">
-            <div class="t-step-num">STEP 1 : 試しに入力してみる</div>
-            <div class="t-logic-text">
-              あなたは「炎(4)」と「水(1)」をセットしました。
-            </div>
-            <div class="t-row">
-              <div style="text-align:center;">
-                <span class="t-highlight">炎:4</span> <span class="t-arrow">></span> <span class="t-highlight-b">水:1</span>
-              </div>
-            </div>
-          </div>
-          <div class="t-step">
-            <div class="t-step-num">STEP 2 : 石碑に問う</div>
-            <div class="t-logic-text">
-              石碑ボタンを押して判定します。<br>
-              もし、結果が <span class="t-result-mock t-res-true">TRUE</span> だったら…？
-            </div>
-            <div class="t-row">
-              <div class="t-stone-mock">石碑: 炎と水</div>
-              <div class="t-arrow">→</div>
-              <div class="t-result-mock t-res-true">TRUE (真実)</div>
-            </div>
-            <div class="t-logic-text">
-              石碑は<strong>「お前の入力した『炎 > 水』という関係性は正しいぞ」</strong>と言っています。
-            </div>
-          </div>
-          <div class="t-step" style="border-color: #d4af37;">
-            <div class="t-step-num" style="background:#d4af37; color:#000;">STEP 3 : ルール確定！</div>
-            <div class="t-logic-text">
-              入力した関係性(4>1)が肯定されたので、この石碑の正体は<strong>「炎 > 水」のルール</strong>だと確定します！
-            </div>
-            <div class="t-conclusion">
-              ★推理完了<br>
-              正解のコードも必ず「炎 > 水」になっています。<br>
-              「炎が水より小さい」組み合わせは全て不正解なので、×をつけましょう。
-            </div>
-          </div>
-        </div>
-      </div>
-      <button class="btn btn-std" style="width:100%; box-sizing:border-box;" onclick="closeHelp()">理解した</button>
     </div>
   </div>
 
@@ -1246,12 +1266,9 @@ const POOL = [
       return c === 2;
   } , diff:3},
   { name:"2つの同じ数字 (なし, 1組)", desc:"2つの同じ数字はない (すべて異なる)", f:(i,a,v)=> (i!=a && a!=v && i!=v) },
-  { name:"2つの同じ数字 (なし, 1組)", desc:"2つ同じは1つ", f:(i,a,v)=> {
-      // 3つ同じ(スリーカード)は除外して、厳密に「2つだけ同じ」場合
-      if (i===a && a===v) return false; 
+  { name:"2つの同じ数字 (なし, 1組)", desc:"同じ数字が含まれる (ペア or トリオ)", f:(i,a,v)=> {
       return (i===a || a===v || i===v);
   } , diff:3},
-
   { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 0 (すべて同じ)", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 0 , diff:3 },
   { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 1 ", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 1 , diff:3 },
   { name:"最大と最小の差(0 ,1 ,2 ,3 ,4)", desc:"最大と最小の差が 2 ", f:(i,a,v)=> (Math.max(i,a,v) - Math.min(i,a,v)) === 2 , diff:3 },
@@ -1336,13 +1353,36 @@ function toggleMemoArea() {
 function setBackground(mode) {
     const body = document.body;
     switch(mode) {
-        case 'standard': body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #1a252e 0%, #05080a 100%)"; break;
-        case 'hard': body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #3e1a1a 0%, #0a0505 100%)"; break;
-        case 'nightmare': body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #2c1a3e 0%, #08050a 100%)"; break;
-        case 'chaos': body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #333 0%, #000 100%)"; break;
-        case 'omega': body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #000 0%, #111 100%)"; break;
+        case 'easy':
+            // Easy: 静寂の青
+            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #1a252e 0%, #05080a 100%)"; 
+            break;
+        case 'standard':
+            // Standard: 深い森の緑 (ボタンの色に合わせる)
+            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #152e1a 0%, #050a05 100%)"; 
+            break;
+        case 'hard':
+            // Hard: 危険な赤
+            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #3e1a1a 0%, #0a0505 100%)"; 
+            break;
+        case 'nightmare':
+            // Nightmare: 悪夢の紫
+            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #2c1a3e 0%, #08050a 100%)"; 
+            break;
+        case 'chaos':
+            // Chaos: 荒廃した茶色
+            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #3e2723 0%, #000000 100%)"; 
+            break;
+        case 'omega':
+            // Omega: 漆黒と微かな金
+            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #1a1505 0%, #000000 100%)"; 
+            break;
+        default:
+            // タイトル画面など
+            body.style.backgroundImage = "radial-gradient(circle at 50% 50%, #1a150e 0%, #000000 100%)";
     }
 }
+
 
  function startGame(mode) {
   isTutorialMode = false; // ★追加: 通常モードであることを明示
@@ -1737,53 +1777,46 @@ function renderProphecies() {
   c.innerHTML = '';
   const names = ["α", "β", "γ", "δ", "ε"];
   
-  // --- 1. Omegaモードのリスト表示部分 (タップ入力対応) ---
+  // --- 1. Omegaモードのリスト表示部分 ---
   if (state.isOmega) {
     const listContainer = document.getElementById('omega-list');
     listContainer.innerHTML = '';
     
-    // シャッフル表示（ネタバレ防止）
+    // シャッフル表示
     let displayRules = [...state.rules];
-    displayRules.sort(() => Math.random() - 0.5); // 簡易シャッフル
+    displayRules.sort(() => Math.random() - 0.5); 
 
     displayRules.forEach((r,idx) => {
       const item = document.createElement('div');
       item.className = 'omega-list-item';
       item.innerHTML = colorize(r.name);
       
-      // 石碑が降り終わるのが約3秒後。そこからリストが降り始める
       const delay = 3000 + (idx * 100); 
-      
-      // クラスを付与してアニメーション開始
       item.classList.add('falling');
       item.style.animationDelay = `${delay}ms`;
       
-      // ★修正ポイント: クラスは消さずに、アニメーションだけを停止させて固定する
-      // これにより「金色の枠」は残り、「降ってくる動き」だけが消滅します。
       setTimeout(() => {
-        // アニメーションを無効化（これで再表示しても降ってこない）
         item.style.animation = 'none'; 
-        
-        // アニメーションの最終状態（不透明・位置リセット）を強制的に固定
         item.style.opacity = '1'; 
         item.style.transform = 'translateY(0) scale(1)';
       }, delay + 3500);
       
-      // クリック時の挙動
+      item.onmousedown = (e) => {
+        if(activeOmegaInput) {
+          e.preventDefault(); 
+        }
+      };
+
       item.onclick = () => {
         if (activeOmegaInput) {
-          // メモ欄が選択されていれば、そこに文字を追記する
           const currentText = activeOmegaInput.value;
           const newText = r.name.split(' (')[0]; 
-          
           if(currentText) {
              activeOmegaInput.value = currentText + ", " + newText;
           } else {
              activeOmegaInput.value = newText;
           }
-          activeOmegaInput.focus();
         } else {
-          // 選択されてなければ、取り消し線のON/OFF
           item.classList.toggle('excluded'); 
         }
       };
@@ -1795,17 +1828,21 @@ function renderProphecies() {
   state.rules.forEach((r, idx) => {
     // ラッパー作成
     let wrapper = document.createElement('div');
-    
     let div = document.createElement('div');
     
     if (state.isOmega) {
-      // ▼▼▼ Ωモード: 特殊演出とラベル表示 ▼▼▼
       div.className = 'stone is-mystery';
-      div.classList.add('stone-fall'); // 落下アニメーション
-      div.style.animationDelay = `${idx * 0.2}s`; // 順番に落とす
-      
-      // レイアウトを通常モードに合わせて調整
+      div.classList.add('stone-fall'); 
+      div.style.animationDelay = `${idx * 0.2}s`; 
       div.style.justifyContent = "space-between"; 
+      
+      // ★修正ポイント: 落下が終わったら、落下クラスを消して「光るクラス」をつける！
+      div.onanimationend = () => {
+        div.classList.remove('stone-fall');
+        div.classList.add('omega-pulsing'); // ← これで光り始めます！
+        div.style.opacity = 1; 
+        div.style.transform = 'translateY(0)';
+      };
       
       div.id = `stone-${idx}`;
       div.innerHTML = `
@@ -1816,7 +1853,6 @@ function renderProphecies() {
         <div class="stone-id" style="color:#444;">${names[idx]}</div>
       `;
     } else {
-      // ▼▼▼ 通常モード ▼▼▼
       div.className = 'stone';
       div.id = `stone-${idx}`;
       div.innerHTML = `
@@ -1831,7 +1867,7 @@ function renderProphecies() {
     div.onclick = () => checkProphecy(idx, r, div);
     wrapper.appendChild(div);
 
-    // Ωモードならメモ欄を追加
+    // Ωモードならメモ欄とコピーボタンを追加
     if (state.isOmega) {
       const memoBox = document.createElement('div');
       memoBox.className = 'omega-memo-box';
@@ -1839,9 +1875,8 @@ function renderProphecies() {
       const input = document.createElement('input');
       input.type = 'text';
       input.className = 'omega-memo-input';
-      input.placeholder = `予言${names[idx]} の推理メモ (リストタップで入力)`;
+      input.placeholder = `予言${names[idx]} のメモ`;
       
-      // フォーカス制御
       input.onfocus = () => { activeOmegaInput = input; };
       input.onblur = () => { 
         setTimeout(() => {
@@ -1849,7 +1884,26 @@ function renderProphecies() {
         }, 200);
       };
       
+      const copyBtn = document.createElement('div');
+      copyBtn.className = 'btn-omega-copy';
+      copyBtn.innerHTML = '📋️'; 
+      copyBtn.title = "内容をコピー";
+      
+      copyBtn.onclick = () => {
+        if(!input.value) return;
+        navigator.clipboard.writeText(input.value).then(() => {
+          const originalIcon = copyBtn.innerHTML;
+          copyBtn.innerHTML = '✔';
+          copyBtn.classList.add('copy-success');
+          setTimeout(() => {
+            copyBtn.innerHTML = originalIcon;
+            copyBtn.classList.remove('copy-success');
+          }, 1500);
+        });
+      };
+
       memoBox.appendChild(input);
+      memoBox.appendChild(copyBtn);
       wrapper.appendChild(memoBox);
     }
 
@@ -1877,7 +1931,7 @@ function isConflict(pickedList, newRule) {
 
 function checkProphecy(idx, rule, el) {
   // チュートリアル制御
-  if(isTutorialMode && tutStep !== 6 && tutStep !== 12 && tutStep !== 15) return;
+  if(isTutorialMode && tutStep !== 6 && tutStep !== 12 && tutStep !== 15 && tutStep !== 18) return;
   
   // マナ切れチェック
   if(state.mana >= state.maxMana) return;
@@ -1980,8 +2034,7 @@ function nextRound() {
   performRoundReset();
 }
 
-// ★新規追加: ラウンド切り替え時の「お掃除」専用関数
-// (nextRound関数のすぐ下に貼り付けてください)
+// ★新規追加: ラウンド切り替え時の「お掃除」
 function performRoundReset() {
   const r1 = document.getElementById('r1');
   const r2 = document.getElementById('r2');
@@ -2000,10 +2053,10 @@ function performRoundReset() {
   document.querySelectorAll('.stone').forEach(s => s.classList.remove('disabled'));
   
   // 5. すぐ入力できるようにカーソルを「炎」に合わせる
-  r1.focus();
+   if (!isTutorialMode) {
+    r1.focus();
+  }
 }
-
-
 
 function attemptUnlock() {
   const i = +document.getElementById('r1').value;
@@ -2032,12 +2085,12 @@ function finishGame(isWin, titleOverride) {
     let mColor = "#fff"; // デフォルト
     let mGlow = "#fff";
     
-    switch(state.currentMode) {
+        switch(state.currentMode) {
       case 'easy':     mColor = "#3498db"; mGlow = "#2980b9"; break; // 青
-      case 'standard': mColor = "#27ae60"; mGlow = "#2ecc71"; break; // 緑 (新設)
-      case 'hard':     mColor = "#e74c3c"; mGlow = "#c0392b"; break;
-      case 'nightmare':mColor = "#9b59b6"; mGlow = "#8e44ad"; break;
-      case 'chaos':    mColor = "#95a5a6"; mGlow = "#7f8c8d"; break; // 灰色
+      case 'standard': mColor = "#27ae60"; mGlow = "#2ecc71"; break; // 緑
+      case 'hard':     mColor = "#e74c3c"; mGlow = "#c0392b"; break; // 赤
+      case 'nightmare':mColor = "#9b59b6"; mGlow = "#8e44ad"; break; // 紫
+      case 'chaos':    mColor = "#d35400"; mGlow = "#a04000"; break; // ★変更: 茶色/焦げ茶
       case 'omega':    mColor = "#fff";    mGlow = "#d4af37"; break; // 白＆金
     }
 
@@ -2086,6 +2139,9 @@ function finishGame(isWin, titleOverride) {
 }
 
 function saveHistory(isWin) {
+  // ★変更: チュートリアルモードなら保存せずに終了
+  if (isTutorialMode) return;
+
   const historyItem = {
     seed: state.currentSeed,
     mode: state.currentMode,
@@ -2305,18 +2361,15 @@ function showHelp() {
 
   // --- TUTORIAL LOGIC v2 ---
 function startTutorial() {
-  // エラー防止: colorize関数がない場合の対策
   if (typeof colorize !== 'function') {
-    window.colorize = function(t) { return t; }; // 無害なダミー関数を作る
+    window.colorize = function(t) { return t; };
   }
 
   isTutorialMode = true;
   tutStep = 0;
   
-  // ▼▼▼ これを追加！ ▼▼▼
   const tutBtn = document.getElementById('top-tut-btn');
   if(tutBtn) tutBtn.style.display = 'none';
-  // ▲▲▲▲▲▲
   
   const loader = document.getElementById('loading-indicator');
   if(loader) loader.style.display = 'block';
@@ -2324,64 +2377,69 @@ function startTutorial() {
   document.getElementById('title-screen').style.display = 'none';
   document.getElementById('game-screen').style.display = 'block';
   
-  // --- レイアウト変更処理 ---
+  // --- レイアウト変更 & QUITボタン追加 ---
   try {
-    // 1. テキスト初期化
     const txt = document.getElementById('tut-text');
     if(txt) txt.innerHTML = '<div style="text-align:center; color:#888;">システム起動中...</div>';
 
-    // 2. マトリクスとメモ関連を非表示
+    // QUITボタンの存在確認と作成
+    let quitBtn = document.getElementById('tut-quit-btn');
+    const tutBox = document.getElementById('tut-box');
+    if (tutBox && !quitBtn) {
+      quitBtn = document.createElement('button');
+      quitBtn.id = 'tut-quit-btn';
+      quitBtn.innerText = "中断する";
+      quitBtn.style.cssText = "position:absolute; top:10px; right:10px; background:transparent; border:1px solid #555; color:#888; font-size:0.7rem; padding:4px 8px; border-radius:4px; cursor:pointer;";
+      quitBtn.onclick = quitTutorial;
+      tutBox.appendChild(quitBtn);
+    }
+    if(quitBtn) quitBtn.style.display = 'block';
+
+    // マトリクス非表示などは既存通り
     const matrix = document.getElementById('logic-matrix');
     if(matrix) matrix.style.display = 'none';
-    
     const memoBtn = document.querySelector('.memo-toggle-btn');
     if(memoBtn) memoBtn.style.display = 'none';
-    
     const memoPad = document.getElementById('memo-pad');
     if(memoPad) memoPad.style.display = 'none';
-
-    // "LOGIC MATRIX..." ラベルの非表示（安全策）
     const runeContainer = document.querySelector('.rune-container');
     if(runeContainer) {
        const matrixLabel = runeContainer.nextElementSibling;
-       // ラベルかどうかの簡易チェック
        if(matrixLabel && matrixLabel.innerText && matrixLabel.innerText.includes('LOGIC')) {
           matrixLabel.style.display = 'none';
        }
     }
 
-    // 3. チュートリアルBOX移動
+    // BOX移動
     const gameScreen = document.getElementById('game-screen');
-    const tutBox = document.getElementById('tut-box');
     const prophecyContainer = document.getElementById('prophecy-container');
-    
     if (gameScreen && tutBox && prophecyContainer) {
       gameScreen.insertBefore(tutBox, prophecyContainer);
       tutBox.classList.add('tut-embedded-mode');
       tutBox.style.display = 'flex';
     }
-  } catch(e) {
-    console.error("Layout Setup Error:", e);
-  }
-  // ---------------------------
+  } catch(e) { console.error("Layout Setup Error:", e); }
   
   setTimeout(() => {
     try {
-      // チュートリアル盤面セット
       state.round = 1;
       state.mana = 0;
-      state.totalChecks = 0; // ★これを追加！
-      state.maxMana = 3;
-      state.stoneCount = 3;
-      state.ans = { i:4, a:4, v:3 }; 
+      state.totalChecks = 0;
+      state.maxMana = 3; 
+      state.stoneCount = 4; // ★変更: 4つにする
+      
+      // ★変更: 正解を 4-4-5 に設定 (風=5のルールと整合させるため)
+      state.ans = { i:4, a:4, v:5 }; 
+      
       state.liarIndex = -1;
       state.isOmega = false;
       
-      // ルールセット
+      // ★変更: ルールセットを強化
       state.rules = [
         { name:"炎と水の比較 (<, =, >)", desc:"炎 = 水", f:(i,a,v)=>i==a },
         { name:"合計と10の関係 (<, ≧)", desc:"合計 ≧ 10", f:(i,a,v)=>(i+a+v)>=10 },
-        { name:"風の偶奇 (偶数, 奇数)", desc:"風 = 奇数", f:(i,a,v)=>v%2!=0 }
+        { name:"風と5の関係 (<, = )", desc:"風 = 5", f:(i,a,v)=>v==5 }, // ★変更
+        { name:"偶数の数 (0, 1, 2)", desc:"偶数が2個", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==2 } // ★追加
       ];
       
       setBackground('standard');
@@ -2392,11 +2450,9 @@ function startTutorial() {
       
       const chaosWarn = document.getElementById('chaos-warning');
       if(chaosWarn) chaosWarn.style.display = 'none';
-      
       const omegaArea = document.getElementById('omega-rule-area');
       if(omegaArea) omegaArea.style.display = 'none';
       
-      // マトリクス再初期化＆非表示
       initMatrix();
       const matrix = document.getElementById('logic-matrix');
       if(matrix) matrix.style.display = 'none';
@@ -2404,7 +2460,7 @@ function startTutorial() {
       const c = document.getElementById('prophecy-container');
       if(c) {
         c.innerHTML = '';
-        const names = ["α", "β", "γ"];
+        const names = ["α", "β", "γ", "δ"]; // δを追加
         state.rules.forEach((r, idx) => {
           let div = document.createElement('div');
           div.className = 'stone';
@@ -2427,14 +2483,12 @@ function startTutorial() {
 
       nextTutorialStep(); 
     } catch(e) {
-      alert("チュートリアル起動エラー: " + e);
-      console.error(e);
+      alert("Tutorial Error: " + e);
     } finally {
       if(loader) loader.style.display = 'none';
     }
   }, 500);
 }
-
 
 // 数字を順番に入力する演出関数
 function typeNumber(n1, n2, n3, callback) {
@@ -2463,7 +2517,6 @@ function typeNumber(n1, n2, n3, callback) {
   }, 3000);
 }
 
-// チュートリアル中のクリックハンドラ
 function handleTutClick(type, idx) {
   // ステップ6: 石碑α
   if(tutStep === 6 && type === 'stone' && idx === 0) {
@@ -2475,24 +2528,31 @@ function handleTutClick(type, idx) {
     checkProphecy(1, state.rules[1], document.getElementById('stone-1'));
     nextTutorialStep(); 
   }
-  // ★追加 ステップ15: 石碑γ
+  // ステップ15: 石碑γ
   if(tutStep === 15 && type === 'stone' && idx === 2) {
     checkProphecy(2, state.rules[2], document.getElementById('stone-2'));
+    nextTutorialStep(); 
+  }
+  // ★追加 ステップ18: 石碑δ
+  if(tutStep === 18 && type === 'stone' && idx === 3) {
+    checkProphecy(3, state.rules[3], document.getElementById('stone-3'));
     nextTutorialStep(); 
   }
 }
 
 
-
 const originalAttemptUnlock = attemptUnlock;
-// 変数再代入のため、originalAttemptUnlockの宣言順序に注意が必要ですが、
-// 現在の構成なら中身だけ上書きすればOKです。
+// ★修正: チュートリアル完了時に本番アニメーションを実行する
 attemptUnlock = function() {
   if(isTutorialMode) {
-    // ★変更: 終了ステップ 19
-    if(tutStep === 19) {
+    // 終了ステップ 22
+    if(tutStep === 22) {
+      // 1. チュートリアル表示のお掃除
       document.querySelectorAll('.tut-highlight').forEach(e => e.classList.remove('tut-highlight'));
       document.querySelectorAll('.tut-blink').forEach(e => e.classList.remove('tut-blink'));
+      
+      const quitBtn = document.getElementById('tut-quit-btn');
+      if(quitBtn) quitBtn.style.display = 'none';
 
       const tutBox = document.getElementById('tut-box');
       if(tutBox) {
@@ -2502,61 +2562,47 @@ attemptUnlock = function() {
       }
       document.getElementById('tut-overlay').style.display = 'none';
       
+      // UI復帰 (マトリクスなどを再表示)
       const matrix = document.getElementById('logic-matrix');
       if(matrix) matrix.style.display = '';
-      
       const memoBtn = document.querySelector('.memo-toggle-btn');
       if(memoBtn) memoBtn.style.display = '';
-      
       const memoPad = document.getElementById('memo-pad');
       if(memoPad) memoPad.style.display = '';
-      
       const runeContainer = document.querySelector('.rune-container');
       if(runeContainer) {
           const matrixLabel = runeContainer.nextElementSibling;
           if(matrixLabel) matrixLabel.style.display = '';
       }
 
-      const modal = document.getElementById('result-modal');
-      modal.style.display = 'flex';
-      document.querySelector('.seal-broken').innerText = "解析中...";
-      document.querySelector('.seal-broken').style.color = "#aaa";
-      document.getElementById('final-code').innerText = "";
-      document.getElementById('result-details').innerHTML = "";
-      
+      // 2. ★ここを変更: いきなり本番用アニメーション関数を呼ぶ！
+      // (通常は確認画面から呼ばれますが、直接呼んでも動きます)
+      executeUnlock();
+
+      // 3. アニメーション(約2.3秒)が終わってリザルトが出た頃にメッセージを出す
       setTimeout(() => {
-          originalAttemptUnlock(); 
-          setTimeout(() => {
-             alert("おめでとう！\nチュートリアルは完了だ。\nさあ、本番の遺跡へ挑もう！");
-          }, 3000);
+         alert("おめでとう！\nチュートリアルは完了だ。\nさあ、本番の遺跡へ挑もう！");
+         // アラートを閉じたら終了処理
+         quitTutorial();
       }, 3000);
     }
   } else {
-    // --- ★ここから書き換え ---
-    
-    // 1. 入力されているかチェック
+    // --- 通常モード (変更なし) ---
     const i = document.getElementById('r1').value;
     const a = document.getElementById('r2').value;
     const v = document.getElementById('r3').value;
     
-    // ▼▼▼ 修正： 確認画面を出す前に、Omegaリストを確実に隠す ▼▼▼
-    // これにより「解除実行時に枠が残る」問題を解決します
     const omegaArea = document.getElementById('omega-rule-area');
     if(omegaArea) omegaArea.style.display = 'none';
-    // ▲▲▲▲▲▲
 
     if(!i || !a || !v) {
       alert("数字が入力されていません！");
-      // 隠してしまったので、エラー時は戻す必要がある
       if(state.isOmega && omegaArea) omegaArea.style.display = 'block';
       return;
     }
 
-    // 2. 確認ポップアップに数字を表示して出す
     document.getElementById('confirm-nums').innerText = `${i} - ${a} - ${v}`;
     document.getElementById('confirm-modal').style.display = 'flex';
-    
-    // --- ▲ここまで書き換え ---
   }
 };
 
@@ -2575,12 +2621,9 @@ function nextTutorialStep() {
   btn.style.display = 'block'; 
   btn.innerText = "次へ ▶";
 
-  // 文字色定義
   const cFire = '<span style="color:#ff9999; font-weight:bold;">炎</span>';
   const cWater = '<span style="color:#99ccff; font-weight:bold;">水</span>';
   const cWind = '<span style="color:#99ffcc; font-weight:bold;">風</span>';
-  const cTrue = '<span style="color:#2ecc71;">TRUE</span>';
-  const cFalse = '<span style="color:#e74c3c;">FALSE</span>';
 
   switch(tutStep) {
     case 1:
@@ -2595,9 +2638,7 @@ function nextTutorialStep() {
     case 2:
       txt.innerHTML = `そしてその上が<b>「マナ」</b>だ。<br>
       石碑に問いかけるたびに 1 消費する。<br>
-      マナが尽きると、回復するために次のラウンドに進むしかなくなる。<br>
-      慣れるまでは1ラウンドでマナを使い切るのがオススメだ。<br>
-      慣れてきたらなるべく少ないマナとラウンドでのクリアを目指そう。`;
+      マナが尽きると、回復するために次のラウンドに進むしかなくなる。`;
       const manaBar = document.querySelector('.mana-bar');
       if(manaBar) manaBar.classList.add('tut-highlight', 'tut-blink');
       break;
@@ -2668,7 +2709,6 @@ function nextTutorialStep() {
       <b>一度セットした数字(1-1-1)は、このラウンド中は変更できない。</b>`;
       break;
 
-    // --- ★ここから新規追加 (ラウンド変更) ---
     case 9:
       txt.innerHTML = `新しい数字を試すには、時間を進める必要がある。<br>
       右下の<b>「次のラウンドへ」</b>ボタンを押してくれ。<br>
@@ -2684,9 +2724,8 @@ function nextTutorialStep() {
       さあ、検証の続きだ。`;
       document.getElementById('ui-round').parentNode.classList.add('tut-highlight');
       break;
-    // ------------------------------------
 
-    case 11: // 元Case9
+    case 11:
       txt.innerHTML = `次は<b>「わざと間違った数字」</b>を入れて反応を見るのがコツだ。<br>
       合計がとても小さい<b>「1 - 1 - 2」</b>（合計4）を入力しよう。`;
       const runeBox2 = document.querySelector('.rune-container');
@@ -2711,7 +2750,7 @@ function nextTutorialStep() {
       btn.style.display = 'none';
       break;
 
-    case 13: // 元Case11
+    case 13:
       const logFalse = `
         <div class="log-entry log-false" style="margin-top:10px; text-align:left;">
           <div style="width:100%;">
@@ -2728,21 +2767,21 @@ function nextTutorialStep() {
       document.getElementById('log-container').classList.add('tut-highlight');
       break;
 
-    case 14: // 元Case12
+    case 14:
       txt.innerHTML = `FALSEが出たことで、正解を絞り込めた。<br>
       しかしまだ情報が足りない。<br>
-      念のため、一番下の<b>「予言 γ」</b>も調べておこう。`;
+      続いて<b>「予言 γ」</b>も調べておこう。`;
       break;
 
-    case 15: // 元Case13
-      txt.innerHTML = `入力数字はさっきと同じ<b>「1 - 1 - 2」</b>のままでいい。<br>
-      一番下の<b>「予言 γ」</b>をタップして反応を見るんだ。`;
+    case 15:
+      txt.innerHTML = `入力数字は<b>「1 - 1 - 2」</b>のままでいい。<br>
+      <b>「予言 γ」</b>をタップして反応を見るんだ。`;
       const s2 = document.getElementById('stone-2');
       if(s2) s2.classList.add('tut-highlight', 'tut-blink');
       btn.style.display = 'none'; 
       break;
 
-    case 16: // 元Case14
+    case 16:
       const logGamma = `
         <div class="log-entry log-false" style="margin-top:10px; text-align:left;">
           <div style="width:100%;">
@@ -2750,48 +2789,83 @@ function nextTutorialStep() {
               <span style="font-weight:bold;">R2 予言γ</span> <strong>FALSE</strong>
             </div>
             <div style="font-size:0.85rem; margin:4px 0; color:#ddd; padding-left:8px; border-left:2px solid rgba(255,255,255,0.2);">
-              ${colorize("風の偶奇 (偶数, 奇数)")}
+              ${colorize("風と5の関係 (<, = )")}
             </div>
             <div style="text-align:right;"><span class="log-nums">1-1-2</span></div>
           </div>
         </div>`;
       txt.innerHTML = `結果は…<br>${logGamma}<br>
       <b>FALSE</b>だ！<br>
-      今の風(2)は偶数。つまり、正解の${cWind}は<b>「奇数」</b>でなければならない！`;
+      入力した${cWind}(2)ではダメだと言っている。<br>
+      つまり、正解の${cWind}は<b>「5」</b>で確定する！`;
       document.getElementById('log-container').classList.add('tut-highlight');
       break;
 
-    case 17: // 元Case15
-      txt.innerHTML = `これですべての条件が揃ったぞ。<br>
-      <ul style="font-size:0.85rem; padding-left:20px; color:#ddd; text-align:left;">
-        <li>予言α: ${cFire}と${cWater}は同じ</li>
-        <li>予言β: 合計は10以上</li>
-        <li>予言γ: ${cWind}は奇数</li>
-      </ul>
-      これを満たす組み合わせは…<br>
-      <span style="font-size:1.2rem; color:#d4af37; font-weight:bold;">そう、これしかない！</span>`;
+    // ★追加: 石碑δのフロー
+    case 17:
+      txt.innerHTML = `まだ終わりではない。最後の石碑がある。<br>
+      <b>「予言 δ」</b>をタップして、偶数に関するルールを確認しよう。`;
       break;
 
-    case 18: // 元Case16
-      txt.innerHTML = `導き出した答え、<b>「4 - 4 - 3」</b>を入力せよ！<br>
-      (合計11、風は奇数、炎=水と条件を全て満たしている)<br>
-      ※本来は「次のラウンドへ」ボタンを押さないと数字を変えられないが、今は特別にスキップしてあげよう`;
+    case 18:
+      txt.innerHTML = `<b>「予言 δ」</b>をタップせよ。<br>
+      入力はまだ「1 - 1 - 2」のままだ。`;
+      const s3 = document.getElementById('stone-3');
+      if(s3) s3.classList.add('tut-highlight', 'tut-blink');
+      btn.style.display = 'none';
+      break;
+
+    case 19:
+      const logDelta = `
+        <div class="log-entry log-false" style="margin-top:10px; text-align:left;">
+          <div style="width:100%;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:bold;">R2 予言δ</span> <strong>FALSE</strong>
+            </div>
+            <div style="font-size:0.85rem; margin:4px 0; color:#ddd; padding-left:8px; border-left:2px solid rgba(255,255,255,0.2);">
+              ${colorize("偶数の数 (0, 1, 2)")}
+            </div>
+            <div style="text-align:right;"><span class="log-nums">1-1-2</span></div>
+          </div>
+        </div>`;
+      txt.innerHTML = `結果は…<br>${logDelta}<br>
+      またしても<b>FALSE</b>。<br>
+      「1-1-2」には偶数が1個しかない。これが間違いなら、正解には<b>「偶数が2個」</b>含まれるということだ！`;
+      document.getElementById('log-container').classList.add('tut-highlight');
+      break;
+
+    case 20:
+      txt.innerHTML = `これですべての条件が揃った。<br>
+      <ul style="font-size:0.85rem; padding-left:20px; color:#ddd; text-align:left;">
+        <li>予言α: ${cFire} = ${cWater}</li>
+        <li>予言β: 合計 ≧ 10</li>
+        <li>予言γ: ${cWind} = 5</li>
+        <li>予言δ: 偶数が2個</li>
+      </ul>
+      風は5(奇数)で確定。残り2つは偶数で、合計10以上…<br>
+      この条件を満たす解は一つしかない！`;
+      break;
+
+    case 21:
+      txt.innerHTML = `導き出した答え、<b>「4 - 4 - 5」</b>を入力せよ！<br>
+      (合計13、風は5、偶数は4と4の2個。完璧だ)<br>
+      ※今回は特別に数字を書き換えてあげよう。`;
       const runeBox3 = document.querySelector('.rune-container');
       if(runeBox3) runeBox3.classList.add('tut-highlight', 'tut-blink');
       btn.style.display = 'none';
       setTimeout(() => {
         if (typeof typeNumber !== 'function') {
-           document.getElementById('r1').value = 4; document.getElementById('r2').value = 4; document.getElementById('r3').value = 3;
+           document.getElementById('r1').value = 4; document.getElementById('r2').value = 4; document.getElementById('r3').value = 5;
            btn.style.display = 'block'; btn.innerText = "OK"; return;
         }
-        typeNumber(4, 4, 3, () => {
+        typeNumber(4, 4, 5, () => {
              btn.style.display = 'block'; btn.innerText = "OK";
         });
       }, 500);
       break;
 
-    case 19: // 元Case17
-      txt.innerHTML = `これが正解なら、すべての石碑が ${cTrue} になるはずだ。<br>
+    case 22:
+      txt.innerHTML = `これが正解なら、すべての石碑が <b>TRUE</b> になるはずだ。<br>
       最後に<b>「封印解除」</b>ボタンを押して、答え合わせをしよう！`;
       const solveBtn = document.querySelector('.btn-solve');
       if(solveBtn) solveBtn.classList.add('tut-highlight', 'tut-blink');
@@ -2799,6 +2873,7 @@ function nextTutorialStep() {
       break;
   }
 }
+
 
 // ▼▼▼ この部分を追加してください ▼▼▼
 
@@ -2998,6 +3073,40 @@ function executeBackToTitle() {
   softResetGame(); // ステップ2で作った関数を呼び出すだけでOK
 }
 
+// ★新規: チュートリアルを中断してタイトルに戻る
+function quitTutorial() {
+  isTutorialMode = false;
+  
+  // 演出用クラスの除去
+  document.querySelectorAll('.tut-highlight').forEach(e => e.classList.remove('tut-highlight'));
+  document.querySelectorAll('.tut-blink').forEach(e => e.classList.remove('tut-blink'));
+  
+  // BOXを隠す
+  const tutBox = document.getElementById('tut-box');
+  if(tutBox) {
+    tutBox.style.display = 'none';
+    tutBox.classList.remove('tut-embedded-mode');
+    document.body.appendChild(tutBox); // DOM位置リセット
+  }
+  document.getElementById('tut-overlay').style.display = 'none';
+  
+  // UIの復元
+  const matrix = document.getElementById('logic-matrix');
+  if(matrix) matrix.style.display = '';
+  const memoBtn = document.querySelector('.memo-toggle-btn');
+  if(memoBtn) memoBtn.style.display = '';
+  const memoPad = document.getElementById('memo-pad');
+  if(memoPad) memoPad.style.display = '';
+  const runeContainer = document.querySelector('.rune-container');
+  if(runeContainer) {
+      const matrixLabel = runeContainer.nextElementSibling;
+      if(matrixLabel) matrixLabel.style.display = '';
+  }
+
+  // ゲームリセットしてタイトルへ
+  softResetGame();
+}
+
 
 </script>
 <div id="confirm-modal" class="modal-overlay">
@@ -3167,13 +3276,14 @@ function executeBackToTitle() {
     <div class="p-item">
       <strong>2つの同じ数字 (なし, 1組)</strong><br>
       ペアが含まれているか (ワンペア)。<br>
-      <span class="p-ex">判定: 2-2-5 (1組) / 1-2-3 (なし)</span>
+      <span class="p-ex">判定: 2-2-5 (1組) / 1-2-3 (なし)<br>
+ ※1組の場合2-2-2を入れてもTRUEを返します。</span>
     </div>
 
     <div class="p-item">
       <strong>最大と最小の差(0 ,1 ,2 ,3 ,4)</strong><br>
       一番大きい数 - 一番小さい数。<br>
-      <span class="p-ex">判定: 2-5-5 なら 5-2=3 なので「差が3」</span>
+      <span class="p-ex">判定: 2-5-5でTRUEなら 5-2=3 なので「差が3」</span>
     </div>
 
     <button class="btn btn-std" onclick="closeProphecyList()" style="width:100%; margin-top:20px;">閉じる</button>
