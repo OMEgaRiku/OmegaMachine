@@ -284,7 +284,7 @@
     
        /* ▼▼▼ 修正点: 枠の外も表示させる最強の呪文 ▼▼▼ */
     position: relative;
-    z-index: 90000;
+    z-index: 15000;
     overflow: visible !important; /* ← これがないとiPhoneで消えます！ */
   }
   .omega-label { color: #fff; font-size: 0.9rem; margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 5px; }
@@ -843,7 +843,7 @@ button, .btn, .hud-btn, .stone, .memo-btn {
   .omega-list-item {
     opacity: 0; 
     position: relative;
-    z-index: 90000; /* 9万のまま維持 */
+    z-index: 15000; /* 9万のまま維持 */
   }
   
    /* その下の .omega-list-item.falling を探してください */
@@ -1751,15 +1751,23 @@ function renderProphecies() {
       item.className = 'omega-list-item';
       item.innerHTML = colorize(r.name);
       
-        // ▼▼▼ ★追加: 落下アニメーションの遅延設定 ▼▼▼
-      // 石碑が降り終わるのが約3秒後なので、3000ms + インデックスごとのズレを加算
-      // これにより「石碑ドーン！ → (一呼吸) → リストがバラバラと降ってくる」演出になります
+      // 石碑が降り終わるのが約3秒後。そこからリストが降り始める
       const delay = 3000 + (idx * 100); 
       
-      // クラスを付与してアニメーション開始（delay付き）
+      // クラスを付与してアニメーション開始
       item.classList.add('falling');
       item.style.animationDelay = `${delay}ms`;
-      // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+      
+      // ★修正ポイント: クラスは消さずに、アニメーションだけを停止させて固定する
+      // これにより「金色の枠」は残り、「降ってくる動き」だけが消滅します。
+      setTimeout(() => {
+        // アニメーションを無効化（これで再表示しても降ってこない）
+        item.style.animation = 'none'; 
+        
+        // アニメーションの最終状態（不透明・位置リセット）を強制的に固定
+        item.style.opacity = '1'; 
+        item.style.transform = 'translateY(0) scale(1)';
+      }, delay + 3500);
       
       // クリック時の挙動
       item.onclick = () => {
@@ -1849,6 +1857,7 @@ function renderProphecies() {
   });
 }
 
+
 // ▼▼▼ 高速化修正: 正規表現を定数として外に出す ▼▼▼
 const CONFLICT_REGEX = /^(.+)と\d+の関係/;
 
@@ -1935,7 +1944,6 @@ function checkProphecy(idx, rule, el) {
   }
 }
 
-// ラウンド進行関数（ロック解除＆メッセージ消去対応版）
 function nextRound() {
   // マナが残っているのに押した場合（通常時のみ無効化）
   if(state.mana === 0 && !isTutorialMode) return;
@@ -1948,15 +1956,8 @@ function nextRound() {
       state.mana = 0;
       updateHUD();
       
-      // ★修正: 入力ロック解除 & メッセージを消す！
-      document.getElementById('r1').disabled = false;
-      document.getElementById('r2').disabled = false;
-      document.getElementById('r3').disabled = false;
-      
-      const msg = document.getElementById('rune-lock-msg');
-      if(msg) msg.style.display = 'none'; // ← ここで消しています
-
-      document.querySelectorAll('.stone').forEach(s => s.classList.remove('disabled'));
+      // ▼▼▼ チュートリアルでもしっかりお掃除 ▼▼▼
+      performRoundReset();
       
       nextTutorialStep(); // 次のステップへ
     }
@@ -1975,16 +1976,33 @@ function nextRound() {
   state.mana = 0;
   updateHUD();
 
-  // ★修正: 入力ロック解除 & メッセージを消す！
-  document.getElementById('r1').disabled = false;
-  document.getElementById('r2').disabled = false;
-  document.getElementById('r3').disabled = false;
-  
-  const msg = document.getElementById('rune-lock-msg');
-  if(msg) msg.style.display = 'none'; // ← ここで消しています
-
-  document.querySelectorAll('.stone').forEach(s => s.classList.remove('disabled'));
+  // ▼▼▼ 通常モードでもしっかりお掃除 ▼▼▼
+  performRoundReset();
 }
+
+// ★新規追加: ラウンド切り替え時の「お掃除」専用関数
+// (nextRound関数のすぐ下に貼り付けてください)
+function performRoundReset() {
+  const r1 = document.getElementById('r1');
+  const r2 = document.getElementById('r2');
+  const r3 = document.getElementById('r3');
+  
+  // 1. 入力ロックを解除
+  r1.disabled = false;
+  r2.disabled = false;
+  r3.disabled = false;
+  
+  // 3. 「ロック中」の警告メッセージを消す！
+  const msg = document.getElementById('rune-lock-msg');
+  if(msg) msg.style.display = 'none'; 
+
+  // 4. 石碑のグレーアウトを解除
+  document.querySelectorAll('.stone').forEach(s => s.classList.remove('disabled'));
+  
+  // 5. すぐ入力できるようにカーソルを「炎」に合わせる
+  r1.focus();
+}
+
 
 
 function attemptUnlock() {
@@ -1998,6 +2016,10 @@ function attemptUnlock() {
 
 // 終了処理
 function finishGame(isWin, titleOverride) {
+// ▼▼▼ 追加: リザルト画面の邪魔になるのでOmegaリストを隠す ▼▼▼
+  const omegaArea = document.getElementById('omega-rule-area');
+  if(omegaArea) omegaArea.style.display = 'none';
+  // ▲▲▲▲▲▲
   const modal = document.getElementById('result-modal');
   modal.style.display = 'flex';
   
@@ -2463,6 +2485,8 @@ function handleTutClick(type, idx) {
 
 
 const originalAttemptUnlock = attemptUnlock;
+// 変数再代入のため、originalAttemptUnlockの宣言順序に注意が必要ですが、
+// 現在の構成なら中身だけ上書きすればOKです。
 attemptUnlock = function() {
   if(isTutorialMode) {
     // ★変更: 終了ステップ 19
@@ -2507,16 +2531,24 @@ attemptUnlock = function() {
           }, 3000);
       }, 3000);
     }
-    } else {
+  } else {
     // --- ★ここから書き換え ---
     
     // 1. 入力されているかチェック
     const i = document.getElementById('r1').value;
     const a = document.getElementById('r2').value;
     const v = document.getElementById('r3').value;
+    
+    // ▼▼▼ 修正： 確認画面を出す前に、Omegaリストを確実に隠す ▼▼▼
+    // これにより「解除実行時に枠が残る」問題を解決します
+    const omegaArea = document.getElementById('omega-rule-area');
+    if(omegaArea) omegaArea.style.display = 'none';
+    // ▲▲▲▲▲▲
 
     if(!i || !a || !v) {
       alert("数字が入力されていません！");
+      // 隠してしまったので、エラー時は戻す必要がある
+      if(state.isOmega && omegaArea) omegaArea.style.display = 'block';
       return;
     }
 
@@ -2803,72 +2835,81 @@ function closeIdModal() {
 // 1. 確認ポップアップを閉じる
 function closeConfirm() {
   document.getElementById('confirm-modal').style.display = 'none';
+  
+  // ▼▼▼ 「再考する」の場合のみリストを復活させる ▼▼▼
+  if (state.isOmega) {
+    const omegaArea = document.getElementById('omega-rule-area');
+    if (omegaArea) {
+      omegaArea.style.display = 'block';
+      // renderPropheciesでfallingクラスを消しているので、
+      // ここでblockにしても再アニメーションはしません。
+    }
+  }
 }
 
+
 // 2. 演出を実行してから結果画面へ (Ω対応版)
+// 2. 演出を実行してから結果画面へ (修正版)
 function executeUnlock() {
-  closeConfirm();
+  // ▼▼▼ 修正: closeConfirm() を呼ばずに、手動でモーダルだけ閉じる ▼▼▼
+  // closeConfirmを呼ぶとOmegaリストが表示されてしまうため、それを防ぎます。
+  document.getElementById('confirm-modal').style.display = 'none';
+  // ▲▲▲▲▲▲
 
   const animModal = document.getElementById('gate-anim-modal');
   const gateObj = document.getElementById('gate-circle');
-  const gateInner = document.querySelector('.gate-inner'); // 中のリング
+  const gateInner = document.querySelector('.gate-inner'); 
   
   animModal.style.display = 'flex';
   animModal.classList.add('gate-anim-running');
   
-  // ★追加: 十字線の色をモードに合わせて切り替える
-    // 親要素にもアニメーション開始の合図クラスを付ける
-  animModal.classList.add('gate-anim-running');
-
-  // ★修正: SVG要素に対してモードクラスを付け外しする
+  // 十字線の色切り替え
   const lightningSvg = document.querySelector('.lightning-svg');
   if (state.isOmega) {
-    lightningSvg.classList.add('omega-mode'); // 白くする
+    lightningSvg.classList.add('omega-mode'); 
   } else {
-    lightningSvg.classList.remove('omega-mode'); // 金色に戻す
+    lightningSvg.classList.remove('omega-mode'); 
   }
 
   // リセット
   gateObj.classList.remove('gate-active');
-  gateObj.classList.remove('gate-active-omega'); // 追加
-  gateObj.classList.remove('gate-stone-omega');  // 追加
-  gateInner.classList.remove('gate-inner-omega');// 追加
+  gateObj.classList.remove('gate-active-omega'); 
+  gateObj.classList.remove('gate-stone-omega');  
+  gateInner.classList.remove('gate-inner-omega');
 
   void gateObj.offsetWidth; // リフロー
 
-  // ★分岐: Ωモードかどうかでアニメーションを変える
-  let animTime = 2300; // 通常時間
+  // アニメーション分岐
+  let animTime = 2300; 
 
   if (state.isOmega) {
-    // Ωモード: 白くてゆっくり
+    // Ωモード
     gateObj.classList.add('gate-stone-omega');
     gateInner.classList.add('gate-inner-omega');
-    gateObj.classList.add('gate-active-omega'); // 3.75秒のアニメーション
-    animTime = 3800; // 待ち時間も延長 (3.75s + α)
+    gateObj.classList.add('gate-active-omega'); 
+    animTime = 3800; 
   } else {
     // 通常モード
     gateObj.classList.add('gate-active');
   }
 
-  // アニメーション終了後の処理
+  // アニメーション終了後
   setTimeout(() => {
     animModal.style.display = 'none';
     animModal.classList.remove('gate-anim-running');
     gateObj.classList.remove('gate-active');
-    gateObj.classList.remove('gate-active-omega'); // 掃除
+    gateObj.classList.remove('gate-active-omega'); 
     
     // 判定
     const i = +document.getElementById('r1').value;
     const a = +document.getElementById('r2').value;
     const v = +document.getElementById('r3').value;
     const isCorrect = (i === state.ans.i && a === state.ans.a && v === state.ans.v);
-
     
     finishGame(isCorrect);
     
-  }, animTime); // ★待ち時間を変数にする
+  }, animTime); 
 }
-
 
 // --- 予言リストの開閉 ---
 function showProphecyList() {
@@ -2897,6 +2938,11 @@ function softResetGame() {
   const tutBtn = document.getElementById('top-tut-btn');
   if(tutBtn) tutBtn.style.display = 'flex';
   // ▲▲▲▲▲▲
+  
+  // ▼▼▼ ★追加修正: ここで「警告メッセージ」を確実に消す！ ▼▼▼
+  const lockMsg = document.getElementById('rune-lock-msg');
+  if(lockMsg) lockMsg.style.display = 'none';
+  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
   // 3. データのリセット
   document.getElementById('r1').value = '';
@@ -2908,8 +2954,13 @@ function softResetGame() {
   
   document.getElementById('log-container').innerHTML = '';
   document.getElementById('prophecy-container').innerHTML = '';
+  // ▼▼▼ 修正: 中身だけでなく、枠ごと消し去る！ ▼▼▼
   const omegaList = document.getElementById('omega-list');
-  if(omegaList) omegaList.innerHTML = ''; // Ω用リストもクリア
+  if(omegaList) omegaList.innerHTML = ''; 
+  
+  // ★これを追加してください
+  const omegaArea = document.getElementById('omega-rule-area');
+  if(omegaArea) omegaArea.style.display = 'none';
   
   initMatrix(); 
   const memoPad = document.getElementById('memo-pad');
