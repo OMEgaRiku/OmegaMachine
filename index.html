@@ -175,6 +175,11 @@
   .stone-title { font-size: 0.75rem; color: #888; margin-bottom: 2px; }
   .stone-text { font-size: 1rem; color: #fff; font-weight: bold; letter-spacing: 0.5px; }
   .stone-id { font-family: 'Cinzel', serif; font-size: 1.4rem; color: #444; margin-left: 10px;}
+  /* 予言リスト開閉用 */
+.prophecy-list.closed {
+  display: none;
+}
+
   
       /* Mystery Stone (Omega) - 基本スタイル（アニメーションなし） */
   .stone.is-mystery {
@@ -1243,6 +1248,87 @@ button, .btn, .hud-btn, .stone, .memo-btn {
   }
 }
 
+/* --- 下部アイコンメニューのスタイル (透明版) --- */
+
+.icon-menu-row {
+  display: flex;
+  justify-content: center;
+  gap: 15px;               /* 3つ並ぶので狭くする */
+  margin-top: 25px;
+  width: 100%;
+  max-width: 400px;        /* 広がりすぎ防止 */
+  margin-left: auto;       /* 中央寄せ */
+  margin-right: auto;
+}
+
+
+.icon-menu-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  width: 80px;
+  transition: transform 0.2s;
+}
+
+.icon-menu-item:active {
+  transform: scale(0.95);
+}
+
+/* 以前は「丸い枠」だった部分 → 透明なコンテナに変更 */
+.icon-circle {
+  width: 50px;
+  height: 50px;
+  
+  /* ▼▼▼ 透明化！ ▼▼▼ */
+  background: transparent; 
+  border: none;
+  box-shadow: none;
+  /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2px; /* 文字との距離を少し詰める */
+  transition: 0.3s;
+}
+
+/* アイコン画像本体 (枠がないので少し大きく、リッチに) */
+.menu-icon-img {
+  width: 88px;  /
+  height: 88px;
+  object-fit: contain;
+  
+  /* 常時、少しだけ魔法の光を帯びさせる */
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
+  opacity: 0.8; /* 少し透けさせて馴染ませる */
+  transition: 0.3s;
+}
+
+/* 下の文字 */
+.menu-label {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 0.85rem;
+  color: #888; /* 少し暗めにしてアイコンを目立たせる */
+  letter-spacing: 1px;
+  text-shadow: 0 0 2px #000;
+  transition: 0.3s;
+}
+
+/* --- ホバー・タップ時の演出 (アイコン自体を光らせる) --- */
+.icon-menu-item:hover .menu-icon-img {
+  opacity: 1;
+  transform: scale(1.1); /* ふわっと浮く */
+  /* 金色に強く発光！ */
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.8)) brightness(1.2);
+}
+
+.icon-menu-item:hover .menu-label {
+  color: #d4af37;
+  text-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
+}
+
+
 
 </style>
 </head>
@@ -1293,14 +1379,32 @@ button, .btn, .hud-btn, .stone, .memo-btn {
       <span>Awakened Omega</span><span class="en-font">Ω+</span>
     </div>
 
-        <div style="display:flex; gap:10px; width:90%; max-width:350px; margin-top:10px;">
-      <div class="btn btn-std" style="font-size:0.9rem; padding:12px;" onclick="showHistory()">📜 履歴</div>
-      <div class="btn btn-std" style="font-size:0.9rem; padding:12px; border-color:#aaa; color:#eee;" onclick="showInputId()">🔑 ID入力</div>
+        <div class="icon-menu-row">
+  
+  <div class="icon-menu-item" onclick="startTutorial()">
+    <div class="icon-circle">
+      <img src="icon_book.png" class="menu-icon-img" alt="Tutorial">
     </div>
-    
-    <div class="btn btn-std" style="width:90%; max-width:350px; margin-top:8px; padding:10px; font-size:0.9rem; border-color:#2ecc71; color:#2ecc71;" onclick="startTutorial()">
-       Tutorial
+    <div class="menu-label">手引き</div>
+  </div>
+
+  <div class="icon-menu-item" onclick="showHistory()">
+    <div class="icon-circle">
+      <img src="icon_scroll.png" class="menu-icon-img" alt="History">
     </div>
+    <div class="menu-label">探査の記録</div>
+  </div>
+
+  <div class="icon-menu-item" onclick="showInputId()">
+    <div class="icon-circle">
+      <img src="icon_key.png" class="menu-icon-img" alt="ID">
+    </div>
+    <div class="menu-label">ID入力</div>
+  </div>
+
+</div>
+
+
 
     <div id="loading-indicator">生成中...</div>
   </div>
@@ -1355,7 +1459,9 @@ button, .btn, .hud-btn, .stone, .memo-btn {
       <textarea class="memo-textarea" placeholder="推理メモ&#13;&#10;例: 炎は偶数ではない...&#13;&#10;合計は10以上..."></textarea>
     </div>
 
-    <div id="prophecy-container" class="prophecy-list"></div>
+    <button class="memo-toggle-btn" onclick="toggleProphecyList()">📜 PROPHECY LIST (Show/Hide)</button>
+<div id="prophecy-container" class="prophecy-list"></div>
+
 
     <div id="omega-rule-area">
       <div class="omega-label">DETECTED LAWS (Search & Destroy)</div>
@@ -1808,6 +1914,12 @@ function toggleMatrix() {
   const matrix = document.getElementById('logic-matrix');
   matrix.classList.toggle('closed');
 }
+
+function toggleProphecyList() {
+  const container = document.getElementById('prophecy-container');
+  container.classList.toggle('closed');
+}
+
 
 
 function setBackground(mode) {
@@ -3859,12 +3971,26 @@ function softResetGame() {
 // MENUボタンを押したとき
 function openMenuModal() {
   document.getElementById('menu-modal').style.display = 'flex';
+  
+  // ▼▼▼ 追加: メニューを開いている間は、Omegaリストを完全に消す ▼▼▼
+  const omegaArea = document.getElementById('omega-rule-area');
+  if(omegaArea) omegaArea.style.display = 'none';
+  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 }
 
 // キャンセルを押したとき
 function closeMenuModal() {
   document.getElementById('menu-modal').style.display = 'none';
+  
+  // ▼▼▼ 追加: メニューを閉じた時、Omegaモード中ならリストを復活させる ▼▼▼
+  // (タイトルに戻る時は softResetGame 側で消してくれるので大丈夫です)
+  if(state.isOmega) {
+    const omegaArea = document.getElementById('omega-rule-area');
+    if(omegaArea) omegaArea.style.display = 'block';
+  }
+  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 }
+
 
 // 終了するを押したとき（さっき作ったリセット関数を再利用！）
 function executeBackToTitle() {
