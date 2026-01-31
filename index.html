@@ -1218,6 +1218,31 @@ button, .btn, .hud-btn, .stone, .memo-btn {
   transform: scale(1.2);
 }
 
+/* --- プレイ画面のドクロ用（常時覚醒モード） --- */
+
+/* このクラスがつくと、強制的に赤くなって鼓動する */
+.img-danger {
+  /* 1. デフォルトの「グレー」を無効化して赤くする */
+  filter: grayscale(0%) brightness(1.2) drop-shadow(0 0 5px #ff0000) !important;
+  opacity: 1 !important;
+  
+  /* 2. アニメーションをセット */
+  animation: skullPulse 1.2s infinite alternate;
+}
+
+/* 鼓動のアニメーション定義 */
+@keyframes skullPulse {
+  0% {
+    transform: scale(1);
+    filter: grayscale(0%) brightness(1.2) drop-shadow(0 0 5px #ff0000);
+  }
+  100% {
+    transform: scale(1.15); /* 少し大きくなる */
+    /* 光を強くする */
+    filter: grayscale(0%) brightness(1.5) drop-shadow(0 0 15px #ff0000);
+  }
+}
+
 
 </style>
 </head>
@@ -2059,7 +2084,7 @@ function initGame(mode, seed, isBoosted = false) {
       if(oldId) oldId.remove();
       
       // ★修正: ブースト中はIDの横にマークを付けるなどしても良いかも？
-      const boostMark = isBoosted ? ' <span style="color:#ff0000; font-weight:bold;"><br><img src="icon_skull.png" class="boost-img" alt="Boost"></span>' : '';
+      const boostMark = isBoosted ? ' <span style="color:#ff0000; font-weight:bold;"><br><img src="icon_skull.png" class="boost-img img-danger" alt="skull"></span>' : '';
       
       hud.insertAdjacentHTML('afterend', 
         `<div id="current-id-display" style="text-align:center; color:#555; font-size:0.7rem; margin-top:-10px;">ID: <span style="font-family:'Cinzel',serif; color:#777;">${state.currentSeed}</span>${boostMark}</div>`
