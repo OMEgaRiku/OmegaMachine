@@ -3860,7 +3860,7 @@ const nextBtn = document.querySelector('.next-circle').closest('.action-btn-item
     case 22:
       txt.innerHTML = `これが正解なら、すべての石碑が <b>TRUE</b> になるはずだ。<br>
       最後に<b>「封印解除」</b>ボタンを押して、答え合わせをしよう！`;
-      const solveBtn = document.querySelector('.solve-circle ).closest('.action-btn-item');
+      const solveBtn = document.querySelector('.solve-circle').closest('.action-btn-item');
       if(solveBtn) solveBtn.classList.add('tut-highlight', 'tut-blink');
       btn.style.display = 'none'; 
       break;
