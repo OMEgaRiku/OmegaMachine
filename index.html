@@ -118,6 +118,19 @@
     font-weight: bold; font-size: 1.2rem; user-select: none; transition: 0.1s;
   }
   
+  /* マトリクスの開閉用 */
+.logic-grid {
+  /* 既存のデザインはそのまま維持 */
+  transition: max-height 0.3s ease-out, opacity 0.3s ease-out, padding 0.3s;
+  overflow: hidden;
+}
+
+/* 閉じている時のスタイル */
+.logic-grid.closed {
+  display: none; /* シンプルに非表示にする */
+  /* アニメーションにこだわるなら max-height: 0; padding: 0; opacity: 0; などでもOK */
+}
+  
   /* Shared Cell Styles */
   .cell-x, .memo-btn.is-x { background: rgba(200, 50, 50, 0.2); color: #ff5555; border-color: #552222; }
   .cell-x::after, .memo-btn.is-x::after { content: "×"; }
@@ -1188,6 +1201,23 @@ button, .btn, .hud-btn, .stone, .memo-btn {
   }
 }
 
+/* ドクロ画像のサイズ強制矯正 */
+.boost-img {
+  width: 64px !important;  /* 強制的に小さくする */
+  height: 64px !important;
+  object-fit: contain;     /* 形を崩さない */
+  
+  /* 以下は演出用（お好みで） */
+  filter: grayscale(100%) brightness(0.6);
+  transition: 0.3s;
+}
+
+/* ONになった時の演出 */
+.btn-boost.active .boost-img {
+  filter: grayscale(0%) drop-shadow(0 0 5px #ff0000) brightness(1.2);
+  transform: scale(1.2);
+}
+
 
 </style>
 </head>
@@ -1208,22 +1238,30 @@ button, .btn, .hud-btn, .stone, .memo-btn {
 
     <div class="mode-row">
       <div class="btn btn-hard" onclick="startGame('hard')"><span>Hard</span><span class="en-font">III</span></div>
-      <div id="boost-hard" class="btn-boost" onclick="toggleBoost('hard')" style="display:none;">💀</div>
+      <div id="boost-hard" class="btn-boost" onclick="toggleBoost('hard')" style="display:none;">
+  <img src="icon_skull.png" class="boost-img" alt="Boost">
+</div>
     </div>
 
     <div class="mode-row">
       <div class="btn btn-night" onclick="startGame('nightmare')"><span>Nightmare</span><span class="en-font">IV</span></div>
-      <div id="boost-nightmare" class="btn-boost" onclick="toggleBoost('nightmare')" style="display:none;">💀</div>
+      <div id="boost-nightmare" class="btn-boost" onclick="toggleBoost('nightmare')" style="display:none;">
+  <img src="icon_skull.png" class="boost-img" alt="Boost">
+</div>
     </div>
 
     <div class="mode-row">
       <div class="btn btn-chaos" onclick="startGame('chaos')"><span>Chaos</span><span class="en-font">∞</span></div>
-      <div id="boost-chaos" class="btn-boost" onclick="toggleBoost('chaos')" style="display:none;">💀</div>
+      <div id="boost-chaos" class="btn-boost" onclick="toggleBoost('chaos')" style="display:none;">
+  <img src="icon_skull.png" class="boost-img" alt="Boost">
+</div>
     </div>
 
     <div class="mode-row">
       <div class="btn btn-omega" onclick="startGame('omega')"><span>Omega</span><span class="en-font">?</span></div>
-      <div id="boost-omega" class="btn-boost" onclick="toggleBoost('omega')" style="display:none;">💀</div>
+      <div id="boost-omega" class="btn-boost" onclick="toggleBoost('omega')" style="display:none;">
+  <img src="icon_skull.png" class="boost-img" alt="Boost">
+</div>
     </div>
 
     <div id="btn-awakened" class="btn btn-awakened" style="display:none;" onclick="confirmAwakened()">
@@ -1282,8 +1320,9 @@ button, .btn, .hud-btn, .stone, .memo-btn {
     </div>
 
 
-    <div style="text-align:left; color:#666; font-size:0.7rem; margin-bottom:5px; margin-left:5px;">LOGIC MATRIX & MEMO</div>
-    <div class="logic-grid" id="logic-matrix"></div>
+    <button class="memo-toggle-btn" onclick="toggleMatrix()">LOGIC MATRIX (Show/Hide)</button>
+<div class="logic-grid" id="logic-matrix"></div>
+
     
         <button class="memo-toggle-btn" onclick="toggleMemoArea()">📝 MEMO PAD (Show/Hide)</button>
     
@@ -1740,6 +1779,11 @@ function toggleMemo(el) {
 function toggleMemoArea() {
   document.getElementById('memo-pad').classList.toggle('closed');
 }
+function toggleMatrix() {
+  const matrix = document.getElementById('logic-matrix');
+  matrix.classList.toggle('closed');
+}
+
 
 function setBackground(mode) {
     const body = document.body;
@@ -2015,7 +2059,7 @@ function initGame(mode, seed, isBoosted = false) {
       if(oldId) oldId.remove();
       
       // ★修正: ブースト中はIDの横にマークを付けるなどしても良いかも？
-      const boostMark = isBoosted ? ' <span style="color:#ff0000; font-weight:bold;">(💀)</span>' : '';
+      const boostMark = isBoosted ? ' <span style="color:#ff0000; font-weight:bold;"><br><img src="icon_skull.png" class="boost-img" alt="Boost"></span>' : '';
       
       hud.insertAdjacentHTML('afterend', 
         `<div id="current-id-display" style="text-align:center; color:#555; font-size:0.7rem; margin-top:-10px;">ID: <span style="font-family:'Cinzel',serif; color:#777;">${state.currentSeed}</span>${boostMark}</div>`
