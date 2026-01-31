@@ -1328,6 +1328,88 @@ button, .btn, .hud-btn, .stone, .memo-btn {
   text-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
 }
 
+/* --- メインアクションボタン（JS制御版） --- */
+
+.action-bar-icons {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  margin-top: 25px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+
+.action-btn-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  width: 100px;
+  transition: transform 0.2s;
+  
+  /* スマホでの誤タップ防止 */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.action-btn-item:active {
+  transform: scale(0.95);
+}
+
+/* コンテナ（透明） */
+.action-circle {
+  width: 80px;
+  height: 80px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.3s;
+}
+
+/* アイコン画像 */
+.action-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 5px rgba(0,0,0,0.8));
+  
+  /* ▼▼▼ これが大事！回転をヌルっと動かす設定 ▼▼▼ */
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
+}
+
+/* ラベル文字 */
+.action-label {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 0.85rem;
+  color: #ccc; 
+  letter-spacing: 1px;
+  transition: 0.3s;
+  text-shadow: 0 0 2px #000;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* --- 個別のスタイル設定（回転は削除、光る演出のみ） --- */
+
+/* 1. 次のラウンド (Next) - 青白く光る */
+.action-btn-item:hover .next-circle .action-img {
+  filter: drop-shadow(0 0 10px rgba(200, 200, 255, 0.6)) brightness(1.2);
+}
+
+/* 2. 封印解除 (Unlock) - 金色に光る */
+.action-btn-item:hover .solve-circle .action-img {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.8)) brightness(1.3);
+}
+
+.action-btn-item:hover .action-label {
+  color: #fff !important;
+  text-shadow: 0 0 8px rgba(255,255,255,0.8);
+}
+
 
 
 </style>
@@ -1469,10 +1551,24 @@ button, .btn, .hud-btn, .stone, .memo-btn {
       <div id="omega-list"></div>
     </div>
 
-    <div class="action-bar">
-      <button class="btn-action btn-next" onclick="nextRound()">次のラウンドへ</button>
-      <button class="btn-action btn-solve" onclick="attemptUnlock()">封印解除</button>
+    <div class="action-bar-icons">
+  
+  <div class="action-btn-item" onclick="nextRound()">  
+    <div class="action-circle next-circle">
+      <img src="icon_next.png" class="action-img" alt="Next">
     </div>
+    <div class="action-label">次のラウンドへ</div>
+  </div>
+
+  <div class="action-btn-item" onclick="attemptUnlock()">
+    <div class="action-circle solve-circle">
+      <img src="icon_unlock.png" class="action-img" alt="Unlock">
+    </div>
+    <div class="action-label" style="color:#d4af37; font-weight:bold;">封印解除</div>
+  </div>
+
+</div>
+
 
     <div id="log-container" class="log-area">
       <div style="color:#666; text-align:center; font-style:italic; font-size:0.8rem;">-- 解析の記録 --</div>
@@ -2642,6 +2738,7 @@ function nextRound() {
   if(isTutorialMode) {
     // ステップ9（ラウンド終了指示）の時だけ許可
     if(tutStep === 9) {
+     spinNextIcon();
       state.round++;
       state.mana = 0;
       updateHUD();
@@ -2659,6 +2756,7 @@ function nextRound() {
     return;
   }
   
+  spinNextIcon();
   state.round++;
   state.mana = 0;
   updateHUD();
@@ -2683,10 +2781,6 @@ function performRoundReset() {
   // 4. 石碑のグレーアウトを解除
   document.querySelectorAll('.stone').forEach(s => s.classList.remove('disabled'));
   
-  // 5. すぐ入力できるようにカーソルを「炎」に合わせる
-   if (!isTutorialMode) {
-    r1.focus();
-  }
 }
 
 function attemptUnlock() {
@@ -4077,7 +4171,25 @@ function confirmAwakened() {
   }
 }
 
+// ▼▼▼ 砂時計を「常に未来へ」回転させる魔法 ▼▼▼
+let nextIconAngle = 0;
+
+function spinNextIcon() {
+  // 角度を360度足す（戻らずに先に進む）
+  nextIconAngle += 360;
+  
+  // 画像を探して回す
+  const icon = document.querySelector('.next-circle .action-img');
+  if(icon) {
+    icon.style.transform = `rotate(${nextIconAngle}deg)`;
+  }
+}
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+
 </script>
+
+
 <div id="confirm-modal" class="modal-overlay">
   <div style="background:#111; padding:25px; border:1px solid #d4af37; border-radius:10px; width:85%; max-width:350px; text-align:center; box-shadow:0 0 30px rgba(212, 175, 55, 0.2);">
     <h3 style="color:#ccc; margin-top:0; font-size:1rem;">封印を解除しますか？</h3>
