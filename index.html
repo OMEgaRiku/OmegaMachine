@@ -2738,7 +2738,8 @@ function nextRound() {
   if(isTutorialMode) {
     // ステップ9（ラウンド終了指示）の時だけ許可
     if(tutStep === 9) {
-     spinNextIcon();
+    
+      spinNextIcon();
       state.round++;
       state.mana = 0;
       updateHUD();
@@ -3702,9 +3703,10 @@ function nextTutorialStep() {
 
     case 9:
       txt.innerHTML = `新しい数字を試すには、時間を進める必要がある。<br>
-      右下の<b>「次のラウンドへ」</b>ボタンを押してくれ。<br>
+      左下の<b>「次のラウンドへ」</b>ボタンを押してくれ。<br>
       （ラウンドが進むとマナも回復するぞ）`;
-      const nextBtn = document.querySelector('.btn-next');
+      // 丸(circle)を見つけて、その親の「ボタン本体(.action-btn-item)」を取得する
+const nextBtn = document.querySelector('.next-circle').closest('.action-btn-item');
       if(nextBtn) nextBtn.classList.add('tut-highlight', 'tut-blink');
       btn.style.display = 'none'; // ユーザーがボタンを押すのを待つ
       break;
@@ -3858,7 +3860,7 @@ function nextTutorialStep() {
     case 22:
       txt.innerHTML = `これが正解なら、すべての石碑が <b>TRUE</b> になるはずだ。<br>
       最後に<b>「封印解除」</b>ボタンを押して、答え合わせをしよう！`;
-      const solveBtn = document.querySelector('.btn-solve');
+      const solveBtn = document.querySelector('.solve-circle ).closest('.action-btn-item');
       if(solveBtn) solveBtn.classList.add('tut-highlight', 'tut-blink');
       btn.style.display = 'none'; 
       break;
