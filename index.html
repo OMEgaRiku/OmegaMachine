@@ -600,7 +600,7 @@
   background: #111;
 }
 
-/* クリップボードコピーボタン */
+/* --- 修正箇所: ボタンの枠 --- */
 .btn-omega-copy {
   width: 30px;
   height: 30px;
@@ -614,7 +614,19 @@
   align-items: center;
   font-size: 1rem;
   transition: 0.2s;
+  
+  /* ▼▼▼ これを追加してください！ ▼▼▼ */
+  flex-shrink: 0;  /* 「絶対に縮まない」という命令です */
 }
+
+/* --- 新規追加: コピーアイコン画像用 --- */
+.copy-icon-img {
+  width: 60px;       /* 枠(30px)より少し小さく */
+  height: 60px;
+  object-fit: contain; /* これで縦横比が崩れなくなります */
+  pointer-events: none; /* 画像をクリックしてもボタン反応を邪魔しない */
+}
+
 .btn-omega-copy:active {
   transform: scale(0.9);
   background: #444;
@@ -1206,6 +1218,19 @@ button, .btn, .hud-btn, .stone, .memo-btn {
   }
 }
 
+/* メモアイコン用のスタイル */
+.memo-icon-img {
+  width: 1.1rem;      /* 文字サイズに合わせる */
+  height: 1.1rem;
+  vertical-align: middle; /* 文字と高さを合わせる */
+  margin-right: 5px;  /* 文字との隙間 */
+  margin-bottom: 2px; /* 微調整 */
+  filter: drop-shadow(0 0 2px rgba(255,255,255,0.5)); /* 軽く光らせる */
+}
+
+
+
+
 /* ドクロ画像のサイズ強制矯正 */
 .boost-img {
   width: 64px !important;  /* 強制的に小さくする */
@@ -1506,7 +1531,7 @@ button, .btn, .hud-btn, .stone, .memo-btn {
         <div id="chaos-warning" class="chaos-bar">⚠ 常に嘘をつく偽りの予言が1つ含まれています</div>
 
     <div id="nightmare-warning" class="chaos-bar" style="background: #4a1c8a; border: 1px solid #9b59b6; box-shadow: 0 0 10px #4a1c8a;">
-      ⚠ MANAは2に減り、5ラウンド以内に封印を解除する必要があります(回答含む)
+      ⚠ MANAが2に減少 5ラウンド以内に封印を解除する(回答含む)
     </div>
 
 
@@ -1535,7 +1560,10 @@ button, .btn, .hud-btn, .stone, .memo-btn {
 <div class="logic-grid" id="logic-matrix"></div>
 
     
-        <button class="memo-toggle-btn" onclick="toggleMemoArea()">📝 MEMO PAD (Show/Hide)</button>
+        <button class="memo-toggle-btn" onclick="toggleMemoArea()">
+  <img src="icon_memo.png" class="memo-icon-img" alt="Memo"> MEMO PAD (Show/Hide)
+</button>
+
     
     <div class="memo-area closed" id="memo-pad">
       <textarea class="memo-textarea" placeholder="推理メモ&#13;&#10;例: 炎は偶数ではない...&#13;&#10;合計は10以上..."></textarea>
@@ -2578,19 +2606,33 @@ function renderProphecies() {
         }, 200);
       };
       
-      const copyBtn = document.createElement('div');
+            const copyBtn = document.createElement('div');
       copyBtn.className = 'btn-omega-copy';
-      copyBtn.innerHTML = '📋️'; 
+          // ▼▼▼ SVGで「青く光るクリスタル風のコピーアイコン」を描画 ▼▼▼
+      // 形状はわかりやすい「重なる四角」ですが、色と発光で魔法っぽくしています
+      copyBtn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" 
+             stroke="#99ccff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             style="pointer-events: none; filter: drop-shadow(0 0 3px #99ccff);">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" style="opacity: 0.6;"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+      `;
+      // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+      
       copyBtn.title = "内容をコピー";
       
       copyBtn.onclick = () => {
         if(!input.value) return;
         navigator.clipboard.writeText(input.value).then(() => {
-          const originalIcon = copyBtn.innerHTML;
-          copyBtn.innerHTML = '✔';
+          // コピー成功時の演出（一瞬チェックマークにする）
+          const originalHTML = copyBtn.innerHTML; // 元の画像を記憶
+          
+          copyBtn.innerHTML = '✔'; // チェックマークは文字でOK、または画像にしてもOK
           copyBtn.classList.add('copy-success');
+          
           setTimeout(() => {
-            copyBtn.innerHTML = originalIcon;
+            copyBtn.innerHTML = originalHTML; // 元の画像に戻す
             copyBtn.classList.remove('copy-success');
           }, 1500);
         });
@@ -3428,12 +3470,11 @@ function startTutorial() {
       state.liarIndex = -1;
       state.isOmega = false;
       
-      // ★変更: ルールセットを強化
       state.rules = [
         { name:"炎と水の比較 (<, =, >)", desc:"炎 = 水", f:(i,a,v)=>i==a },
         { name:"合計と10の関係 (<, ≧)", desc:"合計 ≧ 10", f:(i,a,v)=>(i+a+v)>=10 },
-        { name:"風と5の関係 (<, = )", desc:"風 = 5", f:(i,a,v)=>v==5 }, // ★変更
-        { name:"偶数の数 (0, 1, 2)", desc:"偶数が2個", f:(i,a,v)=>[i,a,v].filter(n=>n%2==0).length==2 } // ★追加
+        { name:"風と5の関係 (<, = )", desc:"風 = 5", f:(i,a,v)=>v==5 },
+        { name:"炎の偶奇 (偶数, 奇数)", desc:"炎 = 偶数", f:(i,a,v)=>i%2==0 }
       ];
       
       setBackground('standard');
@@ -3578,7 +3619,7 @@ attemptUnlock = function() {
          alert("おめでとう！\nチュートリアルは完了だ。\nさあ、本番の遺跡へ挑もう！");
          // アラートを閉じたら終了処理
          quitTutorial();
-      }, 3000);
+      }, 4000);
     }
   } else {
     // --- 通常モード (変更なし) ---
@@ -3620,6 +3661,7 @@ function nextTutorialStep() {
   switch(tutStep) {
     case 1:
       txt.innerHTML = `ようこそ、探求者よ。<br>
+      このゲームの目的は<b>「答えが1つに絞られる、3桁の数字」</b>を特定することだ！<br>
       まずは画面右上を見てほしい。<br>
       ここには現在の<b>「ラウンド数」</b>が刻まれている。<br>
       一度セットした数字はラウンド終了まで変更できないぞ。`;
@@ -3637,7 +3679,7 @@ function nextTutorialStep() {
 
     case 3:
       txt.innerHTML = `では、調査を始めよう。<br>
-      君の目的は、石碑に<b>「質問」</b>をして法則を暴き、隠された<b>「3つの数字」</b>を特定することだ。`;
+      石碑に<b>「質問」</b>をして法則を暴き、隠された<b>「3つの数字」</b>を特定していこう。`;
       break;
       
     case 4:
@@ -3663,7 +3705,7 @@ function nextTutorialStep() {
         }
         typeNumber(1, 1, 1, () => {
              txt.innerHTML = `よし。「1 - 1 - 1」とセット完了だ。<br>
-             これで石碑に聞く準備が整った。<br>右下のボタンを押してくれ。`;
+             これで石碑に聞く準備が整った。`;
              btn.style.display = 'block'; btn.innerText = "OK";
         });
       }, 500);
@@ -3719,8 +3761,7 @@ const nextBtn = document.querySelector('.next-circle').closest('.action-btn-item
       break;
 
     case 11:
-      txt.innerHTML = `次は<b>「わざと間違った数字」</b>を入れて反応を見るのがコツだ。<br>
-      合計がとても小さい<b>「1 - 1 - 2」</b>（合計4）を入力しよう。`;
+      txt.innerHTML = `次は合計がとても小さい<b>「1 - 1 - 2」</b>（合計4）を入力しよう。`;
       const runeBox2 = document.querySelector('.rune-container');
       if(runeBox2) runeBox2.classList.add('tut-highlight', 'tut-blink');
       btn.style.display = 'none';
@@ -3790,7 +3831,7 @@ const nextBtn = document.querySelector('.next-circle').closest('.action-btn-item
       txt.innerHTML = `結果は…<br>${logGamma}<br>
       <b>FALSE</b>だ！<br>
       入力した${cWind}(2)ではダメだと言っている。<br>
-      つまり、正解の${cWind}は<b>「5」</b>で確定する！`;
+      つまり、${cWind}<5ではなく、${cWind}=<b>「5」</b>で確定する！`;
       document.getElementById('log-container').classList.add('tut-highlight');
       break;
 
@@ -3800,9 +3841,13 @@ const nextBtn = document.querySelector('.next-circle').closest('.action-btn-item
       <b>「予言 δ」</b>をタップして、偶数に関するルールを確認しよう。`;
       break;
 
+    // --- nextTutorialStep関数内 ---
+
     case 18:
+      // 文言変更：偶数個数ではなく、炎の性質について
       txt.innerHTML = `<b>「予言 δ」</b>をタップせよ。<br>
-      入力はまだ「1 - 1 - 2」のままだ。`;
+      入力は「1 - 1 - 2」（炎は1）のままだ。<br>
+      もし炎が偶数ならTRUE、奇数ならFALSEになるはずだ。`;
       const s3 = document.getElementById('stone-3');
       if(s3) s3.classList.add('tut-highlight', 'tut-blink');
       btn.style.display = 'none';
@@ -3816,14 +3861,17 @@ const nextBtn = document.querySelector('.next-circle').closest('.action-btn-item
               <span style="font-weight:bold;">R2 予言δ</span> <strong>FALSE</strong>
             </div>
             <div style="font-size:0.85rem; margin:4px 0; color:#ddd; padding-left:8px; border-left:2px solid rgba(255,255,255,0.2);">
-              ${colorize("偶数の数 (0, 1, 2)")}
+              ${colorize("炎の偶奇 (偶数, 奇数)")}
             </div>
             <div style="text-align:right;"><span class="log-nums">1-1-2</span></div>
           </div>
         </div>`;
+      
+      // 解説ロジックの修正
       txt.innerHTML = `結果は…<br>${logDelta}<br>
-      またしても<b>FALSE</b>。<br>
-      「1-1-2」には偶数が1個しかない。これが間違いなら、正解には<b>「偶数が2個」</b>含まれるということだ！`;
+      <b>FALSE</b>だ！<br>
+      入力した${cFire}「1」(奇数)では条件を満たさない。<br>
+      つまり、正解の${cFire}は<b>「偶数 (2か4)」</b>でなければならない！`;
       document.getElementById('log-container').classList.add('tut-highlight');
       break;
 
@@ -3833,15 +3881,15 @@ const nextBtn = document.querySelector('.next-circle').closest('.action-btn-item
         <li>予言α: ${cFire} = ${cWater}</li>
         <li>予言β: 合計 ≧ 10</li>
         <li>予言γ: ${cWind} = 5</li>
-        <li>予言δ: 偶数が2個</li>
+        <li>予言δ: ${cFire} = 偶数</li>
       </ul>
-      風は5(奇数)で確定。残り2つは偶数で、合計10以上…<br>
-      この条件を満たす解は一つしかない！`;
+      ${cFire}が2だと「2+2+5=9」で合計不足。<br>
+      ならば、残る可能性はただ一つ！`;
       break;
 
     case 21:
       txt.innerHTML = `導き出した答え、<b>「4 - 4 - 5」</b>を入力せよ！<br>
-      (合計13、風は5、偶数は4と4の2個。完璧だ)<br>
+      (合計13、風は5、炎は偶数、炎=水。完璧だ)<br>
       ※今回は特別に数字を書き換えてあげよう。`;
       const runeBox3 = document.querySelector('.rune-container');
       if(runeBox3) runeBox3.classList.add('tut-highlight', 'tut-blink');
@@ -4269,10 +4317,13 @@ function spinNextIcon() {
 
     <div id="review-answer-box" style="background:#000; padding:10px; border-radius:6px; border:1px solid #333; text-align:center;"></div>
 
-    <div style="text-align:left;">
-      <div style="font-size:0.8rem; color:#d4af37; margin-bottom:5px;">📝 当時のメモ</div>
+            <div style="text-align:left;">
+      <div style="font-size:0.8rem; color:#d4af37; margin-bottom:5px;">
+        <img src="icon_memo.png" class="memo-icon-img" alt="Memo"> 当時のメモ
+      </div>
       <textarea id="review-memo" readonly style="width:100%; height:100px; background:#1a1a1a; border:1px solid #333; color:#ccc; padding:8px; border-radius:4px; font-family:'Shippori Mincho', serif; box-sizing:border-box; resize:none;"></textarea>
     </div>
+
 
     <div style="text-align:left; flex:1; min-height:0; display:flex; flex-direction:column;">
       <div style="font-size:0.8rem; color:#d4af37; margin-bottom:5px;">📜 解析ログ</div>
