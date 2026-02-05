@@ -172,66 +172,102 @@ function startFromId(mode) {
   
   initGame(mode, seed, isBoosted);
 }
+/* --- script.js の initGame 関数を完全に置換 --- */
+/* --- script.js の initGame 関数を完全に置換 --- */
 
-
-// 引数に isBoosted を追加
-function initGame(mode, seed, isBoosted = false) {
-
- // ▼▼▼ ★修正: 未クリアなら「+」を無視して通常モードにする ▼▼▼
-  
-  // 1. まず「真OMEGA」をクリア済みかチェック
+function initGame(mode, seed, isBoosted = false, loadData = null) {
+  // 未クリアならブースト解除
   const isUnlocked = localStorage.getItem('omega_awakened_unlocked') === 'true';
-
   if (seed && seed.endsWith('+')) {
     if (isUnlocked) {
-      // クリア済みなら、正しくブーストON！
       isBoosted = true;
     } else {
-      // 未クリアなら、「+」を削除してなかったことにする
-      seed = seed.slice(0, -1); 
+      seed = seed.slice(0, -1);
       isBoosted = false;
     }
   }
-  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
-  document.getElementById('loading-indicator').style.display = 'block';
 
-  // (中略: UI初期化系はそのまま)
+  document.getElementById('loading-indicator').style.display = 'block';
   document.querySelectorAll('.btn-action').forEach(b => b.style.display = '');
+  
+  // UIリセット
   const manaBar = document.querySelector('.mana-bar');
-  if(manaBar) { /*...*/ manaBar.classList.remove('glitch-active'); }
+  if(manaBar) { manaBar.style.color = ""; manaBar.style.textShadow = ""; manaBar.classList.remove('glitch-active'); }
   const roundDisplay = document.getElementById('ui-round');
   if(roundDisplay && roundDisplay.parentNode) { roundDisplay.parentNode.classList.remove('glitch-active'); }
   const oldFrame = document.querySelector('.divine-frame');
   if(oldFrame) oldFrame.remove();
   
+  // ゲーム終了フラグをリセット
+  state.isGameEnded = false;
+
   rng = new SeededRandom(seed);
   state.currentSeed = seed;
   state.currentMode = mode;
+
+  const isTower = (mode === 'tower');
   
+  // 階層取得エラー回避 (undefinedなら1階とみなす)
+  let floor = 1; 
+  if (isTower) {
+      if (typeof towerState !== 'undefined' && typeof towerState.floor === 'number') {
+          floor = towerState.floor;
+      } else {
+          console.warn("Tower State Error: Floor reset to 1");
+      }
+  }
+
   setTimeout(() => {
+    // --- 初期パラメータ設定 ---
     state.round = 1;
     state.mana = 0;
     state.totalChecks = 0;
-    
-    // パラメータ設定 (変更なし)
-    switch(mode) {
-      case 'easy': state.maxMana = 3; state.stoneCount = 4; state.doomLimit = 0; break;
-      case 'standard': state.maxMana = 3; state.stoneCount = 5; state.doomLimit = 0; break;
-      case 'hard': state.maxMana = 3; state.stoneCount = 5; state.doomLimit = 0; break;
-      case 'nightmare': state.maxMana = 2; state.stoneCount = 5; state.doomLimit = 5; break;
-      case 'chaos': state.maxMana = 3; state.stoneCount = 5; state.doomLimit = 0; break;
-      case 'omega': state.maxMana = 3; state.stoneCount = 5; state.doomLimit = 0; break;
-      case 'awakened': state.maxMana = 3; state.stoneCount = 5; state.doomLimit = 0; break;
+
+    if (isTower) {
+      // ★修正: タワーは全階層で「Awakened Omega」仕様（予言秘匿）
+      state.stoneCount = 5;
+      state.isOmega = true; // ← ここを true に固定！
+      
+      // 難易度（マナ・ラウンド）のみ階層で変化させる
+      if (floor <= 5) {
+        // 1F-5F: Awakened Standard (マナ3, R9)
+        state.maxMana = 3; state.doomLimit = 9;
+      } else if (floor <= 10) {
+        // 6F-10F: Nightmare (マナ2, R8)
+        state.maxMana = 2; state.doomLimit = 8;
+      } else if (floor <= 15) {
+        // 11F-15F: Rule Shift (マナ3, R8)
+        state.maxMana = 3; state.doomLimit = 8;
+      } else if (floor <= 19) {
+        // 16F-19F: Chaos (マナ3, R10)
+        state.maxMana = 3; state.doomLimit = 10;
+      } else {
+        // 20F: THE OMEGA (マナ3, R7)
+        state.maxMana = 3; state.doomLimit = 7;
+      }
+
+    } else {
+      // 通常モード設定
+      switch(mode) {
+        case 'easy': state.maxMana = 3; state.stoneCount = 4; state.doomLimit = 0; break;
+        case 'standard': state.maxMana = 3; state.stoneCount = 5; state.doomLimit = 0; break;
+        case 'hard': state.maxMana = 3; state.stoneCount = 5; state.doomLimit = 0; break;
+        case 'nightmare': state.maxMana = 2; state.stoneCount = 5; state.doomLimit = 5; break;
+        case 'chaos': state.maxMana = 3; state.stoneCount = 5; state.doomLimit = 0; break;
+        case 'omega': state.maxMana = 3; state.stoneCount = 5; state.doomLimit = 0; break;
+        case 'awakened': state.maxMana = 3; state.stoneCount = 5; state.doomLimit = 0; break;
+      }
+      state.isOmega = (mode === 'omega' || mode === 'awakened');
     }
-    state.isOmega = (mode === 'omega' || mode === 'awakened');
 
     const resultBtn = document.getElementById('btn-show-result');
     if(resultBtn) resultBtn.style.display = 'none';
-    
+
+    // --- ルール生成 ---
     let success = false;
     let attempts = 0;
-    const maxAttempts = 20000; 
-    
+    const maxAttempts = 50000;
+
     while(!success && attempts < maxAttempts) {
       attempts++;
       state.ans = {
@@ -241,8 +277,6 @@ function initGame(mode, seed, isBoosted = false) {
       };
       
       let picked = [];
-
-      // 共通Helper: ランダム抽出関数
       const pickFromPool = (pool, count, currentPicked) => {
            let candidates = [...pool];
            for (let k = candidates.length - 1; k > 0; k--) {
@@ -260,67 +294,61 @@ function initGame(mode, seed, isBoosted = false) {
            return selected;
       };
 
+      const allValid = POOL.filter(r => r.f(state.ans.i, state.ans.a, state.ans.v) === true);
 
-      // ★★★ 生成ロジック分岐 ★★★
-      
-      if (mode === 'awakened') {
-        // --- Awakened (元々のDiff4モード) ---
-        const allValid = POOL.filter(r => r.f(state.ans.i, state.ans.a, state.ans.v) === true);
+      if (isTower) {
+         // タワー用生成ロジック (難易度は維持)
+         if (floor === 20) {
+            const poolD4 = allValid.filter(r => (r.diff||1) === 4);
+            if(poolD4.length < 5) continue; 
+            const p = pickFromPool(poolD4, 5, picked);
+            if(p.length < 5) continue; picked.push(...p);
+         } else if (floor >= 11 && floor <= 15) {
+            const poolD4 = allValid.filter(r => (r.diff||1) === 4);
+            const poolD3 = allValid.filter(r => (r.diff||1) === 3);
+            if(poolD4.length < 3 || poolD3.length < 2) continue;
+            const p4 = pickFromPool(poolD4, 3, picked); if(p4.length < 3) continue; picked.push(...p4);
+            const p3 = pickFromPool(poolD3, 2, picked); if(p3.length < 2) continue; picked.push(...p3);
+         } else {
+            // 1F-10F, 16F-19F (Awakened Standard構成)
+            const poolD2 = allValid.filter(r => (r.diff||1) === 2);
+            const poolD3 = allValid.filter(r => (r.diff||1) === 3);
+            const poolD4 = allValid.filter(r => (r.diff||1) === 4);
+            if(poolD2.length < 1 || poolD3.length < 1 || poolD4.length < 3) continue;
+            const p2 = pickFromPool(poolD2, 1, picked); if(p2.length < 1) continue; picked.push(...p2);
+            const p3 = pickFromPool(poolD3, 1, picked); if(p3.length < 1) continue; picked.push(...p3);
+            const p4 = pickFromPool(poolD4, 3, picked); if(p4.length < 3) continue; picked.push(...p4);
+         }
+      } else if (mode === 'awakened') {
         const poolD2 = allValid.filter(r => (r.diff||1) === 2);
         const poolD3 = allValid.filter(r => (r.diff||1) === 3);
         const poolD4 = allValid.filter(r => (r.diff||1) === 4);
-
         if(poolD2.length < 1 || poolD3.length < 1 || poolD4.length < 3) continue;
-
         const p2 = pickFromPool(poolD2, 1, picked); if(p2.length < 1) continue; picked.push(...p2);
         const p3 = pickFromPool(poolD3, 1, picked); if(p3.length < 1) continue; picked.push(...p3);
         const p4 = pickFromPool(poolD4, 3, picked); if(p4.length < 3) continue; picked.push(...p4);
-
       } else {
-        // --- 通常モード (Easy, Std, Hard, Night, Chaos, Omega) ---
-        
-        let minDiff = 1;
-        let maxDiff = 3;
+        let minDiff = 1; let maxDiff = 3;
         if (mode === 'easy') maxDiff = 2;
         if (mode === 'hard' || mode === 'nightmare' || mode === 'omega') minDiff = 2;
-
-        const allValid = POOL.filter(r => r.f(state.ans.i, state.ans.a, state.ans.v) === true);
-
-        // ★★★ ブースト判定 (Diff4 を 1つ混ぜる) ★★★
         if (isBoosted) {
-           // 1. Diff4のプールを作成
            const poolD4 = allValid.filter(r => (r.diff||1) === 4);
-           // Diff4が足りない(条件に合うものがない)なら生成失敗してやり直し
            if (poolD4.length === 0) continue; 
-           
-           // 2. Diff4から1つ選ぶ
            const p4 = pickFromPool(poolD4, 1, picked);
-           if (p4.length < 1) continue;
-           picked.push(...p4);
-           
-           // 残りの枠 (stoneCount - 1)
-           // 既存の「minDiff〜maxDiff」の範囲で選ぶ
+           if (p4.length < 1) continue; picked.push(...p4);
         }
-
-        // --- 残りのルールを選出 ---
         let normalPool = allValid.filter(r => {
            let d = r.diff || 1;
            if(d < minDiff || d > maxDiff) return false;
            return true;
         });
-        
-        // 足りなければやり直し
         if (normalPool.length < (state.stoneCount - picked.length)) continue;
-
         const needed = state.stoneCount - picked.length;
         const pNormal = pickFromPool(normalPool, needed, picked);
-        
         if (pNormal.length < needed) continue;
         picked.push(...pNormal);
       }
       
-      // (以下、解の一意性チェックなどは変更なし)
-      // 解の一意性検証
       let matches = 0;
       for(let i=1; i<=5; i++) {
         for(let a=1; a<=5; a++) {
@@ -331,23 +359,20 @@ function initGame(mode, seed, isBoosted = false) {
       }
 
       if(matches === 1) {
-        if(mode === 'chaos') {
-          // Chaos: 嘘つき判定ロジック
+        const isChaosMode = (mode === 'chaos');
+        const isTowerChaos = (isTower && floor >= 16 && floor <= 19);
+
+        if(isChaosMode || isTowerChaos) {
           const trueLiar = Math.floor(rng.next() * state.stoneCount);
           let solutionsForTrueLiar = countSolutionsWithLiar(picked, trueLiar);
-
           if(solutionsForTrueLiar === 1) {
             let isAmbiguous = false;
             for(let otherLiar = 0; otherLiar < state.stoneCount; otherLiar++) {
               if(otherLiar === trueLiar) continue; 
               let solutionsForOther = countSolutionsWithLiar(picked, otherLiar);
-              if(solutionsForOther === 1) {
-                isAmbiguous = true; break; 
-              }
+              if(solutionsForOther === 1) { isAmbiguous = true; break; }
             }
-            if(!isAmbiguous) {
-              state.rules = picked; state.liarIndex = trueLiar; success = true;
-            }
+            if(!isAmbiguous) { state.rules = picked; state.liarIndex = trueLiar; success = true; }
           }
         } else {
           state.rules = picked; state.liarIndex = -1; success = true;
@@ -358,52 +383,89 @@ function initGame(mode, seed, isBoosted = false) {
     document.getElementById('loading-indicator').style.display = 'none';
 
     if(!success) {
-      alert("生成失敗: 再試行します。");
+      alert("生成失敗: 条件が厳しすぎます。再試行します。");
     } else {
-      // 成功時処理 (変更なし)
       document.getElementById('title-screen').style.display = 'none';
       const tutBtn = document.getElementById('top-tut-btn');
       if(tutBtn) tutBtn.style.display = 'none';
-
       document.getElementById('game-screen').style.display = 'block';
-      setBackground(mode);
-      updateHUD();
-      document.getElementById('log-container').innerHTML = '';
       
+      if(isTower) {
+         updateTowerUI(floor);
+      } else {
+         setBackground(mode);
+         document.body.classList.remove('bg-tower-1', 'bg-tower-2', 'bg-tower-3', 'bg-tower-4', 'bg-tower-5');
+      }
+
       const hud = document.querySelector('.hud');
       const oldId = document.getElementById('current-id-display');
       if(oldId) oldId.remove();
-      
-      // ★修正: ブースト中はIDの横にマークを付けるなどしても良いかも？
-      const boostMark = isBoosted ? ' <span style="color:#ff0000; font-weight:bold;"><br><img src="assets/images/icon_skull.png" class="boost-img img-danger" alt="skull"></span>' : '';
-      
-      hud.insertAdjacentHTML('afterend', 
-        `<div id="current-id-display" style="text-align:center; color:#555; font-size:0.7rem; margin-top:-10px;">ID: <span style="font-family:'Cinzel',serif; color:#777;">${state.currentSeed}</span>${boostMark}</div>`
-      );
+      if(!isTower) {
+        const boostMark = isBoosted ? ' <span style="color:#ff0000; font-weight:bold;"><br><img src="assets/images/icon_skull.png" class="boost-img img-danger" alt="skull"></span>' : '';
+        hud.insertAdjacentHTML('afterend', `<div id="current-id-display" style="text-align:center; color:#555; font-size:0.7rem; margin-top:-10px;">ID: <span style="font-family:'Cinzel',serif; color:#777;">${state.currentSeed}</span>${boostMark}</div>`);
+      } else {
+         hud.insertAdjacentHTML('afterend', `<div id="current-id-display"></div>`);
+         updateTowerUI(floor);
+      }
 
       document.getElementById('omega-rule-area').style.display = state.isOmega ? 'block' : 'none';
 
       initMatrix();
-      initRuneImages(); // ★これを追加！
+      initRuneImages();
       renderProphecies();
 
-      const chaosWarn = document.getElementById('chaos-warning');
-      if (mode === 'chaos') {
-        if(chaosWarn) { chaosWarn.style.display = 'none'; chaosWarn.classList.remove('visible'); }
-        executeChaosIntro();
-      } else {
-        if(chaosWarn) chaosWarn.style.display = 'none';
+      // --- ロードデータの復元 ---
+      if (loadData) {
+          state.round = loadData.round;
+          state.mana = loadData.mana;
+          state.totalChecks = loadData.totalChecks;
+          
+          if (loadData.logHtml) document.getElementById('log-container').innerHTML = loadData.logHtml;
+          
+          if (loadData.r1) {
+              document.getElementById('r1').value = loadData.r1;
+              document.getElementById('r2').value = loadData.r2;
+              document.getElementById('r3').value = loadData.r3;
+              updateRuneImage('img-r1', loadData.r1, '#ff9999');
+              updateRuneImage('img-r2', loadData.r2, '#99ccff');
+              updateRuneImage('img-r3', loadData.r3, '#99ffcc');
+          }
+          if (loadData.memo) document.querySelector('.memo-textarea').value = loadData.memo;
+
+          if (loadData.disabledIndices) {
+              loadData.disabledIndices.forEach(idx => {
+                  const s = document.getElementById(`stone-${idx}`);
+                  if(s) s.classList.add('disabled');
+              });
+          }
+          if (loadData.omegaExcludedIndices && state.isOmega) {
+               const items = document.querySelectorAll('.omega-list-item');
+               loadData.omegaExcludedIndices.forEach(idx => {
+                   if(items[idx]) items[idx].classList.add('excluded');
+               });
+          }
+          localStorage.removeItem('omega_tower_save');
       }
 
-      const nmWarn = document.getElementById('nightmare-warning');
-      if(nmWarn) { nmWarn.style.display = 'none'; nmWarn.classList.remove('visible'); }
+      updateHUD(); 
 
-      if (mode === 'nightmare') {
-        executeNightmareIntro();
+      if (!loadData) {
+          const chaosWarn = document.getElementById('chaos-warning');
+          const nmWarn = document.getElementById('nightmare-warning');
+          if(chaosWarn) { chaosWarn.style.display = 'none'; chaosWarn.classList.remove('visible'); }
+          if(nmWarn) { nmWarn.style.display = 'none'; nmWarn.classList.remove('visible'); }
+
+          if (mode === 'chaos' || (isTower && floor >= 16 && floor <= 19)) {
+            executeChaosIntro();
+          }
+          if (mode === 'nightmare' || (isTower && floor >= 6 && floor <= 10)) {
+            executeNightmareIntro();
+          }
       }
     }
   }, 100);
 }
+
 
 // ヘルパー関数: 指定した石碑が嘘つきだと仮定した場合の解の個数を数える
 function countSolutionsWithLiar(rules, liarIdx) {
@@ -731,10 +793,20 @@ function checkProphecy(idx, rule, el) {
   const a = +document.getElementById('r2').value;
   const v = +document.getElementById('r3').value;
   if(!i || !a || !v) return;
+
+  // これにより、封印解除画面(confirm-modal)のルーンはロックされません
+  if(state.mana === 0) {
+    document.querySelectorAll('.rune-container .rune-wrapper').forEach(e => e.classList.add('locked'));
+    const msg = document.getElementById('rune-lock-msg');
+    if(msg) msg.style.display = 'block';
+  }
   
   // 最初の判定時にロック＆メッセージ表示
   if(state.mana === 0) {
     document.querySelectorAll('.rune-wrapper').forEach(e => e.classList.add('locked'));
+
+    // ★追加: アクションボタンの無効化クラスも削除して復活させる
+  document.querySelectorAll('.action-btn-item').forEach(btn => btn.classList.remove('disabled'));
   
   const msg = document.getElementById('rune-lock-msg');
   if(msg) msg.style.display = 'block';
@@ -888,53 +960,62 @@ function attemptUnlock() {
   finishGame(isCorrect);
 }
 
-// 終了処理
+/* --- script.js の finishGame 関数を置換 --- */
+
 function finishGame(isWin, titleOverride) {
-  // 入力値を取得しておく
+// ★追加: ゲーム終了フラグをONにする
+  state.isGameEnded = true;
+
+  // ★追加: アクションボタンを直ちに無効化（グレーアウト）する
+  document.querySelectorAll('.action-btn-item').forEach(btn => btn.classList.add('disabled'));
+
+  // 入力値を取得
   const uI = document.getElementById('r1').value;
   const uA = document.getElementById('r2').value;
   const uV = document.getElementById('r3').value;
   const omegaArea = document.getElementById('omega-rule-area');
   if(omegaArea) omegaArea.style.display = 'none';
-   const modal = document.getElementById('result-modal');
+  const modal = document.getElementById('result-modal');
   modal.style.display = 'flex';
   
-   const modeBadge = document.getElementById('result-mode-badge');
+  // --- モードバッジ表示 (タワー対応) ---
+  const modeBadge = document.getElementById('result-mode-badge');
   if(modeBadge) {
-    // 基本のモード名 (EASY, HARD etc)
-    let modeText = state.currentMode.toUpperCase();
-    
-    // もしIDのお尻に「+」がついていたら（＝ブースト状態なら）、表示にも「+」を足す！
-    if (state.currentSeed && state.currentSeed.endsWith('+')) {
-      modeText += "+";
-    }
-    
-    // 画面にセット
-    modeBadge.innerText = modeText;
-
-    // モードごとの色設定
-    let mColor = "#fff"; // デフォルト
-    let mGlow = "#fff";
-    
+    if (state.currentMode === 'tower') {
+         modeBadge.innerText = `FLOOR ${towerState.floor}`;
+         modeBadge.style.color = "#d4af37";
+         modeBadge.style.textShadow = "0 0 15px #8e44ad";
+    } else {
+        // 通常モードの表示ロジック
+        let modeText = state.currentMode.toUpperCase();
+        if (state.currentSeed && state.currentSeed.endsWith('+')) {
+          modeText += "+";
+        }
+        modeBadge.innerText = modeText;
+        
+        let mColor = "#fff"; 
+        let mGlow = "#fff";
         switch(state.currentMode) {
-      case 'easy':     mColor = "#3498db"; mGlow = "#2980b9"; break; // 青
-      case 'standard': mColor = "#27ae60"; mGlow = "#2ecc71"; break; // 緑
-      case 'hard':     mColor = "#e74c3c"; mGlow = "#c0392b"; break; // 赤
-      case 'nightmare':mColor = "#9b59b6"; mGlow = "#8e44ad"; break; // 紫
-      case 'chaos':    mColor = "#d35400"; mGlow = "#a04000"; break; // ★変更: 茶色/焦げ茶
-      case 'omega':    mColor = "#fff";    mGlow = "#d4af37"; break; // 白＆金
+          case 'easy':     mColor = "#3498db"; mGlow = "#2980b9"; break;
+          case 'standard': mColor = "#27ae60"; mGlow = "#2ecc71"; break;
+          case 'hard':     mColor = "#e74c3c"; mGlow = "#c0392b"; break;
+          case 'nightmare':mColor = "#9b59b6"; mGlow = "#8e44ad"; break;
+          case 'chaos':    mColor = "#d35400"; mGlow = "#a04000"; break;
+          case 'omega':    mColor = "#fff";    mGlow = "#d4af37"; break;
+          case 'awakened': mColor = "#ff0000"; mGlow = "#500"; break;
+        }
+        modeBadge.style.color = mColor;
+        modeBadge.style.textShadow = `0 0 15px ${mGlow}`;
     }
-
-    modeBadge.style.color = mColor;
-    modeBadge.style.textShadow = `0 0 15px ${mGlow}`;
   }
   
-  // ★追加: Ωモードクリア時の神演出
-  if (isWin && state.isOmega) {
+  // 神演出 (Ωモード、またはタワー20階クリア時)
+  if (isWin && (state.isOmega || (state.currentMode === 'tower' && towerState.floor === 20))) {
     const frame = document.createElement('div');
     frame.className = 'divine-frame';
     document.body.appendChild(frame);
   }
+
   const title = document.querySelector('.seal-broken');
   if(isWin) {
     title.innerText = "封印解除";
@@ -945,15 +1026,13 @@ function finishGame(isWin, titleOverride) {
   }
   
   document.getElementById('final-code').innerText = `${state.ans.i} ${state.ans.a} ${state.ans.v}`;
-   // ▼▼▼ 追加: ユーザー入力値の表示 ▼▼▼
+
   const userDisplay = document.getElementById('user-input-display');
   if(userDisplay) {
     userDisplay.innerHTML = `YOUR CODE: <span style="color:${isWin ? '#fff' : '#e74c3c'}; border-bottom:1px solid #555;">${uI} ${uA} ${uV}</span>`;
   }
   
   document.getElementById('final-round').innerText = state.round;
-  
-  // ★追加: 検証回数を表示 (存在チェック付き)
   const checksEl = document.getElementById('final-checks');
   if(checksEl) checksEl.innerText = state.totalChecks;
 
@@ -973,6 +1052,76 @@ function finishGame(isWin, titleOverride) {
       </div>`;
   });
   detailBox.innerHTML = html;
+
+  // ボタン要素を取得
+  const btns = document.querySelectorAll('#result-modal .btn');
+  const nextBtn = btns[btns.length - 1]; 
+
+  // まずデフォルト状態にリセット
+  nextBtn.onclick = softResetGame;
+  nextBtn.innerText = "次の遺跡へ";
+  nextBtn.style.background = "#d4af37";
+  nextBtn.style.color = "#000";
+  nextBtn.style.borderColor = "#fff";
+
+  // ★ OMEGA TOWER モードの処理
+  if (state.currentMode === 'tower') {
+      
+      // 【要望③対応】 ハイスコア更新処理
+      // 勝敗に関わらず、「到達した階層」が自己ベストなら即座に更新する
+      const currentBest = parseInt(localStorage.getItem('omega_tower_best') || "0");
+      if (towerState.floor > currentBest) {
+          localStorage.setItem('omega_tower_best', towerState.floor);
+      }
+
+      if (isWin) {
+          if (towerState.floor >= 20) {
+              // 完全制覇
+              title.innerText = "THE SINGULARITY";
+              title.style.color = "#d4af37";
+              title.style.textShadow = "0 0 30px #d4af37";
+              
+              nextBtn.innerText = "伝説として帰還する";
+              nextBtn.onclick = () => {
+                  localStorage.removeItem('omega_tower_save'); // クリアしたのでセーブ削除
+                  softResetGame();
+              };
+          } else {
+              // 次の階層へ
+              const nextF = towerState.floor + 1;
+              nextBtn.innerText = `Floor ${nextF} へ進む`;
+              
+              // 自動セーブ (中断可能にする)
+              localStorage.setItem('omega_tower_save', JSON.stringify({ 
+                  floor: nextF,
+                  runSeed: towerState.runSeed // シードも引き継ぐ
+              }));
+
+              nextBtn.onclick = () => {
+                  modal.style.display = 'none';
+                  const frame = document.querySelector('.divine-frame');
+                  if(frame) frame.remove();
+                  startTowerLevel(nextF);
+              };
+          }
+      } else {
+          // 【要望②対応】 敗北時 -> タイトルへ戻る
+          title.innerText = "塔からの追放";
+          title.style.color = "#9b59b6";
+          
+          nextBtn.innerText = "タイトルへ戻る";
+          nextBtn.style.background = "#333";
+          nextBtn.style.color = "#ccc";
+          nextBtn.style.borderColor = "#777";
+          
+          // セーブデータを消す（パーマデス）
+          localStorage.removeItem('omega_tower_save');
+          
+          nextBtn.onclick = () => {
+              softResetGame(); // タイトルに戻る
+          };
+      }
+  }
 }
 
 // ブースト状態を管理するオブジェクト
@@ -983,30 +1132,51 @@ let boostState = {
   omega: false
 };
 
-// ★修正: 閉じカッコ不足を修正し、横並びクラスの付け替えを実装
-function checkAwakenedUnlock() {
+/* --- script.js の checkAwakenedUnlock 関数を置換 --- */
+
+checkAwakenedUnlock = function() {
+  // Awakened 解放チェック
   const isUnlocked = localStorage.getItem('omega_awakened_unlocked') === 'true';
-  const btn = document.getElementById('btn-awakened');
   
-  // Awakenedボタン制御
+  const btn = document.getElementById('btn-awakened');
   if(btn) btn.style.display = isUnlocked ? 'flex' : 'none';
 
-  // ブーストボタン（ドクロ）制御
   ['hard', 'nightmare', 'chaos', 'omega'].forEach(m => {
     const bBtn = document.getElementById(`boost-${m}`);
     if(bBtn) bBtn.style.display = isUnlocked ? 'flex' : 'none';
   });
 
-  // ★追加修正: EasyとStandardの「透明スペーサー」も連動させる
-  // これにより、ドクロが出ている時だけ、Easy/Stdも幅を合わせて縮みます
   const spacerEasy = document.getElementById('spacer-easy');
   const spacerStd = document.getElementById('spacer-std');
-  
   if(spacerEasy) spacerEasy.style.display = isUnlocked ? 'flex' : 'none';
   if(spacerStd) spacerStd.style.display = isUnlocked ? 'flex' : 'none';
+
+  // --- タワー解放チェック & ベストスコア表示 ---
+  const isTowerUnlocked = localStorage.getItem('omega_tower_unlocked') === 'true';
+  const btnSingularity = document.getElementById('btn-singularity');
+  const scoreSpan = document.getElementById('tower-best-score');
   
-  
-}
+  if(btnSingularity) {
+    btnSingularity.style.display = isTowerUnlocked ? 'flex' : 'none';
+    
+    if (isTowerUnlocked && scoreSpan) {
+      const bestVal = localStorage.getItem('omega_tower_best');
+      const best = parseInt(bestVal || "0"); // 数値化
+      
+      if (best >= 20) {
+          scoreSpan.innerText = "COMPLETE";
+          scoreSpan.style.color = "#d4af37";
+          scoreSpan.style.textShadow = "0 0 5px #d4af37";
+      } else if (best > 0) {
+          scoreSpan.innerText = `Best: ${best}F`;
+          scoreSpan.style.color = "#aaa";
+          scoreSpan.style.textShadow = "none";
+      } else {
+          scoreSpan.innerText = ""; // 0なら非表示
+      }
+    }
+  }
+};
 
 
 // ブースト切り替え & 演出
@@ -1049,13 +1219,11 @@ function toggleBoost(mode) {
   }
 }
 
-// ▼▼▼ 履歴システム完全版 (ここからコピー) ▼▼▼
 
-// 1. 履歴を保存する関数 (ログとメモも保存)
 function saveHistory(isWin, userInput) {
   if (isTutorialMode) return;
   
-  // 覚醒モード解放チェック
+  // 1. Awakened解放チェック (Omegaクリア時)
   if (state.currentMode === 'omega' && isWin) {
     if (localStorage.getItem('omega_awakened_unlocked') !== 'true') {
         localStorage.setItem('omega_awakened_unlocked', 'true');
@@ -1063,16 +1231,25 @@ function saveHistory(isWin, userInput) {
     }
   }
 
-  // 現在のログHTMLとメモの内容を取得
+  // 2. ★追加: Tower解放チェック (Awakenedクリア時)
+  if (state.currentMode === 'awakened' && isWin) {
+    if (localStorage.getItem('omega_tower_unlocked') !== 'true') {
+        localStorage.setItem('omega_tower_unlocked', 'true');
+        setTimeout(() => { 
+            playTowerUnlockAnimation();
+        }, 500);
+    }
+  }
+
   const logHtml = document.getElementById('log-container') ? document.getElementById('log-container').innerHTML : "";
   const memoText = document.querySelector('.memo-textarea') ? document.querySelector('.memo-textarea').value : "";
 
-  // ★修正: checks (総検証数) を追加
   const historyItem = {
     seed: state.currentSeed,
     mode: state.currentMode,
+    floor: (state.currentMode === 'tower' ? towerState.floor : null), // タワー階層を記録
     round: state.round,
-    checks: state.totalChecks, // ← これを追加！
+    checks: state.totalChecks,
     win: isWin,
     date: new Date().toLocaleString(),
     ans: state.ans,
@@ -1087,7 +1264,8 @@ function saveHistory(isWin, userInput) {
   localStorage.setItem('omega_history', JSON.stringify(history));
 }
 
-// 2. 履歴リストを表示する関数
+/* --- script.js の showHistory 関数を置換 --- */
+
 function showHistory() {
   const tutBtn = document.getElementById('top-tut-btn');
   if(tutBtn) tutBtn.style.display = 'none';
@@ -1104,7 +1282,6 @@ function showHistory() {
     return;
   }
 
-  // ★ここが重要: (h, idx) でインデックスを受け取る
   history.forEach((h, idx) => {
     const item = document.createElement('div');
     item.className = 'hist-item';
@@ -1112,7 +1289,15 @@ function showHistory() {
     if(h.mode==='standard') modeLabel = 'STD';
     if(h.mode==='nightmare') modeLabel = 'NIGHT';
     
-    // 詳細情報の生成
+    // ★追加: タワーモードならIDを表示しない
+    let idDisplay = `<span class="hist-id">#${h.seed}</span>`;
+    if (h.mode === 'tower') {
+        idDisplay = ''; // IDは非表示
+        // その代わりモード名に階層を入れる
+        const floorNum = h.floor || '?';
+        modeLabel = `TOWER [F${floorNum}]`;
+    }
+
     let detailHtml = "";
     if (h.ans && h.input) {
        const inputColor = h.win ? '#2ecc71' : '#e74c3c';
@@ -1124,17 +1309,14 @@ function showHistory() {
        `;
     }
     
-    // ボタンに idx を渡す: onclick="openReview(${idx})"
-    // ★修正: 日付の横などに検証数を追加
-    // 例: "2026/2/4 12:00 - R3 (12手)" のように表示
-    const checkCount = h.checks !== undefined ? h.checks : '?'; // 古いデータ対策
+    const checkCount = h.checks !== undefined ? h.checks : '?';
     
     item.innerHTML = `
       <div class="hist-left" style="width:100%;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start;">
             <div>
                 <span class="hist-mode mode-${h.mode}">${modeLabel}</span>
-                <span class="hist-id">#${h.seed}</span>
+                ${idDisplay}
             </div>
             <div style="display:flex; align-items:center;">
                 <span class="hist-result ${h.win ? 'res-win':'res-lose'}" style="margin-right:8px;">${h.win ? 'WIN':'LOSE'}</span>
@@ -1468,17 +1650,16 @@ const originalAttemptUnlock = attemptUnlock;
 
 // ★修正: チュートリアル完了時に本番アニメーションを実行する
 // ★修正版 attemptUnlock (チュートリアル成功対応)
+/* --- script.js の attemptUnlock 関数を修正 --- */
+
 attemptUnlock = function() {
   if(isTutorialMode) {
-    // 終了ステップ 22
+    // (チュートリアル用の処理はそのまま維持)
     if(tutStep === 22) {
-      // 1. お掃除処理
       document.querySelectorAll('.tut-highlight').forEach(e => e.classList.remove('tut-highlight'));
       document.querySelectorAll('.tut-blink').forEach(e => e.classList.remove('tut-blink'));
-      
       const quitBtn = document.getElementById('tut-quit-btn');
       if(quitBtn) quitBtn.style.display = 'none';
-
       const tutBox = document.getElementById('tut-box');
       if(tutBox) {
         tutBox.style.display = 'none';
@@ -1487,7 +1668,6 @@ attemptUnlock = function() {
       }
       document.getElementById('tut-overlay').style.display = 'none';
       
-      // UI復帰
       const matrix = document.getElementById('logic-matrix');
       if(matrix) matrix.style.display = '';
       const memoBtn = document.querySelector('.memo-toggle-btn');
@@ -1500,16 +1680,12 @@ attemptUnlock = function() {
           if(matrixLabel) matrixLabel.style.display = '';
       }
 
-      // 2. ★追加: チュートリアルの答え(4-4-5)を、判定用の隠しデータにコピーする！
-      // これを忘れていたので「0-0-0」と判定されて失敗していました
       document.getElementById('final-1').value = document.getElementById('r1').value;
       document.getElementById('final-2').value = document.getElementById('r2').value;
       document.getElementById('final-3').value = document.getElementById('r3').value;
 
-      // 3. 儀式実行
       executeUnlock();
 
-      // 4. 成功メッセージ
       setTimeout(() => {
          alert("おめでとう！\nチュートリアルは完了だ。\nさあ、本番の遺跡へ挑もう！");
          quitTutorial();
@@ -1540,10 +1716,13 @@ attemptUnlock = function() {
     updateRuneImage('img-final-2', a, '#d4af37');
     updateRuneImage('img-final-3', v, '#d4af37');
 
+    // ★追加: 封印解除画面のルーンから「locked」クラスを強制削除
+    // これでグレーアウトが解除され、明るくなります
+    document.querySelectorAll('#confirm-modal .rune-wrapper').forEach(e => e.classList.remove('locked'));
+
     document.getElementById('confirm-modal').style.display = 'flex';
   }
 };
-
 
 
 
@@ -1925,14 +2104,15 @@ function closeProphecyList() {
   document.getElementById('prophecy-list-modal').style.display = 'none';
 }
 
-// ゲームをリロードせずに初期化してタイトルに戻す関数
+
 function softResetGame() {
   document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
   const frame = document.querySelector('.divine-frame');
   if(frame) frame.remove();
   
   document.body.style.backgroundImage = ""; 
-  
+  document.body.classList.remove('bg-tower-1', 'bg-tower-2', 'bg-tower-3', 'bg-tower-4', 'bg-tower-5');
+
   const manaBar = document.querySelector('.mana-bar');
   if(manaBar) {
     manaBar.style.color = "";      
@@ -1948,6 +2128,9 @@ function softResetGame() {
   
   const lockMsg = document.getElementById('rune-lock-msg');
   if(lockMsg) lockMsg.style.display = 'none';
+
+  // ★修正: リセット時にロッククラスを確実に削除する
+  document.querySelectorAll('.rune-wrapper').forEach(e => e.classList.remove('locked'));
 
   document.getElementById('r1').value = '';
   document.getElementById('r2').value = '';
@@ -1979,15 +2162,34 @@ function softResetGame() {
     nmWarn.style.display = 'none';
     nmWarn.classList.remove('visible');
   }
+  
+  const idDisplay = document.getElementById('current-id-display');
+  if(idDisplay) idDisplay.remove();
+
   checkAwakenedUnlock();
 }
+
+/* --- script.js の openMenuModal 関数を置換 --- */
 
 function openMenuModal() {
   document.getElementById('menu-modal').style.display = 'flex';
   const omegaArea = document.getElementById('omega-rule-area');
   if(omegaArea) omegaArea.style.display = 'none';
-}
 
+  // タワーモード用の中断ボタン制御
+  const towerSaveBtn = document.getElementById('btn-tower-save');
+  const normalExitBtn = document.getElementById('btn-normal-exit');
+  
+  // ★修正: 「タワーモード」かつ「ゲームが終了していない」場合のみ、中断セーブを許可
+  if (state.currentMode === 'tower' && !state.isGameEnded) {
+      if(towerSaveBtn) towerSaveBtn.style.display = 'flex';
+      if(normalExitBtn) normalExitBtn.style.display = 'none';
+  } else {
+      // それ以外（通常モード、または既に決着がついた後）は「終了する」ボタン
+      if(towerSaveBtn) towerSaveBtn.style.display = 'none';
+      if(normalExitBtn) normalExitBtn.style.display = 'flex';
+  }
+}
 function closeMenuModal() {
   document.getElementById('menu-modal').style.display = 'none';
   if(state.isOmega) {
@@ -2050,15 +2252,32 @@ function playUnlockAnimation() {
           resultModal.style.transition = 'opacity 1s';
           resultModal.style.opacity = '1';
       }
-      alert("【 Awakened Omega Mode 】 unlocked.\nタイトル画面に新たな扉が開かれました。");
     }, 1000);
   }, 5000);
  }
   
+/* --- script.js の confirmAwakened 関数を完全に置換 --- */
+
 function confirmAwakened() {
-  if(confirm("【警告】\nこれより先は、論理の深淵「Awakened Omega」です。\n非常に難易度が高いですが、挑戦しますか？")) {
-    startGame('awakened');
+  // ブラウザのconfirmをやめて、専用モーダルを開く
+  const modal = document.getElementById('awakened-entry-modal');
+  if(modal) {
+    modal.style.display = 'flex';
   }
+}
+
+// モーダルを閉じる
+function closeAwakenedModal() {
+  const modal = document.getElementById('awakened-entry-modal');
+  if(modal) {
+    modal.style.display = 'none';
+  }
+}
+
+// ゲーム開始実行
+function executeAwakenedStart() {
+  closeAwakenedModal();
+  startGame('awakened');
 }
 
 let nextIconAngle = 0;
@@ -2074,15 +2293,19 @@ function spinNextIcon() {
 
 // 初期化時に画像をセットする
 // (window.onload の最後などで呼ぶ必要がありますが、とりあえずクリックすれば動きます)
+/* --- script.js の cycleRune 関数を修正 --- */
 
 function cycleRune(inputId, imgId, color) {
   const input = document.getElementById(inputId);
   const wrapper = input.closest('.rune-wrapper');
 
-  // ロックされていたら何もしない
-  if (wrapper.classList.contains('locked')) return;
+  // ★修正: 封印解除画面(final-*)以外で、かつロックされている場合のみリターン
+  // これにより、封印解除画面では常に変更が可能になります
+  if (!inputId.startsWith('final-') && wrapper.classList.contains('locked')) {
+      return;
+  }
 
-  // 数字を増やす (1->2->3->4->5->1...)
+  // 数字を増やす
   let val = parseInt(input.value);
   if (isNaN(val)) val = 1;
   val++;
@@ -2126,4 +2349,253 @@ function initRuneImages() {
     updateRuneImage(imgIds[idx], el.value, colors[idx]);
   });
 }
-// --- ▲▲▲ ここまで追記 ▲▲▲ ---
+
+/* --- script.js の末尾（1290行目付近〜最後まで）を以下のコードで上書き --- */
+
+// ■ 1. タワーモード用 ステート管理
+let towerState = {
+  active: false,
+  floor: 1,
+  maxFloor: 20,
+  runSeed: "" // ランダムシード保持用
+};
+
+/* --- script.js の checkAwakenedUnlock をさらに安全版に更新 --- */
+
+checkAwakenedUnlock = function() {
+  // ① Awakened Omegaボタンの表示判定
+  const isAwakenedAvailable = localStorage.getItem('omega_awakened_unlocked') === 'true';
+  
+  const btn = document.getElementById('btn-awakened');
+  if(btn) btn.style.display = isAwakenedAvailable ? 'flex' : 'none';
+
+  // ブーストボタン制御
+  ['hard', 'nightmare', 'chaos', 'omega'].forEach(m => {
+    const bBtn = document.getElementById(`boost-${m}`);
+    if(bBtn) bBtn.style.display = isAwakenedAvailable ? 'flex' : 'none';
+  });
+
+  const spacerEasy = document.getElementById('spacer-easy');
+  const spacerStd = document.getElementById('spacer-std');
+  if(spacerEasy) spacerEasy.style.display = isAwakenedAvailable ? 'flex' : 'none';
+  if(spacerStd) spacerStd.style.display = isAwakenedAvailable ? 'flex' : 'none';
+
+  // --- ★安全装置: Awakened未解放なら、タワーも強制ロック ---
+  if (!isAwakenedAvailable) {
+      localStorage.removeItem('omega_tower_unlocked');
+  }
+
+  // ② Singularityボタンの表示判定
+  const isTowerUnlocked = localStorage.getItem('omega_tower_unlocked') === 'true';
+  const btnSingularity = document.getElementById('btn-singularity');
+  const scoreSpan = document.getElementById('tower-best-score');
+  
+  if(btnSingularity) {
+    btnSingularity.style.display = isTowerUnlocked ? 'flex' : 'none';
+    
+    if (isTowerUnlocked && scoreSpan) {
+      const best = parseInt(localStorage.getItem('omega_tower_best') || "0");
+      if (best >= 20) {
+          scoreSpan.innerText = "COMPLETE";
+          scoreSpan.style.color = "#d4af37";
+          scoreSpan.style.textShadow = "0 0 5px #d4af37";
+      } else if (best > 0) {
+          scoreSpan.innerText = `Best: ${best}F`;
+          scoreSpan.style.color = "#aaa";
+          scoreSpan.style.textShadow = "none";
+      } else {
+          scoreSpan.innerText = "";
+      }
+    }
+  }
+};
+
+/* --- script.js の startSingularity 関数を完全に置換 --- */
+
+function startSingularity() {
+  const modal = document.getElementById('tower-entry-modal');
+  const textArea = document.getElementById('tower-modal-text');
+  const btnArea = document.getElementById('tower-modal-btns');
+  
+  if(!modal) return;
+
+  // 中断データの確認
+  const saveStr = localStorage.getItem('omega_tower_save');
+  
+  if (saveStr) {
+    // --- 中断データがある場合 ---
+    const save = JSON.parse(saveStr);
+    textArea.innerHTML = `
+      <span style="color:#d4af37; font-weight:bold;">中断された記録を検知</span><br>
+      Floor ${save.floor} (Round ${save.round})<br><br>
+      探索を再開しますか？<br>
+      <span style="font-size:0.8rem; color:#888;">※「最初から」を選ぶと、中断データは破棄されます。</span>
+    `;
+
+    btnArea.innerHTML = `
+      <button class="btn btn-std" style="border-color:#555; color:#aaa;" onclick="closeTowerModal()">閉じる</button>
+      <button class="btn btn-hard" style="border-color:#e74c3c; color:#e74c3c;" onclick="confirmTowerStart('new')">最初から</button>
+      <button class="btn btn-std" style="background:#d4af37; color:#000; border-color:#fff; font-weight:bold;" onclick="confirmTowerStart('resume', ${save.floor})">再開する</button>
+    `;
+  } else {
+    // --- 新規スタートの場合 ---
+    textArea.innerHTML = `
+      これより先は引き返せない深淵<br>
+      <span style="color:#9b59b6; font-weight:bold;">エンドコンテンツ</span> です。<br><br>
+      全20階層。<br>
+      敗北すれば、即座に1階へ戻されます。<br>
+      <span style="color:#d4af37; font-size:0.9rem;">覚悟はいいですか？</span>
+    `;
+
+    btnArea.innerHTML = `
+      <button class="btn btn-std" style="border-color:#555; color:#aaa;" onclick="closeTowerModal()">やめる</button>
+      <button class="btn btn-omega" style="border-color:#d4af37; color:#fff; box-shadow:0 0 15px rgba(212,175,55,0.4);" onclick="confirmTowerStart('new')">深淵に挑む</button>
+    `;
+  }
+  
+  modal.style.display = 'flex';
+}
+
+// モーダルを閉じる関数
+function closeTowerModal() {
+  document.getElementById('tower-entry-modal').style.display = 'none';
+}
+
+// 選択後の処理
+function confirmTowerStart(type, floor) {
+  closeTowerModal();
+  
+  if (type === 'resume') {
+     const saveStr = localStorage.getItem('omega_tower_save');
+     if(saveStr) {
+       const save = JSON.parse(saveStr);
+       towerState.floor = save.floor;
+       towerState.runSeed = save.runSeed || generateSeed(5);
+       startTowerLevel(save.floor, save);
+     }
+  } else {
+     // 新規スタート
+     localStorage.removeItem('omega_tower_save');
+     towerState.floor = 1;
+     towerState.runSeed = generateSeed(5);
+     startTowerLevel(1);
+  }
+}
+
+// ■ 4. 階層開始ラッパー
+function startTowerLevel(floor) {
+   towerState.active = true;
+   towerState.floor = floor;
+   
+   // ランダムシード + 階層番号 で、毎回違うが再現性のあるIDを作る
+   const seedPrefix = `T-${towerState.runSeed}-F${floor}`;
+   
+   initGame('tower', seedPrefix); 
+}
+
+// ■ 5. 中断セーブ実行
+function executeTowerSave() {
+  if (state.currentMode === 'tower') {
+      // 階層だけでなく、ランダムシードも保存する
+      localStorage.setItem('omega_tower_save', JSON.stringify({ 
+          floor: towerState.floor,
+          runSeed: towerState.runSeed
+      }));
+      alert(`Floor ${towerState.floor} の状態で記録しました。\nタイトルへ戻ります。`);
+  }
+  closeMenuModal();
+  softResetGame();
+}
+
+// ■ 6. タワー用UI更新ヘルパー
+function updateTowerUI(floor) {
+   // 背景リセット & クラス付与
+   document.body.classList.remove('bg-tower-1', 'bg-tower-2', 'bg-tower-3', 'bg-tower-4', 'bg-tower-5');
+   
+   if(floor <= 5) document.body.classList.add('bg-tower-1');
+   else if(floor <= 10) document.body.classList.add('bg-tower-2');
+   else if(floor <= 15) document.body.classList.add('bg-tower-3');
+   else if(floor <= 19) document.body.classList.add('bg-tower-4');
+   else document.body.classList.add('bg-tower-5');
+
+   // ID表示エリアを「FLOOR表示」に書き換え
+   const idDisplay = document.getElementById('current-id-display');
+   if(idDisplay) {
+     idDisplay.innerHTML = `<div id="tower-floor-badge">FLOOR ${floor}</div>`;
+   }
+}
+
+/* --- script.js の playTowerUnlockAnimation 関数を修正（振動維持・位置修正版） --- */
+
+function playTowerUnlockAnimation() {
+  const overlay = document.getElementById('tower-unlock-overlay');
+  const resultModal = document.getElementById('result-modal');
+  const towerContainer = document.querySelector('.tower-image-container');
+
+  if(!overlay) return;
+
+  // 1. リセット処理
+  if(towerContainer) {
+    towerContainer.classList.remove('rise-active');
+    towerContainer.style.transform = 'translateY(100%)';
+    towerContainer.style.opacity = '1';
+  }
+
+  // 結果画面を隠す
+  if(resultModal) resultModal.style.opacity = '0';
+
+  // オーバーレイを表示
+  overlay.style.display = 'flex';
+  overlay.style.opacity = '1';
+  
+  // 地響き開始
+  document.body.classList.add('shake-effect');
+  
+  if (navigator.vibrate) navigator.vibrate([200, 50, 200, 50, 1000]);
+
+  // 強制リフロー（初期位置を確定させる）
+  if(towerContainer) {
+    void towerContainer.offsetWidth; 
+  }
+
+  // 2. アニメーション開始
+  requestAnimationFrame(() => {
+    if(towerContainer) {
+      towerContainer.classList.add('rise-active');
+      towerContainer.style.transform = ''; 
+    }
+  });
+
+  // 終了処理（表示時間を調整：7.5秒後）
+  setTimeout(() => {
+    // ★修正ポイント: ここではまだ振動を止めない！
+    // フェードアウトだけを開始する
+    overlay.style.transition = 'opacity 1s';
+    overlay.style.opacity = '0';
+    
+    // フェードアウトが完了するのを待つ（1秒）
+    setTimeout(() => {
+      // ★修正ポイント: 完全に消えてから振動を止める
+      // これで「最後に動く」現象がなくなります
+      document.body.classList.remove('shake-effect');
+
+      overlay.style.display = 'none';
+      overlay.style.transition = ''; 
+      
+      if(towerContainer) {
+        towerContainer.classList.remove('rise-active');
+      }
+
+      if(resultModal) resultModal.style.opacity = '1';
+      
+    }, 1000); // フェードアウト時間(1s)に合わせて待つ
+  }, 7500);
+}
+
+// ★強制勝利コマンド（コピーしてコンソールで実行）
+function debugWin() {
+  document.getElementById('r1').value = state.ans.i;
+  document.getElementById('r2').value = state.ans.a;
+  document.getElementById('r3').value = state.ans.v;
+  finishGame(true);
+}
