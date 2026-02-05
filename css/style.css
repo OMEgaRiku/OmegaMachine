@@ -1,0 +1,1498 @@
+:root {
+    --bg-color: #050505;
+    --text-main: #e0d0b0;
+    --accent-color: #d4af37;
+  }
+
+  body {
+    font-family: 'Shippori Mincho', serif;
+    background-color: var(--bg-color);
+    background-image: radial-gradient(circle at 50% 50%, #1a150e 0%, #000000 100%);
+    color: var(--text-main);
+    text-align: center;
+    padding: 20px;
+    margin: 0;
+    min-height: 100vh;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-image 1s ease;
+  }
+  .en-font { font-family: 'Cinzel', serif; }
+
+  /* Title Screen */
+  #title-screen {
+    display: flex; flex-direction: column; justify-content: center; align-items: center; height: 90vh; animation: fadeIn 2s;
+  }
+  .game-title {
+    font-family: 'Cinzel', serif; font-size: 2.5rem; font-weight: 900; letter-spacing: 3px;
+    background: linear-gradient(to bottom, #fff, #aaa); -webkit-background-clip: text; color: transparent;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3); margin-bottom: 5px;
+  }
+  
+  /* メインのルーン入力欄 (既存クラスの上書き・強化) */
+input.rune-input {
+  font-family: 'Cinzel', serif; /* フォント適用 */
+  font-weight: bold;
+  letter-spacing: 2px;
+  /* 入力時の雰囲気を強化 */
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.3); 
+}
+
+
+/* 封印解除画面の入力欄スタイル */
+.final-input-row {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.final-input {
+  width: 60px;
+  height: 80px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #555;
+  border-radius: 8px;
+  color: #d4af37; /* 金文字 */
+  font-family: 'Cinzel', serif;
+  font-size: 2.5rem;
+  text-align: center;
+  outline: none;
+  transition: 0.3s;
+  box-shadow: inset 0 0 10px #000;
+}
+
+.final-input:focus {
+  border-color: #d4af37;
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.3), inset 0 0 10px #000;
+  transform: scale(1.1);
+}
+
+
+  /* Difficulty Buttons */
+  .btn {
+    background: rgba(0,0,0,0.5); border: 1px solid #777; color: #ccc; padding: 18px; margin: 8px;
+    font-size: 1.1rem; font-family: 'Shippori Mincho', serif; font-weight: bold; cursor: pointer;
+    width: 90%; max-width: 350px; position: relative; overflow: hidden; transition: 0.3s; border-radius: 8px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .btn:active { transform: scale(0.98); }
+  
+  .btn-std { border-color: #3498db; color: #aed6f1; box-shadow: 0 0 10px rgba(52, 152, 219, 0.2); }
+  .btn-hard { border-color: #e74c3c; color: #f5b7b1; box-shadow: 0 0 10px rgba(231, 76, 60, 0.2); }
+  .btn-night { border-color: #9b59b6; color: #d7bde2; box-shadow: 0 0 10px rgba(155, 89, 182, 0.2); }
+  .btn-chaos { border-color: #8d6e63; color: #d7ccc8; box-shadow: 0 0 10px rgba(141, 110, 99, 0.2); 
+  }
+  
+  /* 履歴のラベル色 - 茶色 */
+  .mode-chaos { background: #4e342e; color: #d7ccc8; }
+
+  
+  /* Omega Mode Styles */
+  .btn-omega { 
+    border-color: #fff; color: #fff; background: #000; 
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); font-family: 'Cinzel', serif;
+  }
+
+  /* Game Screen */
+  #game-screen { display: none; max-width: 600px; margin: 0 auto; animation: slideIn 0.5s ease-out; }
+  @keyframes slideIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+  .hud {
+    display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.2);
+    padding-bottom: 10px; margin-bottom: 20px; font-family: 'Cinzel', serif;
+  }
+  .hud-left { display: flex; gap: 8px; }
+  .hud-btn { 
+    cursor: pointer; font-size: 0.85rem; color: #aaa; border: 1px solid #555; 
+    padding: 6px 12px; border-radius: 4px; background: rgba(0,0,0,0.6); 
+    display: flex; align-items: center; justify-content: center;
+  }
+  .btn-guide { border-color: #d4af37; color: #f1c40f; font-weight: bold; }
+  .mana-bar { font-size: 1.1rem; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+
+  /* Rune Inputs */
+  .rune-container {
+    display: flex; justify-content: center; gap: 12px; margin-bottom: 20px;
+    background: rgba(0,0,0,0.4); padding: 20px 10px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);
+  }
+  .rune-wrapper { position: relative; width: 80px; }
+  .rune-label { position: absolute; top: -28px; left: 0; width: 100%; font-size: 0.8rem; font-weight: bold; }
+  .rune-sub { font-size: 0.6rem; color: #888; display: block; margin-top: -2px; font-family: 'Cinzel', serif; }
+  
+  input.rune-input {
+    width: 100%; height: 75px; font-size: 2.2rem; text-align: center; background: #0f0f0f;
+    border: 2px solid #333; border-radius: 8px; color: #fff; font-family: 'Cinzel', serif; transition: 0.3s;
+  }
+  input:focus { outline: none; border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.3); }
+  
+  #r1 { border-color: #8a1c1c; color: #ff9999; } /* Ignis */
+  #r2 { border-color: #1c4e8a; color: #99ccff; } /* Aqua */
+  #r3 { border-color: #1c8a5e; color: #99ffcc; } /* Ventus */
+
+  /* Logic Matrix */
+  .logic-grid {
+    display: grid; grid-template-columns: auto repeat(5, 1fr); gap: 4px;
+    margin: 10px 0 10px 0; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+  }
+  .grid-header { font-family: 'Cinzel', serif; font-weight: bold; color: #888; font-size: 0.8rem; padding-bottom: 5px;}
+  .grid-row-label { text-align: right; padding-right: 10px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; justify-content: flex-end;}
+  
+  .grid-cell {
+    background: rgba(255,255,255,0.05); border: 1px solid #333; aspect-ratio: 1; border-radius: 4px;
+    cursor: pointer; display: flex; justify-content: center; align-items: center;
+    font-weight: bold; font-size: 1.2rem; user-select: none; transition: 0.1s;
+  }
+  
+  /* マトリクスの開閉用 */
+.logic-grid {
+  /* 既存のデザインはそのまま維持 */
+  transition: max-height 0.3s ease-out, opacity 0.3s ease-out, padding 0.3s;
+  overflow: hidden;
+}
+
+/* 閉じている時のスタイル */
+.logic-grid.closed {
+  display: none; /* シンプルに非表示にする */
+  /* アニメーションにこだわるなら max-height: 0; padding: 0; opacity: 0; などでもOK */
+}
+  
+  /* Shared Cell Styles */
+  .cell-x, .memo-btn.is-x { background: rgba(200, 50, 50, 0.2); color: #ff5555; border-color: #552222; }
+  .cell-x::after, .memo-btn.is-x::after { content: "×"; }
+  
+  .cell-o, .memo-btn.is-o { background: rgba(50, 200, 50, 0.2); color: #55ff55; border-color: #225522; }
+  .cell-o::after, .memo-btn.is-o::after { content: "○"; }
+
+  /* Memo Toggle & Area */
+  .memo-toggle-btn {
+    width: 100%; padding: 8px; background: rgba(255,255,255,0.1); border: 1px solid #444; border-radius: 6px;
+    color: #aaa; font-size: 0.8rem; cursor: pointer; margin-bottom: 5px; font-weight: bold; transition: 0.2s;
+  }
+  .memo-toggle-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+  .memo-area {
+    background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 8px;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out; overflow: hidden;
+  }
+  .memo-area.closed { display: none; }
+
+  .memo-row { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
+  .memo-label { width: 100%; font-size: 0.7rem; color: #888; margin-bottom: 2px; text-align: left; padding-left: 5px;}
+  .memo-btn {
+    border: 1px solid #444; background: #111; color: #ccc; padding: 6px 8px; border-radius: 4px;
+    font-size: 0.75rem; cursor: pointer; min-width: 45px; display: flex; align-items: center; justify-content: center; gap: 3px; user-select: none;
+  }
+  .memo-btn::after { margin-left: 2px; font-weight: bold; }
+
+  /* Prophecy List */
+  .prophecy-list { display: flex; flex-direction: column; gap: 10px; }
+  .stone {
+    background: linear-gradient(to right, rgba(30,30,30,0.9), rgba(10,10,10,0.9));
+    border: 1px solid #444; padding: 10px 15px;
+    border-radius: 5px; cursor: pointer; text-align: left; transition: 0.2s;
+    display: flex; justify-content: space-between; align-items: center; position: relative;
+    backdrop-filter: blur(5px);
+  }
+  .stone:hover { border-color: #aaa; transform: translateX(5px); }
+  .stone::after { content: ''; position: absolute; top:0; left:0; width: 4px; height: 100%; background: #666; }
+  .stone.disabled { opacity: 0.4; pointer-events: none; }
+  .stone-title { font-size: 0.75rem; color: #888; margin-bottom: 2px; }
+  .stone-text { font-size: 1rem; color: #fff; font-weight: bold; letter-spacing: 0.5px; }
+  .stone-id { font-family: 'Cinzel', serif; font-size: 1.4rem; color: #444; margin-left: 10px;}
+  /* 予言リスト開閉用 */
+.prophecy-list.closed {
+  display: none;
+}
+
+  
+      /* Mystery Stone (Omega) - 基本スタイル（アニメーションなし） */
+  .stone.is-mystery {
+    color: #d4af37;
+    background: radial-gradient(circle, #1a1505 0%, #000 100%);
+    border: 1px solid #d4af37;
+    display: flex; justify-content: center; align-items: center;
+    
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+    transition: all 0.5s ease;
+  }
+
+  /* 着地した後に追加するクラス（ここで光らせる） */
+  .stone.is-mystery.omega-pulsing {
+    animation: omegaPulse 3s infinite alternate;
+  }
+
+  /* 判定済み（disabled）のスタイル */
+  .stone.is-mystery.disabled {
+    animation: none; /* 光を止める */
+    border-color: #333;
+    color: #333;
+    background: #050505;
+    box-shadow: none;
+    opacity: 0.3;
+    filter: grayscale(100%);
+    cursor: not-allowed;
+  }
+
+  .stone.is-mystery .stone-text { 
+    font-family: 'Cinzel', serif; 
+    font-size: 1.5rem; 
+    letter-spacing: 5px; 
+    color: #d4af37;
+    text-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+  }
+  
+  .stone.is-mystery.disabled .stone-text {
+    color: #333;
+    text-shadow: none;
+  }
+
+  /* 黄金の呼吸アニメーション */
+  @keyframes omegaPulse {
+    0% {
+      box-shadow: 0 0 5px rgba(212, 175, 55, 0.2), inset 0 0 10px rgba(0,0,0,0.8);
+      border-color: #8a7326;
+    }
+    100% {
+      box-shadow: 0 0 25px rgba(212, 175, 55, 0.5), inset 0 0 20px rgba(212, 175, 55, 0.1);
+      border-color: #ffe066;
+    }
+  }
+
+  /* Log */
+  .log-area {
+    margin-top: 20px; border-top: 1px solid #444; padding-top: 10px; max-height: 200px; overflow-y: auto; text-align: left; font-size: 0.9rem;
+  }
+  .log-entry { margin-bottom: 5px; padding: 8px 10px; border-radius: 4px; background: rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+  /* TRUE: 緑→金 (神聖な正解) */
+  .log-true { border-left: 3px solid #d4af37; color: #ffd700; background: rgba(212, 175, 55, 0.1); }
+  /* FALSE: 赤→紫 (虚無・不正解) */
+  .log-false { border-left: 3px solid #9b59b6; color: #d7bde2; background: rgba(155, 89, 182, 0.1); }
+  
+  /* 数字の強調用クラス */
+  .num-fire { color: #ff9999; font-weight: bold; }
+  .num-water { color: #99ccff; font-weight: bold; }
+  .num-wind { color: #99ffcc; font-weight: bold; }
+
+  /* メモ欄をフリーテキスト化 --- */
+  .memo-textarea {
+    width: 100%;
+    height: 120px;
+    background: #000;
+    border: 1px solid #444;
+    color: #e0d0b0;
+    padding: 10px;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.9rem;
+    resize: none;
+    box-sizing: border-box;
+    border-radius: 4px;
+    line-height: 1.5;
+    transition: 0.3s;
+  }
+  .memo-textarea:focus {
+    outline: none;
+    border-color: #d4af37;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+    background: #111;
+  }
+  .memo-textarea::placeholder {
+    color: #444;
+    font-style: italic;
+  }
+  .log-nums { font-family: 'Cinzel', serif; font-weight: bold; background: #000; padding: 1px 6px; border-radius: 3px; letter-spacing: 1px; font-size: 0.8rem;}
+
+  /* Action Bar */
+  .action-bar { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
+  .btn-action { flex: 1; padding: 15px; font-weight: bold; font-family: 'Shippori Mincho', serif; border: none; cursor: pointer; border-radius: 8px; font-size: 1rem; color: #fff; transition: 0.2s; }
+  .btn-next { background: #333; border: 1px solid #555; }
+  .btn-solve { background: #27ae60; box-shadow: 0 4px 0 #1e8449; }
+
+  /* Chaos Bar */
+  .chaos-bar { background: #c0392b; color: white; padding: 5px; font-size: 0.8rem; font-weight: bold; margin-bottom: 15px; border-radius: 4px; display: none; text-shadow: 0 0 5px #000; letter-spacing: 2px;}
+
+  /* Modals */
+  .modal-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9); z-index: 10000; flex-direction: column; justify-content: center; align-items: center;
+    backdrop-filter: blur(5px);
+  }
+  .seal-broken { font-size: 2.5rem; color: #fff; text-shadow: 0 0 30px #fff; font-weight: bold; }
+  .answer-reveal { font-size: 4rem; letter-spacing: 15px; margin: 20px; color: #fff; font-family: 'Cinzel', serif; }
+
+  /* Help & History Styles */
+  #help-content, #history-content {
+    background: #111; border: 1px solid #444; padding: 20px; border-radius: 10px; width: 85%; max-width: 500px;
+    max-height: 80vh; overflow-y: auto; text-align: left; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.8);
+  }
+  .help-section { margin-bottom: 25px; border-bottom: 1px dashed #333; padding-bottom: 15px; }
+  .help-title { color: #d4af37; font-weight: bold; margin-bottom: 10px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;}
+  .help-text { font-size: 0.9rem; line-height: 1.6; color: #ccc; }
+  /* 閉じるボタン（スクロールしても追従するように変更） */
+.close-help { 
+  position: sticky !important; /* absolute から sticky に変更 */
+  top: 0; 
+  float: right; /* 右に寄せる */
+  font-size: 2rem; /* 少し大きくして押しやすく */
+  cursor: pointer; 
+  color: #888; 
+  padding: 5px 10px;
+  background: #111; /* 背景をつけて文字と被らないように */
+  border-radius: 0 0 0 8px;
+  z-index: 10;
+  margin-top: -10px; /* 位置微調整 */
+  margin-right: -10px;
+}
+
+  
+  .diagram-box {
+    background: #222; border: 1px solid #444; padding: 15px; border-radius: 6px; margin: 10px 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .d-stone {
+    width: 90%; background: #333; border-left: 3px solid #666; padding: 8px; margin: 5px 0; color: #fff; font-size: 0.8rem; display: flex; justify-content: space-between;
+  }
+  .d-arrow { font-size: 1.5rem; color: #d4af37; margin: 5px 0; }
+  .d-result { font-weight: bold; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
+  .d-true { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+  .d-false { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
+  
+  /* Liar Styles */
+  .stone.is-liar {
+    border: 2px solid #e74c3c;
+    background: linear-gradient(to right, rgba(231, 76, 60, 0.2), rgba(0,0,0,0.8));
+  }
+  .stone.is-liar::after { background: #e74c3c; }
+  .stone.is-liar .stone-title::after {
+    content: " (嘘つき)"; color: #e74c3c; font-weight: bold; margin-left: 5px;
+  }
+  .res-row { font-size: 0.8rem; border-bottom: 1px solid #444; padding: 5px 0; color: #ccc; }
+  .res-liar-txt { color: #e74c3c; font-weight:bold; }
+
+    /* Omega Rule List */
+  #omega-rule-area {
+    margin-top: 15px; padding: 10px; border: 1px solid #444; border-radius: 8px;
+    background: rgba(0,0,0,0.8); display: none; text-align: left;
+    
+    position: relative;
+    z-index: 15000;
+    overflow: visible !important; /* ← これがないとiPhoneで消えます！ */
+  }
+  .omega-label { color: #fff; font-size: 0.9rem; margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+  .omega-list-item {
+    padding: 6px; font-size: 0.85rem; color: #ccc; cursor: pointer; border-bottom: 1px dashed #333; transition: 0.2s;
+  }
+  .omega-list-item:hover { color: #fff; background: rgba(255,255,255,0.1); }
+  .omega-list-item.excluded {
+    text-decoration: line-through; color: #555; opacity: 0.6;
+  }
+
+  /* History List Styles */
+  .hist-item {
+    background: #1a1a1a; border: 1px solid #333; border-radius: 6px; padding: 10px;
+    margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .hist-left { text-align: left; }
+  .hist-mode { font-size: 0.7rem; padding: 2px 6px; border-radius: 3px; margin-right: 5px; font-weight: bold; }
+  .mode-standard { background: #1c4e8a; color: #aed6f1; }
+  .mode-hard { background: #8a1c1c; color: #f5b7b1; }
+  .mode-nightmare { background: #4a1c8a; color: #d7bde2; }
+  .mode-chaos { background: #555; color: #ccc; }
+  .mode-omega { background: #000; color: #fff; border: 1px solid #fff; }
+
+  .hist-id { font-family: 'Cinzel', serif; color: #d4af37; font-weight: bold; letter-spacing: 1px; }
+  .hist-date { font-size: 0.7rem; color: #666; margin-top: 2px; }
+  .hist-result { font-weight: bold; font-size: 0.9rem; }
+  .res-win { color: #2ecc71; }
+  .res-lose { color: #e74c3c; }
+
+  .btn-replay {
+    background: transparent; border: 1px solid #555; color: #aaa; cursor: pointer;
+    padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; margin-left: 10px; transition: 0.2s;
+  }
+  .btn-replay:hover { background: #333; color: #fff; border-color: #fff; }
+  
+  /* Tutorial Styles */
+  .t-container { display: flex; flex-direction: column; gap: 15px; }
+  .t-step { background: #1a1a1a; border: 1px solid #444; border-radius: 8px; padding: 15px; position: relative; text-align: left; }
+  .t-step-num { background: var(--accent-color); color: #000; font-weight: bold; display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; margin-bottom: 8px; }
+  .t-row { display: flex; align-items: center; justify-content: space-around; margin: 10px 0; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; }
+  .t-stone-mock { border: 1px solid #666; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; color: #ccc; background: #222; }
+  .t-result-mock { font-weight: bold; font-family: 'Cinzel', serif; padding: 5px 10px; border-radius: 4px; }
+  .t-res-true { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+  .t-res-false { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
+  .t-logic-text { font-size: 0.9rem; line-height: 1.6; color: #ddd; margin-top: 5px; }
+  .t-highlight { color: #ff9999; font-weight: bold; }
+  .t-highlight-b { color: #99ccff; font-weight: bold; }
+  .t-conclusion { border-top: 1px dashed #444; margin-top: 10px; padding-top: 10px; font-weight: bold; color: var(--accent-color); }
+
+  #loading-indicator { font-size: 1.2rem; color: #d4af37; margin-top: 20px; display: none; }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  
+    /* --- チュートリアル用スタイル--- */
+.title-top-right {
+  position: fixed;
+  top: max(20px, env(safe-area-inset-top)); 
+  right: 20px; 
+  left: auto;   /* ←コレ重要！左側は固定しない */
+  width: auto;  /* ←コレ重要！勝手に伸びないようにする */
+  
+  display: flex; 
+  gap: 10px; 
+  z-index: 20000; 
+  pointer-events: auto; 
+}
+
+  .btn-tutorial {
+    background: rgba(46, 204, 113, 0.2); border: 1px solid #2ecc71; color: #2ecc71;
+    padding: 10px 15px; border-radius: 30px; font-weight: bold; cursor: pointer;
+    font-size: 0.9rem; display: flex; align-items: center; gap: 5px;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.2); transition: 0.2s;
+  }
+  .btn-tutorial:hover { background: rgba(46, 204, 113, 0.4); transform: scale(1.05); }
+
+  /* チュートリアルのメッセージBOX */
+  #tut-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    /* 背景の暗さを少し和らげました (0.7 -> 0.4) */
+    background: rgba(0,0,0,0.4); z-index: 2000; display: none;
+    pointer-events: auto;
+  }
+  
+  /* ハイライト（穴を開ける） */
+  .tut-highlight {
+    position: relative; z-index: 2001; 
+    /* 周りの暗さも少し和らげました */
+    box-shadow: 0 0 0 9999px rgba(0,0,0,0.6); 
+    pointer-events: auto; 
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+
+  /* 赤く点滅するアニメーション（注目！） */
+  @keyframes blink-red {
+    0% { border-color: #ff0000; box-shadow: 0 0 10px rgba(255, 0, 0, 0.5); transform: scale(1); }
+    50% { border-color: #ffcccc; box-shadow: 0 0 25px rgba(255, 50, 50, 0.9); transform: scale(1.02); }
+    100% { border-color: #ff0000; box-shadow: 0 0 10px rgba(255, 0, 0, 0.5); transform: scale(1); }
+  }
+  .tut-blink {
+    animation: blink-red 1.2s infinite ease-in-out !important;
+    border: 2px solid #ff0000 !important;
+    background: rgba(0, 0, 0, 0.8) !important; /* 文字が読みやすいように背景を濃く */
+  }
+  /* --- チュートリアルBOX (強制位置修正版) --- */
+
+  .tut-msg-box {
+    position: fixed !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 92% !important; /* 横幅 */
+    max-width: 500px !important;
+    background: rgba(15, 15, 20, 0.95) !important;
+    border: 1px solid #d4af37 !important;
+    border-radius: 8px !important;
+    padding: 12px 15px !important; /* パディングを減らす */
+    z-index: 9999 !important; /* 最前面に */
+    text-align: left !important;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.9) !important;
+    transition: all 0.3s ease !important;
+    
+    /* デフォルトは「画面の一番下」に配置 */
+    bottom: 20px !important;
+    top: auto !important;
+  }
+
+  /* 上に表示する場合のクラス */
+  .tut-pos-top {
+    top: 80px !important; /* ヘッダーの下 */
+    bottom: auto !important;
+  }
+
+  /* 下に表示する場合のクラス (デフォルトと同じだが念のため) */
+  .tut-pos-bottom {
+    bottom: 20px !important;
+    top: auto !important;
+  }
+
+  /* テキストサイズ調整 */
+  .tut-text {
+    color: #fff;
+    line-height: 1.4;
+    font-size: 0.9rem; /* 文字を少し小さく */
+    margin-bottom: 8px;
+  }
+
+  /* ボタン調整 */
+  .tut-next-btn {
+    background: #d4af37;
+    color: #000;
+    border: none;
+    padding: 5px 15px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    float: right;
+    font-size: 0.8rem;
+  }
+
+    
+  .tut-msg-box {
+    position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%);
+    width: 90%; max-width: 500px; background: #111; border: 2px solid #d4af37;
+    border-radius: 10px; padding: 20px; z-index: 2002; text-align: left;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+  }
+  .tut-text { color: #fff; line-height: 1.6; font-size: 1rem; margin-bottom: 15px; }
+  .tut-next-btn {
+    background: #d4af37; color: #000; border: none; padding: 8px 20px;
+    font-weight: bold; border-radius: 4px; cursor: pointer; float: right;
+  }
+  .tut-arrow {
+    position: absolute; color: #d4af37; font-size: 2rem; font-weight: bold;
+    animation: bounce 1s infinite; z-index: 2003; text-shadow: 0 0 5px #000;
+  }
+  @keyframes bounce { 0%, 100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
+
+/* --- チュートリアル用レイアウト --- */
+/* 埋め込みモードのメッセージボックス */
+.tut-embedded-mode {
+  position: relative !important; /* 固定配置を解除 */
+  left: auto !important;
+  transform: none !important;
+  bottom: auto !important;
+  top: auto !important;
+  
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 0 20px 0 !important;
+  box-sizing: border-box !important; 
+  background: rgba(20, 20, 25, 0.95) !important;
+  border: 1px solid #d4af37 !important;
+  border-radius: 8px !important;
+  padding: 15px !important;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.3) !important;
+  
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 120px; 
+}
+
+/* 矢印は埋め込みモードでは消す */
+.tut-embedded-mode .tut-arrow {
+  display: none !important;
+}
+
+/* 結果表示のデザイン */
+.tut-result-display {
+  font-family: 'Cinzel', serif;
+  font-size: 1.4rem;
+  font-weight: bold;
+  text-align: center;
+  margin: 10px 0;
+  padding: 8px;
+  background: rgba(0,0,0,0.5);
+  border-radius: 4px;
+}
+
+/* --- Ωモード用メモ欄 (改修版) --- */
+.omega-memo-box {
+  margin-top: 5px;
+  padding: 0 5px;
+  /* Flexboxにして入力欄とボタンを横並びに */
+  display: flex; 
+  gap: 5px;
+  align-items: center;
+}
+
+.omega-memo-input {
+  /* width: 100% を削除し、flex: 1 で残りの幅を埋める */
+  flex: 1; 
+  box-sizing: border-box;
+  background: #000;
+  border: 1px solid #444;
+  color: #d4af37;
+  font-size: 0.8rem;
+  padding: 5px;
+  border-radius: 4px;
+  font-family: 'Shippori Mincho', serif;
+  transition: 0.3s;
+}
+.omega-memo-input:focus {
+  outline: none;
+  border-color: #d4af37;
+  box-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
+  background: #111;
+}
+
+/* --- 修正箇所: ボタンの枠 --- */
+.btn-omega-copy {
+  width: 30px;
+  height: 30px;
+  background: #222;
+  border: 1px solid #555;
+  border-radius: 4px;
+  color: #aaa;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1rem;
+  transition: 0.2s;
+  flex-shrink: 0;  /* 「絶対に縮まない」という命令*/
+}
+
+/* --- 新規追加: コピーアイコン画像用 --- */
+.copy-icon-img {
+  width: 60px;       /* 枠(30px)より少し小さく */
+  height: 60px;
+  object-fit: contain; /* これで縦横比が崩れなくなります */
+  pointer-events: none; /* 画像をクリックしてもボタン反応を邪魔しない */
+}
+
+.btn-omega-copy:active {
+  transform: scale(0.9);
+  background: #444;
+}
+/* コピー成功時の演出用クラス */
+.copy-success {
+  border-color: #2ecc71 !important;
+  color: #2ecc71 !important;
+  background: rgba(46, 204, 113, 0.1) !important;
+}
+
+/* --- ロック状態のスタイル --- */
+input.rune-input:disabled {
+  background: #222;       /* 背景を暗く */
+  color: #555;            /* 文字を暗く */
+  border-color: #444;     /* 枠線も目立たなく */
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ロックメッセージのアニメーション */
+@keyframes fadeIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
+
+/* --- iPhone (iOS Safari) 表示崩れ対策 --- */
+
+/* 1. 入力欄のスタイルを強制リセット＆サイズ固定 */
+.rune-input {
+  /* iPhone特有の丸みや影を消す */
+  -webkit-appearance: none !important; 
+  appearance: none !important;
+  
+  /* 横幅を強制的に広げる */
+  width: 80px !important; 
+  min-width: 80px !important; /* 念のため最小幅も指定 */
+  
+  /* 余計な隙間を消す */
+  margin: 0;
+  border-radius: 8px; /* デザインに合わせて調整してOK */
+  box-sizing: border-box; /* 枠線を含めたサイズ計算にする */
+}
+
+/* 2. 入力欄を包んでいる箱が潰れないようにする */
+.rune-wrapper {
+  flex-shrink: 0 !important; /* 「縮むな！」という命令 */
+  width: auto !important;
+}
+
+/* --- ゲート解放演出 (強化版) --- */
+
+/* モダル全体のアニメーション制御用クラス */
+.gate-anim-running {
+  /* 子要素のアニメーション発火用 */
+}
+
+/* === 十字線演出 (中心拡散・極細版) === */
+.lightning-svg {
+  position: absolute;
+  top: 0; left: 0;
+  pointer-events: none;
+  opacity: 0;
+  transform-origin: center center; /* 中心を軸にする */
+}
+
+.lightning-path {
+  fill: none;
+  stroke: #fffbe0; 
+  stroke-width: 0.4px; /* さらに細くして鋭さを出す */
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 3px #d4af37) drop-shadow(0 0 6px #aa771c);
+  vector-effect: non-scaling-stroke;
+}
+
+.lightning-path.main { stroke-width: 0.6px; }
+.lightning-path.sub { stroke-width: 0.2px; opacity: 0.5; }
+
+.lightning-svg.omega-mode .lightning-path {
+  stroke: #ffffff !important;
+  filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 8px #fff) !important;
+}
+
+.gate-anim-running .lightning-svg {
+  animation: explode-discharge 2.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+/* 中心から爆発的に広がり、震えるアニメーション */
+@keyframes explode-discharge {
+  0% { 
+    opacity: 0; 
+    transform: scale(0.2); /* 中心に凝縮 */
+  }
+  5% { 
+    opacity: 1; 
+    transform: scale(1.2); /* 一気に広がる */
+  }
+  
+  /* バチバチと震えるノイズ */
+  10%, 30%, 50%, 70%, 90% { transform: scale(1.05) translate(2px, -1px); opacity: 1; }
+  20%, 40%, 60%, 80% { transform: scale(1) translate(-2px, 1px); opacity: 0.2; }
+
+  95% { opacity: 1; transform: scale(1.2) filter(brightness(2)); }
+  100% { opacity: 0; transform: scale(2); filter: brightness(10); }
+}
+
+/* 石板本体 (質感を強化) */
+.gate-stone {
+  width: 180px; height: 180px; /* 少し大きく */
+  /* 点線をやめて、ゴツゴツした実線と多重影に変更 */
+  border: 8px solid #2a2a2a;
+  border-radius: 50%;
+  display: flex; justify-content: center; align-items: center;
+  font-family: 'Cinzel', serif; font-size: 6rem; color: #111;
+  position: relative;
+  /* 岩っぽいテクスチャと内側からの光 */
+  background: radial-gradient(circle, #333 0%, #000 100%);
+  box-shadow: 
+    inset 0 0 30px #000, /* 内側の深い影 */
+    0 0 20px rgba(212, 175, 55, 0.3); /* 外側の微かな光 */
+  text-shadow: 0 0 5px rgba(212, 175, 55, 0.5); /* 文字の光 */
+}
+
+/* 内側の装飾リング */
+.gate-inner {
+  width: 140px; height: 140px;
+  border: 4px solid rgba(212, 175, 55, 0.6); /* 金色のリング */
+  border-radius: 50%;
+  display: flex; justify-content: center; align-items: center;
+}
+
+/* 石板のアニメーション (クラス付与で開始) */
+.gate-active {
+  animation: gateOpenHeavy 2.5s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+}
+
+@keyframes gateOpenHeavy {
+  0% { 
+    transform: rotate(0deg) scale(1);
+    border-color: #2a2a2a; color: #111;
+  }
+  20% {
+    /* 起動: ガガガッと少し回って止まる */
+    transform: rotate(45deg) scale(1.1);
+    color: #d4af37; border-color: #d4af37;
+    box-shadow: inset 0 0 50px #d4af37, 0 0 50px #d4af37;
+  }
+  40% {
+    /*溜め: 一瞬逆回転してエネルギーを溜める */
+    transform: rotate(30deg) scale(1.05);
+    filter: brightness(1.5);
+  }
+  100% {
+    /* 解放: 一気に加速してホワイトアウト */
+    transform: rotate(1080deg) scale(15);
+    opacity: 0; filter: brightness(20);
+    color: #fff; border-color: #fff;
+  }
+}
+
+/* --- 予言リスト画面用スタイル --- */
+#prophecy-list-content {
+  background: #111; border: 1px solid #444; padding: 20px; border-radius: 10px; width: 85%; max-width: 500px;
+  max-height: 80vh; overflow-y: auto; text-align: left; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.8);
+}
+.p-cat-title {
+  margin-top: 20px; margin-bottom: 10px; font-weight: bold; border-left: 4px solid #555; padding-left: 8px; font-size: 0.95rem;
+}
+.p-item {
+  margin-bottom: 12px; font-size: 0.9rem; line-height: 1.5; border-bottom: 1px dashed #333; padding-bottom: 8px; color: #ddd;
+}
+.p-ex {
+  color: #888; font-size: 0.8rem; display: block; margin-top: 2px;
+}
+
+/* --- Ωモード特殊演出 (修正版: 天空からの降臨) --- */
+
+/* 1. 開始時: 予言が画面最上部から降ってくる */
+@keyframes dropStone {
+  0% { 
+    transform: translateY(-120vh); /* 画面の遥か上からスタート */
+    opacity: 0;
+  }
+  10% {
+    opacity: 1; /* 降り始めですぐ見えるように */
+  }
+  100% { 
+    transform: translateY(0); /* 自分の場所に着地 */
+    opacity: 1; 
+  }
+}
+
+.stone-fall {
+  /* 3秒かけてゆっくり、ふんわりと着地する */
+  animation: dropStone 3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  opacity: 0; /* 最初は隠しておく */
+  
+  /* 降ってくる間、他のパーツより手前に表示する */
+  position: relative;
+  z-index: 100; 
+}
+
+/* 2. 解除時: 白色の石板スタイル (変更なし) */
+.gate-stone-omega {
+  border-color: #fff !important;
+  color: #fff !important;
+  background: radial-gradient(circle, #555 0%, #000 100%) !important;
+  box-shadow: inset 0 0 50px #fff, 0 0 30px #fff !important;
+  text-shadow: 0 0 20px #fff !important;
+}
+.gate-inner-omega {
+  border-color: #fff !important;
+}
+
+/* 通常の1.5倍の時間 (2.5s * 1.5 = 3.75s) */
+.gate-active-omega {
+  animation: gateOpenHeavy 3.75s cubic-bezier(0.7, 0, 0.3, 1) forwards !important;
+}
+
+/* 3. クリア時: 神々しいフレーム (変更なし) */
+.divine-frame {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 20000;
+  box-shadow: inset 0 0 50px #fff, inset 0 0 100px rgba(212, 175, 55, 0.5);
+  border: 4px solid #fff;
+  animation: divinePulse 3s infinite alternate;
+}
+@keyframes divinePulse {
+  0% { box-shadow: inset 0 0 30px #fff, inset 0 0 80px rgba(212, 175, 55, 0.3); opacity: 0.8; }
+  100% { box-shadow: inset 0 0 60px #fff, inset 0 0 150px rgba(212, 175, 55, 0.8); opacity: 1; }
+}
+
+/* 斬撃エフェクト本体 */
+.slash-effect {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 30000; display: none;
+}
+.slash-line {
+  position: absolute; background: #fff;
+  box-shadow: 0 0 20px #fff, 0 0 40px #ff0000;
+  transform: rotate(-20deg);
+}
+
+/* 数字が壊される時の震え */
+@keyframes glitch-shake {
+  0% { transform: translate(0); }
+  20% { transform: translate(-5px, 5px); color: #ff0000; }
+  40% { transform: translate(-5px, -5px); }
+  60% { transform: translate(5px, 5px); }
+  80% { transform: translate(5px, -5px); }
+  100% { transform: translate(0); }
+}
+.glitch-active { animation: glitch-shake 0.3s linear infinite; }
+
+/* --- カオスモード演出用 --- */
+/* 1. 降り注ぐ禍々しいオーブ */
+.chaos-orb {
+  position: fixed;
+  width: 20px; height: 20px;
+  background: radial-gradient(circle, #fff 0%, #d7ccc8 30%, #000 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 10px #9b59b6, 0 0 20px #8e44ad;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+}
+/* 落下アニメーション */
+@keyframes chaos-fall {
+  0% { transform: translateY(-100px) scale(2); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* 2. 石碑が呪われた時の振動と変色 */
+@keyframes chaos-impact {
+  0% { transform: scale(1); border-color: #777; }
+  10% { transform: scale(1.1); border-color: #9b59b6; background: #2c0e3a; }
+  20% { transform: translate(-3px, 3px); }
+  40% { transform: translate(3px, -3px); }
+  60% { transform: translate(-3px, -3px); }
+  80% { transform: translate(3px, 3px); }
+  100% { transform: scale(1); border-color: #9b59b6; background: rgba(0,0,0,0.6); }
+}
+.stone.chaos-infected {
+    animation: chaos-impact 0.5s cubic-bezier(.36,.07,.19,.97) forwards;
+  /* 憑依後は枠線を茶色(サドルブラウン)に固定 */
+  border-color: #8B4513 !important;  
+  /* 影も茶色っぽく光らせる (RGB: 139, 69, 19) */
+  box-shadow: 0 0 15px rgba(139, 69, 19, 0.5);
+}
+
+
+/* 警告文のじわっと表示 */
+.chaos-bar {
+  opacity: 0;
+  transition: opacity 2s ease-in; 
+  
+  /* 以下は変更なし */
+  background: #c0392b; color: white; padding: 5px; font-size: 0.8rem; 
+  font-weight: bold; margin-bottom: 15px; border-radius: 4px; 
+  display: none; text-shadow: 0 0 5px #000; letter-spacing: 2px;
+}
+.chaos-bar.visible {
+  opacity: 1;
+}
+
+/* タップ時の遅延を無効化して即時反応させる */
+button, .btn, .hud-btn, .stone, .memo-btn {
+  touch-action: manipulation;
+}
+
+       /* アニメーション定義（テスト用に高さを半分に） */
+  @keyframes dropInBounce {
+    0% {
+      opacity: 1; /* ★テスト用: 最初から不透明に */
+      transform: translateY(-150vh) scale(0.9); /* ★テスト用: 半分の高さから */
+    }
+    70% { opacity: 1; transform: translateY(20px) scale(1.05); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* リスト項目のスタイル */
+  .omega-list-item {
+    opacity: 0; 
+    position: relative;
+    z-index: 15000; 
+  }
+
+/* 降ってくる時のスタイル */
+.omega-list-item.falling {
+  /* 薄い黄金色の背景（透明度25%） */
+  background: rgba(212, 175, 55, 0.25);
+  /* はっきりした金の枠線 */
+  border: 1px solid #ffd700;
+  /* ぼんやり黄金色に光らせる */
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+  
+  /* アニメーション設定（そのまま） */
+  animation: dropInBounce 3.0s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+  /* Awakened Omega Style */
+  .btn-awakened {
+    border-color: #ff0000;
+    color: #ff0000;
+    background: #000;
+    font-family: 'Cinzel', serif;
+    box-shadow: 0 0 10px #500;
+    border-style: double;
+    border-width: 3px;
+    letter-spacing: 1px;
+    animation: awakenedPulse 2s infinite alternate;
+  }
+  .btn-awakened:hover {
+    background: #200;
+    box-shadow: 0 0 20px #f00;
+  }
+
+  @keyframes awakenedPulse {
+    0% { text-shadow: 0 0 5px #500; border-color: #800; }
+    100% { text-shadow: 0 0 15px #f00; border-color: #f00; }
+  }
+
+
+/* --- 覚醒解放アニメーション --- */
+#awakened-unlock-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 10000; /* 最前面 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  animation: overlayFadeIn 1s forwards;
+}
+
+.unlock-content {
+  text-align: center;
+  color: #ff0000;
+  font-family: 'Cinzel', serif;
+}
+
+.unlock-icon {
+  font-size: 5rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px #f00;
+  opacity: 0;
+  transform: scale(3);
+  animation: iconDrop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.5s;
+}
+
+.unlock-text-main {
+  font-size: 1.5rem;
+  color: #fff;
+  margin-bottom: 10px;
+  opacity: 0;
+  letter-spacing: 5px;
+  animation: textSlideUp 1s ease-out forwards 1.5s;
+}
+
+.unlock-text-sub {
+  font-size: 1.2rem;
+  color: #ff0000;
+  text-shadow: 0 0 10px #800;
+  opacity: 0;
+  animation: textBlink 2s infinite alternate 2.5s, fadeIn 1s forwards 2.5s;
+}
+
+/* Keyframes */
+@keyframes overlayFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes iconDrop { 
+  to { opacity: 1; transform: scale(1); text-shadow: 0 0 30px #ff0000; } 
+}
+@keyframes textSlideUp { 
+  from { opacity: 0; transform: translateY(20px); } 
+  to { opacity: 1; transform: translateY(0); } 
+}
+@keyframes textBlink {
+  0% { text-shadow: 0 0 10px #500; }
+  100% { text-shadow: 0 0 20px #f00, 0 0 40px #f00; }
+}
+
+  /* ボタン横並び用のコンテナ */
+  .mode-row {
+    display: flex;
+    width: 90%;
+    max-width: 350px;
+    gap: 8px; /* ボタン間の隙間 */
+    margin: 8px 0;
+  }
+  
+  /* モードボタンのスタイル上書き (flexアイテム化) */
+  .mode-row .btn {
+    margin: 0; /* ラッパー側で制御するのでマージン削除 */
+    flex: 1;   /* 横幅いっぱいに広げる */
+  }
+
+  /* ブーストボタン (ドクロ) */
+  .btn-boost {
+    width: 50px; /* 正方形に近い形 */
+    background: #111;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: #444;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.3s;
+    user-select: none;
+  }
+  
+  /* ONになった時のスタイル (赤く光る) */
+  .btn-boost.active {
+    border-color: #ff0000;
+    color: #ff0000;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.4);
+    background: rgba(50, 0, 0, 0.5);
+    animation: boostPulse 1.5s infinite alternate;
+  }
+  
+  @keyframes boostPulse {
+    from { text-shadow: 0 0 5px #f00; }
+    to { text-shadow: 0 0 15px #f00; transform: scale(1.05); }
+  }
+  
+      /* --- Easy & Standard 完全整列スタイル --- */
+  /* デフォルト（未解放）：縦積み＆全幅 */
+  #easy-std-wrapper {
+    display: flex;
+    flex-direction: column; /* 縦に積む */
+    width: 90%;             /* 下のボタンたちと同じ幅 (90%) */
+    max-width: 350px;       /* 下のボタンたちと同じ最大幅 */
+    gap: 8px;               /* ボタン同士の間隔 */
+    margin: 8px 0;          /* 上下の間隔 */
+  }
+
+  /* 縦積みの時、中のボタンを親要素(wrapper)いっぱいに広げる */
+  #easy-std-wrapper .btn {
+    width: 100% !important;     /* 親の幅に合わせる */
+    max-width: none !important; /* ボタン自体の制限を解除 */
+    margin: 0 !important;       /* 余計なマージンを消す */
+    flex: none;                 /* 縦積み時は伸縮させない */
+  }
+
+  /* 解放時：横並び（JSでこのクラスが付く） */
+  #easy-std-wrapper.unlocked-row {
+    flex-direction: row;        /* 横並びにする */
+  }
+  
+  /* 横並びの時だけ、幅を半分こにする */
+  #easy-std-wrapper.unlocked-row .btn {
+    flex: 1; 
+  }
+
+  /* ブースト時の警告メッセージ */
+  .boost-popup {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    text-align: center;
+    
+    color: #ff0000;
+    font-family: 'Shippori Mincho', serif;
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-shadow: 0 0 5px #000, 0 0 10px #500;
+    background: rgba(0,0,0,0.7); /* 文字が見やすいように背景を敷く */
+    padding: 5px 0;
+    
+    pointer-events: none; /* クリックを邪魔しない */
+    opacity: 0;
+    z-index: 100;
+    
+    animation: boostMsgFade 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @keyframes boostMsgFade {
+    0% { opacity: 0; transform: translate(-50%, -40%) scale(0.9); }
+    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -60%); }
+  }
+
+  /* --- Easy & Standard ラッパーのスタイル (完全版) --- */
+  
+  /* デフォルト状態（未解放）：縦積み */
+  #easy-std-wrapper {
+    display: flex;
+    flex-direction: column; /* 縦に積む */
+    align-items: center;    /* 真ん中に揃える */
+    width: 100%;            /* 横幅は画面いっぱい使う */
+    /* ボタン自体にマージンがあるので、ここではgap不要 */
+  }
+
+  /* 解放された状態：横並び（JSでこのクラスが付く） */
+  #easy-std-wrapper.unlocked-row {
+    flex-direction: row;       /* 横に並べる */
+    width: 90%;                /* ラッパー自体の幅をボタンに合わせる */
+    max-width: 350px;
+    gap: 8px;                  /* ボタン間の隙間 */
+    margin: 8px 0;             /* 上下の隙間 */
+  }
+
+  /* 横並びになった時の、中身のボタンの調整 */
+  #easy-std-wrapper.unlocked-row .btn {
+    margin: 0;        /* 横並び時は個別のマージンを消す */
+    flex: 1;          /* 仲良く幅を半分こにする */
+    width: auto;      /* 幅指定を解除してflexに任せる */
+  }
+
+/* レビューモーダル内のログ表示調整 */
+#review-log .log-entry {
+  /* ログのデザインを維持しつつ、サイズ感を調整 */
+  margin-bottom: 4px;
+  padding: 6px 8px;
+  font-size: 0.75rem; 
+}
+
+/* ログ内の数字バッジなども少し小さく */
+#review-log .log-nums {
+  font-size: 0.7rem;
+  padding: 1px 4px;
+}
+
+/* --- 判定演出アニメーション --- */
+
+/* 1. ドーンと出る */
+.anim-pop-in {
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* 2. 下に吸い込まれる */
+.anim-drop-down {
+  animation: dropToLog 0.5s ease-in forwards;
+}
+
+@keyframes dropToLog {
+  0% { transform: scale(1) translateY(0); opacity: 1; }
+  100% { 
+    transform: scale(0.3) translateY(300px); /* 下へ移動して小さくなる */
+    opacity: 0; 
+  }
+}
+
+/* メモアイコン用のスタイル */
+.memo-icon-img {
+  width: 1.1rem;      /* 文字サイズに合わせる */
+  height: 1.1rem;
+  vertical-align: middle; /* 文字と高さを合わせる */
+  margin-right: 5px;  /* 文字との隙間 */
+  margin-bottom: 2px; /* 微調整 */
+  filter: drop-shadow(0 0 2px rgba(255,255,255,0.5)); /* 軽く光らせる */
+}
+
+
+
+
+/* ドクロ画像のサイズ強制矯正 */
+.boost-img {
+  width: 64px !important;  /* 強制的に小さくする */
+  height: 64px !important;
+  object-fit: contain;     /* 形を崩さない */
+  
+  /* 以下は演出用（お好みで） */
+  filter: grayscale(100%) brightness(0.6);
+  transition: 0.3s;
+}
+
+/* ONになった時の演出 */
+.btn-boost.active .boost-img {
+  filter: grayscale(0%) drop-shadow(0 0 5px #ff0000) brightness(1.2);
+  transform: scale(1.2);
+}
+
+/* --- プレイ画面のドクロ用（常時覚醒モード） --- */
+
+/* このクラスがつくと、強制的に赤くなって鼓動する */
+.img-danger {
+  /* 1. デフォルトの「グレー」を無効化して赤くする */
+  filter: grayscale(0%) brightness(1.2) drop-shadow(0 0 5px #ff0000) !important;
+  opacity: 1 !important;
+  
+  /* 2. アニメーションをセット */
+  animation: skullPulse 1.2s infinite alternate;
+}
+
+/* 鼓動のアニメーション定義 */
+@keyframes skullPulse {
+  0% {
+    transform: scale(1);
+    filter: grayscale(0%) brightness(1.2) drop-shadow(0 0 5px #ff0000);
+  }
+  100% {
+    transform: scale(1.15); /* 少し大きくなる */
+    /* 光を強くする */
+    filter: grayscale(0%) brightness(1.5) drop-shadow(0 0 15px #ff0000);
+  }
+}
+
+/* --- 下部アイコンメニューのスタイル (透明版) --- */
+
+.icon-menu-row {
+  display: flex;
+  justify-content: center;
+  gap: 15px;               /* 3つ並ぶので狭くする */
+  margin-top: 25px;
+  width: 100%;
+  max-width: 400px;        /* 広がりすぎ防止 */
+  margin-left: auto;       /* 中央寄せ */
+  margin-right: auto;
+}
+
+
+.icon-menu-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  width: 80px;
+  transition: transform 0.2s;
+}
+
+.icon-menu-item:active {
+  transform: scale(0.95);
+}
+
+/* 以前は「丸い枠」だった部分 → 透明なコンテナに変更 */
+.icon-circle {
+  width: 50px;
+  height: 50px;
+  
+  /* ▼▼▼ 透明化！ ▼▼▼ */
+  background: transparent; 
+  border: none;
+  box-shadow: none;
+  /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2px; /* 文字との距離を少し詰める */
+  transition: 0.3s;
+}
+
+/* アイコン画像本体 (枠がないので少し大きく、リッチに) */
+.menu-icon-img {
+  width: 88px;  /
+  height: 88px;
+  object-fit: contain;
+  
+  /* 常時、少しだけ魔法の光を帯びさせる */
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
+  opacity: 0.8; /* 少し透けさせて馴染ませる */
+  transition: 0.3s;
+}
+
+/* 下の文字 */
+.menu-label {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 0.85rem;
+  color: #888; /* 少し暗めにしてアイコンを目立たせる */
+  letter-spacing: 1px;
+  text-shadow: 0 0 2px #000;
+  transition: 0.3s;
+}
+
+/* --- ホバー・タップ時の演出 (アイコン自体を光らせる) --- */
+.icon-menu-item:hover .menu-icon-img {
+  opacity: 1;
+  transform: scale(1.1); /* ふわっと浮く */
+  /* 金色に強く発光！ */
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.8)) brightness(1.2);
+}
+
+.icon-menu-item:hover .menu-label {
+  color: #d4af37;
+  text-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
+}
+
+/* --- メインアクションボタン（JS制御版） --- */
+
+.action-bar-icons {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  margin-top: 25px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+
+.action-btn-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  width: 100px;
+  transition: transform 0.2s;
+  
+  /* スマホでの誤タップ防止 */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.action-btn-item:active {
+  transform: scale(0.95);
+}
+
+/* コンテナ（透明） */
+.action-circle {
+  width: 80px;
+  height: 80px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.3s;
+}
+
+/* アイコン画像 */
+.action-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 5px rgba(0,0,0,0.8));
+  
+  /* ▼▼▼ これが大事！回転をヌルっと動かす設定 ▼▼▼ */
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
+}
+
+/* ラベル文字 */
+.action-label {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 0.85rem;
+  color: #ccc; 
+  letter-spacing: 1px;
+  transition: 0.3s;
+  text-shadow: 0 0 2px #000;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* --- 個別のスタイル設定（回転は削除、光る演出のみ） --- */
+
+/* 1. 次のラウンド (Next) - 青白く光る */
+.action-btn-item:hover .next-circle .action-img {
+  filter: drop-shadow(0 0 10px rgba(200, 200, 255, 0.6)) brightness(1.2);
+}
+
+/* 2. 封印解除 (Unlock) - 金色に光る */
+.action-btn-item:hover .solve-circle .action-img {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.8)) brightness(1.3);
+}
+
+.action-btn-item:hover .action-label {
+  color: #fff !important;
+  text-shadow: 0 0 8px rgba(255,255,255,0.8);
+}
+
+/* --- 石板風の入力欄スタイル --- */
+.rune-img-display {
+  width: 80px;  /* 横幅 */
+  height: 80px; /* 高さ */
+  background: linear-gradient(145deg, #1a1a1a, #0a0a0a); /* 立体的な黒 */
+  border: 2px solid #333;
+  border-radius: 10px;
+  cursor: pointer;
+  
+  /* 中央寄せ設定 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  /* 背景画像(SVG)の設定 */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  
+  transition: all 0.2s ease;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.8);
+}
+
+/* タップした時の動き */
+.rune-wrapper:active .rune-img-display {
+  transform: scale(0.95);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5), inset 0 0 15px rgba(0,0,0,1);
+}
+
+/* ロックされた時の見た目 */
+.rune-wrapper.locked .rune-img-display {
+  opacity: 0.6;
+  filter: grayscale(80%);
+  border-color: #222;
+  cursor: not-allowed;
+}
