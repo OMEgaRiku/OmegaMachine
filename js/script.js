@@ -2722,6 +2722,12 @@ function startTowerLevel(floor) {
    towerState.active = true;
    towerState.floor = floor;
    const seedPrefix = `T-${towerState.runSeed}-F${floor}`;
+
+   
+   document.querySelectorAll('.rune-wrapper').forEach(e => e.classList.remove('locked'));
+   document.querySelectorAll('.action-btn-item').forEach(btn => btn.classList.remove('disabled'));
+   const lockMsg = document.getElementById('rune-lock-msg');
+   if(lockMsg) lockMsg.style.display = 'none';
    
    // 3. 次の階層を生成
    // 階段で隠れている間に実行されるので、ユーザーには見えません
