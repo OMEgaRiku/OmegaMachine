@@ -631,25 +631,34 @@ input.rune-input {
 .omega-memo-box {
   margin-top: 5px;
   padding: 0 5px;
-  /* Flexboxにして入力欄とボタンを横並びに */
   display: flex; 
   gap: 5px;
-  align-items: center;
+  /* ★変更: テキストエリアが高くなっても、ボタンは「上揃え」か「中央」か。
+     今回はメモが長くなってもボタンを見失わないよう「上揃え(flex-start)」を推奨しますが、
+     2〜3行程度なら center でも綺麗です。お好みで調整を。
+     ここではバランスの良い center にしておきます。 */
+  align-items: center; 
 }
 
 .omega-memo-input {
-  /* width: 100% を削除し、flex: 1 で残りの幅を埋める */
   flex: 1; 
   box-sizing: border-box;
   background: #000;
   border: 1px solid #444;
   color: #d4af37;
-  font-size: 0.8rem;
-  padding: 5px;
+  font-size: 0.85rem; /* 少し読みやすく */
+  padding: 8px;       /* 余白を広げる */
   border-radius: 4px;
   font-family: 'Shippori Mincho', serif;
   transition: 0.3s;
+  
+  /* ★追加: テキストエリア専用設定 */
+  resize: vertical;   /* 縦方向のみリサイズ許可 */
+  min-height: 40px;   /* 最低限の高さ */
+  line-height: 1.4;   /* 行間を空ける */
+  overflow-y: auto;   /* 文字数が多い場合はスクロール */
 }
+
 .omega-memo-input:focus {
   outline: none;
   border-color: #d4af37;
@@ -1528,7 +1537,6 @@ button, .btn, .hud-btn, .stone, .memo-btn {
   cursor: not-allowed;
 }
 
-/* --- style.css の末尾に追加 --- */
 
 /* Ω+ Singularity ボタン (深淵と事象の地平線) */
 /* --- style.css の .btn-singularity を修正 --- */
@@ -1642,80 +1650,306 @@ body.bg-tower-5 {
   75% { transform: translate(2px, -3px); }
   100% { transform: translate(-2px, 2px); }
 }
+/* --- style.css タワー演出 (画像優先版) --- */
 
-/* 1. 塔を動かすための「箱」の設定 */
-.tower-image-container {
-  position: absolute;
-  bottom: 50vh;
-  left: 0;
-  width: 100%;
-  
-  /* ★最重要: これがないと動きません */
-  height: 100%; 
-  
-  display: flex;
-  justify-content: center;
-  align-items: flex-end; /* 画像を下端に合わせる */
-  
-  /* 初期位置：画面の高さ分(100%)だけ下に隠す */
-  transform: translateY(100%); 
-  
-  /* Z-indexを強化 */
-  z-index: 20; 
-  pointer-events: none;
-}
-
-/* 2. アニメーション発動クラス */
-.tower-image-container.rise-active {
-  /* 4秒かけてせり上がる */
-  animation: towerRiseImage 4s ease-out forwards;
-}
-
-/* 塔の画像設定 */
-.tower-image {
-  width: auto;
-  height: 85vh; /* 画面の85%の高さ */
-  max-width: 95%;
-  object-fit: contain;
-  /* 影をつけて背景から浮き上がらせる */
-  filter: drop-shadow(0 0 20px rgba(142, 68, 173, 0.5)) brightness(0.8);
-  
-  /* 塔自体もガタガタ震える */
-  animation: towerRumble 0.15s linear infinite;
-  
-  position: relative;
+#tower-unlock-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.95);
   z-index: 30000;
+  
+  display: none; 
+  flex-direction: column; 
+  justify-content: flex-end; 
+  align-items: center;
+  
+  opacity: 0; transition: opacity 1s;
 }
 
-/* せり上がりアニメーション定義 */
-@keyframes towerRiseImage {
-  0% { 
-    transform: translateY(40%); /* 画面外（下） */
-    opacity: 1; 
-  }
-  100% { 
-    transform: translateY(-20%); /* 画面内（少し下を残して止まる） */
-    opacity: 1; 
-  }
+/* 1. コンテナ設定 */
+.tower-image-container {
+  position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
+  display: flex; justify-content: center; align-items: flex-end; /* 画像を下揃え */
+  
+  transform: translateY(100%);
+  transition: transform 4.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
+  pointer-events: none; z-index: 30001;
 }
 
-/* 振動アニメーション */
-@keyframes towerRumble {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(1px); }
-  50% { transform: translateX(0); }
-  75% { transform: translateX(-1px); }
-  100% { transform: translateX(0); }
+/* せり上がり発動クラス */
+.tower-image-container.rise-active {
+  transform: translateY(0%);
+}
+
+/* 2. バックライト（光）の設定：z-indexをマイナスにする */
+.tower-image-container::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 250px; 
+  height: 90%; 
+  
+  /* 紫と金の光 */
+  background: radial-gradient(ellipse at bottom, rgba(142, 68, 173, 0.8) 0%, rgba(212, 175, 55, 0.3) 50%, transparent 80%);
+  filter: blur(20px);
+  
+  z-index: -1; /* ★重要: 画像より後ろへ */
+}
+
+/* 3. 画像本体の設定：z-indexをプラスにする */
+.tower-image {
+  position: relative; /* z-indexを効かせるため必須 */
+  z-index: 10;        /* ★重要: 光より手前へ */
+  
+  width: auto;
+  max-width: 95%;     /* 画面からはみ出さない */
+  height: 100vh;       
+  object-fit: contain; /* 比率を保つ */
+  
+  filter: drop-shadow(0 0 10px rgba(0,0,0,0.8)) brightness(0.9);
+  
+  /* 念のためブロック要素にする */
+  display: block; 
+  
+  animation: towerRumble 0.1s linear infinite;
 }
 
 /* テキストコンテナ（変更なし） */
 .tower-unlock-container {
-  position: absolute; 
-  top: 15%; 
+  position: absolute; top: 15%; left: 0; width: 100%; text-align: center; z-index: 30002;
+  opacity: 0; transform: translateY(20px);
+  transition: all 1s ease-out; transition-delay: 3.5s;
+}
+.tower-unlock-container.text-visible {
+  opacity: 1; transform: translateY(0);
+}
+
+@keyframes towerRumble {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(1px); }
+  75% { transform: translateX(-1px); }
+  100% { transform: translateX(0); }
+}
+
+/* 石板直下の判定結果リスト
+/* 石板直下のミニログ用コンテナ */
+.mini-log-container {
+  display: flex;
+  flex-wrap: wrap; /* 端まで来たら折り返す */
+  justify-content: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 0 5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 個別の判定結果チップ */
+.mini-res-item {
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #333;
+  white-space: nowrap; /* 折り返し防止 */
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* TRUEの場合のデザイン (金) */
+.mini-res-t {
+  background: rgba(212, 175, 55, 0.15);
+  color: #d4af37;
+  border-color: #8a7326;
+}
+
+/* FALSEの場合のデザイン (紫) */
+.mini-res-f {
+  background: rgba(155, 89, 182, 0.15);
+  color: #d7bde2;
+  border-color: #8e44ad;
+}
+
+/* T/Fの文字強調 */
+.mini-label {
+  font-weight: bold;
+  margin-right: 3px;
+  letter-spacing: 1px;
+}
+
+/* ミニログ内の数字をよりくっきりさせる */
+.mini-res-item .num-fire,
+.mini-res-item .num-water,
+.mini-res-item .num-wind {
+  text-shadow: 0 0 2px rgba(0,0,0,0.8); /* 黒い影をつけて文字を浮き立たせる */
+  font-weight: 800; /* より太く */
+}
+
+/* テキストエリアのスクロールバーをダークにする */
+.omega-memo-input::-webkit-scrollbar {
+  width: 6px;
+}
+.omega-memo-input::-webkit-scrollbar-track {
+  background: #000; 
+}
+.omega-memo-input::-webkit-scrollbar-thumb {
+  background: #333; 
+  border-radius: 3px;
+}
+.omega-memo-input::-webkit-scrollbar-thumb:hover {
+  background: #d4af37; /* ホバー時に金色に */
+}
+
+/* --- タワー突入＆階段演出 --- */
+
+/* --- 塔への突入演出（ヴォイド・ゲート ver.） --- */
+
+/* アニメーションのベース設定 */
+#anim-tower-img {
+  transform-origin: center center; /* 真ん中を中心に変形 */
+  will-change: transform, filter, opacity; /* 動作を軽くするおまじない */
+}
+
+/* クラスが付与されたら発動するアニメーション */
+.tower-zoom-active {
+  animation: voidDive 2.2s cubic-bezier(0.7, 0, 0.2, 1) forwards;
+}
+
+/* 禍々しいアニメーション本体 */
+@keyframes voidDive {
+  0% {
+    transform: scale(1);
+    filter: brightness(1) drop-shadow(0 0 0 rgba(142,68,173,0));
+    opacity: 1;
+  }
+  
+  /* [溜め] 塔が黒く沈み込み、背後から紫の光が溢れ出す */
+  20% {
+    transform: scale(0.95);
+    filter: brightness(0.5) drop-shadow(0 0 30px rgba(142,68,173, 0.8));
+  }
+  
+  /* [覚醒] 激しく振動し、色が反転しかける */
+  40% {
+    transform: scale(1.1) rotate(2deg);
+    filter: brightness(1.5) contrast(2) drop-shadow(0 0 60px rgba(212,175,55, 1)) hue-rotate(45deg);
+  }
+  
+  45% {
+    transform: scale(1.15) rotate(-2deg);
+    filter: invert(1) drop-shadow(0 0 80px rgba(142,68,173, 1)); /* 一瞬ネガポジ反転 */
+  }
+  
+  /* [突入] 空間ごとねじ曲がりながら吸い込まれる */
+  60% {
+    transform: scale(3) rotate(5deg);
+    filter: brightness(1) blur(2px);
+  }
+  
+  100% {
+    /* 最後は超拡大して、闇の中に消える */
+    transform: scale(20) rotate(15deg); 
+    filter: brightness(0) blur(20px); /* 完全に真っ黒になる */
+    opacity: 0;
+  }
+}
+
+/* --- 突入演出の背景：激しい雷エフェクト --- */
+
+/* オーバーレイの基本背景色（宇宙空間のような深い色） */
+#tower-entry-anim-overlay {
+  background: radial-gradient(ellipse at center, #1a0033 0%, #000000 100%);
+}
+
+/* 塔の画像を最前面に持ってくる設定 */
+#anim-tower-img {
+  position: relative;
+  z-index: 10; /* 雷より手前 */
+}
+
+/* 雷レイヤーの共通設定 */
+.lightning-layer {
+  position: absolute;
+  top: 0;
   left: 0;
   width: 100%;
-  text-align: center;
+  height: 100%;
+  z-index: 5; /* 塔より奥、背景より手前 */
+  opacity: 0; /* 最初は隠しておく */
+  mix-blend-mode: screen; /* 光を重ねて明るくする合成モード */
+}
+
+
+/* 親要素にクラスがついたら発動するアニメーション */
+/* 異なる速度で点滅させてカオス感を出す */
+.overlay-active .layer-1 {
+  animation: lightningFlash 0.4s steps(3, end) infinite alternate;
+}
+.overlay-active .layer-2 {
+  animation: lightningFlash 0.7s steps(5, start) infinite alternate-reverse;
+}
+
+/* バチバチ点滅するアニメーションキーフレーム */
+@keyframes lightningFlash {
+  0%, 100% { opacity: 0; }
+  10% { opacity: 0; } /* 溜め */
+  20% { opacity: 1; transform: scale(1.1); filter: brightness(2); } /* 強発光！ */
+  30% { opacity: 0.2; } /* 残光 */
+  50% { opacity: 0; }
+  60% { opacity: 0.8; transform: translateX(-2%) rotate(2deg); } /* 位置ずれ発光 */
+  80% { opacity: 0; }
+}
+/* --- 階段演出（登る感覚アップ版） --- */
+
+#stairs-anim-overlay {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0; left: 0;
+  
+  /* 画像パス */
+  background-image: url('../assets/images/stairs_img.png'); 
+  
+  /* 繰り返しなし */
+  background-repeat: no-repeat; 
+  
+  /* 画面いっぱいに */
+  background-size: cover;      
+  
+  /* 初期位置：足元（一番下） */
+  background-position: center 100%;
+  
+  /* 最前面 */
+  z-index: 40000 !important; 
+  
+  display: none;
   opacity: 0;
-  animation: fadeIn 1s ease-out 3s forwards;
-  z-index: 30000;
+}
+
+/* 階段アニメーションクラス */
+.stairs-climb-active {
+  /* イージングを調整して、踏み出しを力強く */
+  animation: climbStairs 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes climbStairs {
+  0% {
+    opacity: 0;
+    transform: scale(1);
+    /* スタート：階段の一番下（足元）を見る */
+    background-position: center 100%; 
+  }
+  15% {
+    opacity: 1; /* すぐに表示 */
+  }
+  80% {
+    opacity: 1; /* 登っている間は見えている */
+  }
+  100% {
+    opacity: 0; /* 最後はフェードアウト */
+    
+    /* アクション：奥に進みつつ（拡大）、視線を上げる（位置移動） */
+    transform: scale(1.25); 
+    background-position: center 40%; /* 画像の上の方へ視点をずらす */
+  }
 }

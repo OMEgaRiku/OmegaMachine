@@ -65,12 +65,12 @@ const POOL = [
   { name:"炎と風の比較 (<, =, >)", desc:"炎 < 風", f:(i,a,v)=>i<v , diff:2}, 
   { name:"炎と風の比較 (<, =, >)", desc:"炎 = 風", f:(i,a,v)=>i==v, diff:2 },
 
-  { name:"最大値の所在 (≧)", desc:"炎が最大 (他以上)", f:(i,a,v)=>i>=a && i>=v, diff:2 }, 
-  { name:"最大値の所在 (≧)", desc:"水が最大 (他以上)", f:(i,a,v)=>a>=i && a>=v , diff:2}, 
-  { name:"最大値の所在 (≧)", desc:"風が最大 (他以上)", f:(i,a,v)=>v>=i && v>=a, diff:2 }, 
-  { name:"最小値の所在 (≦)", desc:"炎が最小 (他以下)", f:(i,a,v)=>i<=a && i<=v, diff:2 }, 
-  { name:"最小値の所在 (≦)", desc:"水が最小 (他以下)", f:(i,a,v)=>a<=i && a<=v, diff:2 }, 
-  { name:"最小値の所在 (≦)", desc:"風が最小 (他以下)", f:(i,a,v)=>v<=i && v<=a , diff:2}, 
+  { name:"最大値の所在(同数の可能性含む) (≧)", desc:"炎が最大 (他以上)", f:(i,a,v)=>i>=a && i>=v, diff:2 }, 
+  { name:"最大値の所在(同数の可能性含む) (≧)", desc:"水が最大 (他以上)", f:(i,a,v)=>a>=i && a>=v , diff:2}, 
+  { name:"最大値の所在(同数の可能性含む) (≧)", desc:"風が最大 (他以上)", f:(i,a,v)=>v>=i && v>=a, diff:2 }, 
+  { name:"最小値の所在(同数の可能性含む) (≦)", desc:"炎が最小 (他以下)", f:(i,a,v)=>i<=a && i<=v, diff:2 }, 
+  { name:"最小値の所在(同数の可能性含む) (≦)", desc:"水が最小 (他以下)", f:(i,a,v)=>a<=i && a<=v, diff:2 }, 
+  { name:"最小値の所在(同数の可能性含む) (≦)", desc:"風が最小 (他以下)", f:(i,a,v)=>v<=i && v<=a , diff:2}, 
 
   { name:"合計の偶奇 (偶数, 奇数)", desc:"合計 = 偶数", f:(i,a,v)=>(i+a+v)%2==0 , diff:2},
   { name:"合計の偶奇 (偶数, 奇数)", desc:"合計 = 奇数", f:(i,a,v)=>(i+a+v)%2!=0 , diff:2},
@@ -172,13 +172,33 @@ const POOL = [
   { name:"2か4の数 (0, 1, 2, 3)", desc:"4が2個", f:(i,a,v)=>[i,a,v].filter(n=>n==4).length==2, diff:4 },
   { name:"2か4の数 (0, 1, 2, 3)", desc:"4が3個", f:(i,a,v)=>[i,a,v].filter(n=>n==4).length==3, diff:4 },
 
+  //  3 or 4の個数
+  { name:"3か4の数 (0, 1, 2, 3)", desc:"3が0個", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==0, diff:4 },
+  { name:"3か4の数 (0, 1, 2, 3)", desc:"3が1個", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==1, diff:4 },
+  { name:"3か4の数 (0, 1, 2, 3)", desc:"3が2個", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==2, diff:4 },
+  { name:"3か4の数 (0, 1, 2, 3)", desc:"3が3個", f:(i,a,v)=>[i,a,v].filter(n=>n==3).length==3, diff:4 },
+  { name:"3か4の数 (0, 1, 2, 3)", desc:"4が0個", f:(i,a,v)=>[i,a,v].filter(n=>n==4).length==0, diff:4 },
+  { name:"3か4の数 (0, 1, 2, 3)", desc:"4が1個", f:(i,a,v)=>[i,a,v].filter(n=>n==4).length==1, diff:4 },
+  { name:"3か4の数 (0, 1, 2, 3)", desc:"4が2個", f:(i,a,v)=>[i,a,v].filter(n=>n==4).length==2, diff:4 },
+  { name:"3か4の数 (0, 1, 2, 3)", desc:"4が3個", f:(i,a,v)=>[i,a,v].filter(n=>n==4).length==3, diff:4 },
+
+  //  2 or 5の個数
+  { name:"2か5の数 (0, 1, 2, 3)", desc:"2が0個", f:(i,a,v)=>[i,a,v].filter(n=>n==2).length==0, diff:4 },
+  { name:"2か5の数 (0, 1, 2, 3)", desc:"2が1個", f:(i,a,v)=>[i,a,v].filter(n=>n==2).length==1, diff:4 },
+  { name:"2か5の数 (0, 1, 2, 3)", desc:"2が2個", f:(i,a,v)=>[i,a,v].filter(n=>n==2).length==2, diff:4 },
+  { name:"2か5の数 (0, 1, 2, 3)", desc:"2が3個", f:(i,a,v)=>[i,a,v].filter(n=>n==2).length==3, diff:4 },
+  { name:"2か5の数 (0, 1, 2, 3)", desc:"5が0個", f:(i,a,v)=>[i,a,v].filter(n=>n==5).length==0, diff:4 },
+  { name:"2か5の数 (0, 1, 2, 3)", desc:"5が1個", f:(i,a,v)=>[i,a,v].filter(n=>n==5).length==1, diff:4 },
+  { name:"2か5の数 (0, 1, 2, 3)", desc:"5が2個", f:(i,a,v)=>[i,a,v].filter(n=>n==5).length==2, diff:4 },
+  { name:"2か5の数 (0, 1, 2, 3)", desc:"5が3個", f:(i,a,v)=>[i,a,v].filter(n=>n==5).length==3, diff:4 },
+
   //  唯一の最大値・最小値 (Strict inequality)
-  { name:"唯一の最大、最小の所在（最大・最小を複数入れるとFalse）", desc:"炎が唯一の最大 (他より大きい)", f:(i,a,v)=> i > a && i > v, diff:4 },
-  { name:"唯一の最大、最小の所在（最大・最小を複数入れるとFalse）", desc:"水が唯一の最大 (他より大きい)", f:(i,a,v)=> a > i && a > v, diff:4 },
-  { name:"唯一の最大、最小の所在（最大・最小を複数入れるとFalse）", desc:"風が唯一の最大 (他より大きい)", f:(i,a,v)=> v > i && v > a, diff:4 },
-  { name:"唯一の最大、最小の所在（最大・最小を複数入れるとFalse）", desc:"炎が唯一の最小 (他より小さい)", f:(i,a,v)=> i < a && i < v, diff:4 },
-  { name:"唯一の最大、最小の所在（最大・最小を複数入れるとFalse）", desc:"水が唯一の最小 (他より小さい)", f:(i,a,v)=> a < i && a < v, diff:4 },
-  { name:"唯一の最大、最小の所在（最大・最小を複数入れるとFalse）", desc:"風が唯一の最小 (他より小さい)", f:(i,a,v)=> v < i && v < a, diff:4 },
+  { name:"唯一の最大か唯一の最小の所在\n（判定値を複数入れるとFalse）", desc:"炎が唯一の最大 (他より大きい)", f:(i,a,v)=> i > a && i > v, diff:4 },
+  { name:"唯一の最大か唯一の最小の所在\n（判定値を複数入れるとFalse）", desc:"水が唯一の最大 (他より大きい)", f:(i,a,v)=> a > i && a > v, diff:4 },
+  { name:"唯一の最大か唯一の最小の所在\n（判定値を複数入れるとFalse）", desc:"風が唯一の最大 (他より大きい)", f:(i,a,v)=> v > i && v > a, diff:4 },
+  { name:"唯一の最大か唯一の最小の所在\n（判定値を複数入れるとFalse）", desc:"炎が唯一の最小 (他より小さい)", f:(i,a,v)=> i < a && i < v, diff:4 },
+  { name:"唯一の最大か唯一の最小の所在\n（判定値を複数入れるとFalse）", desc:"水が唯一の最小 (他より小さい)", f:(i,a,v)=> a < i && a < v, diff:4 },
+  { name:"唯一の最大か唯一の最小の所在\n（判定値を複数入れるとFalse）", desc:"風が唯一の最小 (他より小さい)", f:(i,a,v)=> v < i && v < a, diff:4 },
 
   //  属性同士の比較 (Diff4枠として再定義)
   // 炎 vs 水
@@ -240,10 +260,10 @@ const POOL = [
   { name:"4と特定の属性の比較 (<, =, >)", desc:"4 < 風", f:(i,a,v)=> 4 < v, diff:4 },
 
 //特定同士の比較
-// 炎 vs 水
+  // 炎 vs 水
   { name:"特定の属性同士の比較 (<, =, >)", desc:"炎 > 水", f:(i,a,v)=> i > a, diff:4 },
-  { name:"特定の属性同士の比較(<, =, >)", desc:"炎 = 水", f:(i,a,v)=> i == a, diff:4 },
-  { name:"特定の属性同士の比較(<, =, >)", desc:"炎 < 水", f:(i,a,v)=> i < a, diff:4 },
+  { name:"特定の属性同士の比較 (<, =, >)", desc:"炎 = 水", f:(i,a,v)=> i == a, diff:4 },
+  { name:"特定の属性同士の比較 (<, =, >)", desc:"炎 < 水", f:(i,a,v)=> i < a, diff:4 },
   // 炎 vs 風
   { name:"特定の属性同士の比較 (<, =, >)", desc:"炎 > 風", f:(i,a,v)=> i > v, diff:4 },
   { name:"特定の属性同士の比較 (<, =, >)", desc:"炎 = 風", f:(i,a,v)=> i == v, diff:4 },
