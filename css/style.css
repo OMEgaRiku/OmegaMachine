@@ -6,7 +6,7 @@
 
   body {
     font-family: 'Shippori Mincho', serif;
-    background-color: var(--bg-color);
+    background-color: #000000 !important;
     background-image: radial-gradient(circle at 50% 50%, #1a150e 0%, #000000 100%);
     color: var(--text-main);
     text-align: center;
@@ -18,6 +18,23 @@
     transition: background-image 1s ease;
   }
   .en-font { font-family: 'Cinzel', serif; }
+
+  /* style.css の一番上の方に追加・修正 */
+
+html, body {
+  /* ブラウザのデフォルト背景（白）を上書きして、永遠の闇にする */
+  background-color: #000000 !important;
+  margin: 0;
+  padding: 0;
+  
+  /* タップ時のハイライトを消す（スマホ対策） */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ゲーム画面自体にもトランジションをつけて、切り替えをフワッとさせる */
+#game-screen {
+  transition: opacity 0.2s ease-out;
+}
 
 /* --- Title Screen (サイズ維持・スクロール対応版) --- */
 #title-screen {
@@ -343,12 +360,59 @@ input.rune-input {
   /* Chaos Bar */
   .chaos-bar { background: #c0392b; color: white; padding: 5px; font-size: 0.8rem; font-weight: bold; margin-bottom: 15px; border-radius: 4px; display: none; text-shadow: 0 0 5px #000; letter-spacing: 2px;}
 
-  /* Modals */
-  .modal-overlay {
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.9); z-index: 10000; flex-direction: column; justify-content: center; align-items: center;
-    backdrop-filter: blur(5px);
-  }
+/* style.css の該当箇所を以下に差し替えてください */
+
+/* すべてのモーダルを画面中央に固定する設定 */
+.modal-overlay {
+  display: none; 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  width: 100%; 
+  height: 100%;
+  background: rgba(0,0,0,0.9); 
+  z-index: 10000; 
+  backdrop-filter: blur(5px);
+
+  /* フレックス設定: 常に中央揃え */
+  display: none; /* JSでflexに切り替え */
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; /* ① 中央固定を強制 */
+
+  /* 中身が長い場合でもスクロール可能にする設定 */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 20px 0;
+  box-sizing: border-box;
+}
+
+/* ★追加: 中身がはみ出すときのために、上下に透明なクッションを置く */
+.modal-overlay::before,
+.modal-overlay::after {
+  content: '';
+  flex-shrink: 0;
+  height: 40px; /* 最小の余白 */
+}
+
+/* 特定のモーダルで flex-start にしていた記述を削除、または上書き */
+#history-modal, /* ← result-modal をここから消しました */
+#review-modal,
+#prophecy-list-modal {
+  justify-content: flex-start !important;
+  padding-top: 60px;
+  padding-bottom: 60px;
+}
+
+/* ★新規追加：リザルトとメニューを「完全に中央」にする設定 */
+#result-modal,
+#menu-modal {
+  justify-content: center !important;
+  align-items: center !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
   .seal-broken { font-size: 2.5rem; color: #fff; text-shadow: 0 0 30px #fff; font-weight: bold; }
   .answer-reveal { font-size: 4rem; letter-spacing: 15px; margin: 20px; color: #fff; font-family: 'Cinzel', serif; }
 
@@ -907,17 +971,53 @@ input.rune-input:disabled {
   animation: gateOpenHeavy 3.75s cubic-bezier(0.7, 0, 0.3, 1) forwards !important;
 }
 
-/* 3. クリア時: 神々しいフレーム (変更なし) */
+/* =========================================
+   神演出用フレーム (完全版)
+   ========================================= */
+
+/* 基本スタイル（位置とサイズ） */
 .divine-frame {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   pointer-events: none; z-index: 20000;
-  box-shadow: inset 0 0 50px #fff, inset 0 0 100px rgba(212, 175, 55, 0.5);
   border: 4px solid #fff;
+  
+  /* デフォルト: 金色の光アニメーション */
+  box-shadow: inset 0 0 50px #fff, inset 0 0 100px rgba(212, 175, 55, 0.5);
   animation: divinePulse 3s infinite alternate;
 }
+
+/* 金色の脈動アニメーション */
 @keyframes divinePulse {
-  0% { box-shadow: inset 0 0 30px #fff, inset 0 0 80px rgba(212, 175, 55, 0.3); opacity: 0.8; }
-  100% { box-shadow: inset 0 0 60px #fff, inset 0 0 150px rgba(212, 175, 55, 0.8); opacity: 1; }
+  0% { 
+    box-shadow: inset 0 0 30px #fff, inset 0 0 80px rgba(212, 175, 55, 0.3); 
+    opacity: 0.8; 
+  }
+  100% { 
+    box-shadow: inset 0 0 60px #fff, inset 0 0 150px rgba(212, 175, 55, 0.8); 
+    opacity: 1; 
+  }
+}
+
+/* --- Awakened Mode (赤色の神演出) --- */
+/* クラス is-awakened がつくと赤色に変化 */
+.divine-frame.is-awakened {
+  border-color: #ffcccc !important; /* 枠線も少し赤く */
+  
+  /* 赤色の光アニメーション (importantで強制適用) */
+  box-shadow: inset 0 0 50px #fff, inset 0 0 100px rgba(255, 0, 0, 0.5) !important;
+  animation: divinePulseAwakened 3s infinite alternate !important;
+}
+
+/* 赤色の脈動アニメーション */
+@keyframes divinePulseAwakened {
+  0% { 
+    box-shadow: inset 0 0 30px #fff, inset 0 0 80px rgba(255, 0, 0, 0.3); 
+    opacity: 0.8; 
+  }
+  100% { 
+    box-shadow: inset 0 0 60px #fff, inset 0 0 150px rgba(255, 0, 0, 0.8); 
+    opacity: 1; 
+  }
 }
 
 /* 斬撃エフェクト本体 */
@@ -1867,38 +1967,6 @@ body.bg-tower-5 {
   z-index: 10; /* 雷より手前 */
 }
 
-/* 雷レイヤーの共通設定 */
-.lightning-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 5; /* 塔より奥、背景より手前 */
-  opacity: 0; /* 最初は隠しておく */
-  mix-blend-mode: screen; /* 光を重ねて明るくする合成モード */
-}
-
-
-/* 親要素にクラスがついたら発動するアニメーション */
-/* 異なる速度で点滅させてカオス感を出す */
-.overlay-active .layer-1 {
-  animation: lightningFlash 0.4s steps(3, end) infinite alternate;
-}
-.overlay-active .layer-2 {
-  animation: lightningFlash 0.7s steps(5, start) infinite alternate-reverse;
-}
-
-/* バチバチ点滅するアニメーションキーフレーム */
-@keyframes lightningFlash {
-  0%, 100% { opacity: 0; }
-  10% { opacity: 0; } /* 溜め */
-  20% { opacity: 1; transform: scale(1.1); filter: brightness(2); } /* 強発光！ */
-  30% { opacity: 0.2; } /* 残光 */
-  50% { opacity: 0; }
-  60% { opacity: 0.8; transform: translateX(-2%) rotate(2deg); } /* 位置ずれ発光 */
-  80% { opacity: 0; }
-}
 /* --- 階段演出（登る感覚アップ版） --- */
 
 #stairs-anim-overlay {
@@ -1914,7 +1982,7 @@ body.bg-tower-5 {
   background-repeat: no-repeat; 
   
   /* 画面いっぱいに */
-  background-size: cover;      
+  background-size: 150% auto; /* 横幅を1.5倍に拡大 */
   
   /* 初期位置：足元（一番下） */
   background-position: center 100%;
@@ -1953,3 +2021,364 @@ body.bg-tower-5 {
     background-position: center 40%; /* 画像の上の方へ視点をずらす */
   }
 }
+
+/* --- Awakened Mode (赤色演出) の追加定義 --- */
+
+/* 1. 覚醒モードの石板 (通常時は赤黒く、文字は赤) */
+.stone.is-awakened {
+  color: #ff0000 !important;
+  background: radial-gradient(circle, #1a0505 0%, #000 100%) !important;
+  border-color: #8a1c1c !important;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.2), inset 0 0 10px rgba(0,0,0,0.8);
+}
+
+.stone.is-awakened .stone-text {
+  color: #ff0000 !important;
+  text-shadow: 0 0 8px rgba(255, 0, 0, 0.6) !important;
+}
+
+/* 落下アニメーション中の発光 (赤) */
+.stone.is-awakened.stone-fall {
+   box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+   border-color: #ff0000;
+}
+
+/* 呼吸アニメーション (赤版) */
+.stone.is-awakened.omega-pulsing {
+  animation: awakenedPulseStone 3s infinite alternate !important;
+}
+
+@keyframes awakenedPulseStone {
+  0% {
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.2), inset 0 0 10px rgba(0,0,0,0.8);
+    border-color: #8a1c1c;
+  }
+  100% {
+    box-shadow: 0 0 25px rgba(255, 0, 0, 0.6), inset 0 0 20px rgba(255, 0, 0, 0.2);
+    border-color: #ff4d4d;
+  }
+}
+
+/* 2. Search & Destroy (右側のリスト) の赤色化 */
+
+/* 落下中のスタイル (赤枠・赤背景) */
+.omega-list-item.is-awakened.falling {
+  background: rgba(255, 0, 0, 0.25) !important;
+  border: 1px solid #ff0000 !important;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.4) !important;
+  color: #ffcccc !important;
+}
+
+/* リストアイテムのホバー時 (赤く光る) */
+.omega-list-item.is-awakened:hover {
+  color: #ff0000 !important;
+  background: rgba(255, 0, 0, 0.15) !important;
+  text-shadow: 0 0 5px #ff0000;
+}
+
+/* 3. Awakenedモード時の「真実のルーン」表示色調整 (結果画面用) */
+.stone.is-awakened .stone-title {
+  color: #8a1c1c !important; /* タイトルも少し赤暗く */
+}
+
+/* Awakenedモードのクリアオーバーレイ (赤色) */
+.game-clear-overlay.is-awakened {
+  background: radial-gradient(circle, transparent 40%, #ff0000 90%) !important; /* グラデーションを赤に */
+  box-shadow: inset 0 0 50px #ff0000, inset 0 0 100px #8a1c1c !important; /* 影も赤に */
+  animation: clearFlashAwakened 2s forwards !important; /* 専用アニメーションを適用 */
+}
+
+/* Awakened専用の赤色フラッシュアニメーション */
+@keyframes clearFlashAwakened {
+  0% { opacity: 0; }
+  20% { 
+    opacity: 1; 
+    box-shadow: inset 0 0 80px #ff4d4d, inset 0 0 150px #ff0000; /* 明るい赤で発光 */
+  }
+  50% { 
+    opacity: 1; 
+    box-shadow: inset 0 0 120px #ff8080, inset 0 0 250px #ff0000; /* さらに強く発光 */
+  }
+  100% { 
+    opacity: 1; 
+    box-shadow: inset 0 0 50px #ff0000, inset 0 0 100px #8a1c1c; /* 落ち着いた赤に戻る */
+  }
+}
+
+/* =========================================
+   Ω+ SINGULARITY TOWER: 修正版
+   ========================================= */
+
+/* --- 共通設定: 背景の呼吸アニメーション --- */
+@keyframes towerBreath {
+  0% { background-size: 100% 100%; filter: brightness(1); }
+  50% { background-size: 110% 110%; filter: brightness(1.2); }
+  100% { background-size: 100% 100%; filter: brightness(1); }
+}
+
+/* ★重要: body自体のアニメーションやフィルタは削除し、
+   背景設定を ::before 疑似要素に移動します */
+
+/* 全タワー階層共通の背景ベース設定 */
+body[class*="bg-tower-"] {
+    /* body自体は透明に。こうしないとfilterが効いてモーダルが壊れます */
+    background: transparent !important;
+    animation: none !important;
+    filter: none !important;
+}
+
+body[class*="bg-tower-"]::before {
+    content: "";
+    position: fixed; /* 背景を画面に固定 */
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1; /* コンテンツの裏側へ */
+    pointer-events: none;
+    will-change: transform, filter; /* 描画最適化 */
+}
+
+
+/* --- 1F-5F: 静寂の回廊 --- */
+body.bg-tower-1::before {
+  background: radial-gradient(circle at center, #001f3f 0%, #000000 90%);
+  animation: towerBreath 8s infinite alternate ease-in-out;
+}
+/* テキスト等の色は body のままでOK */
+body.bg-tower-1 .stone,
+body.bg-tower-1 .omega-list-item {
+  border-color: #00ffff !important;
+  color: #e0ffff !important;
+  background: rgba(0, 31, 63, 0.8) !important;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3) !important;
+}
+body.bg-tower-1 .stone-text,
+body.bg-tower-1 .stone-title {
+  text-shadow: 0 0 8px rgba(0, 255, 255, 0.6) !important;
+  color: #00ffff !important;
+}
+
+
+/* --- 6F-10F: 悪夢の層 --- */
+body.bg-tower-2::before {
+  background: radial-gradient(circle at center, #2e003e 0%, #050005 100%);
+  animation: towerBreath 6s infinite alternate ease-in-out;
+}
+body.bg-tower-2 .stone,
+body.bg-tower-2 .omega-list-item {
+  border-color: #9b59b6 !important;
+  color: #e8daef !important;
+  background: rgba(46, 0, 62, 0.8) !important;
+  box-shadow: 0 0 15px rgba(155, 89, 182, 0.4) !important;
+}
+body.bg-tower-2 .stone-text,
+body.bg-tower-2 .stone-title {
+  text-shadow: 0 0 10px rgba(155, 89, 182, 0.8) !important;
+  color: #d2b4de !important;
+}
+
+
+/* --- 11F-15F: 歪みの層 --- */
+body.bg-tower-3::before {
+  background: radial-gradient(circle at center, #003300 0%, #000000 100%);
+  animation: towerBreath 5s infinite alternate linear;
+}
+body.bg-tower-3 .stone,
+body.bg-tower-3 .omega-list-item {
+  border-color: #00ff00 !important;
+  color: #ccffcc !important;
+  background: rgba(0, 20, 0, 0.9) !important;
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.5), inset 0 0 10px rgba(0, 50, 0, 0.5) !important;
+  font-family: 'Courier New', monospace !important;
+}
+body.bg-tower-3 .stone-text,
+body.bg-tower-3 .stone-title {
+  text-shadow: 0 0 5px #00ff00 !important;
+  color: #00ff00 !important;
+}
+
+
+/* --- 16F-19F: 混沌の層 --- */
+body.bg-tower-4::before {
+  background: radial-gradient(circle at center, #3e0000 0%, #000000 100%);
+  animation: towerBreath 2s infinite alternate ease-in;
+}
+body.bg-tower-4 .stone,
+body.bg-tower-4 .omega-list-item {
+  border-color: #ff0000 !important;
+  color: #ffcccc !important;
+  background: rgba(40, 0, 0, 0.85) !important;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.5) !important;
+}
+body.bg-tower-4 .stone-text,
+body.bg-tower-4 .stone-title {
+  text-shadow: 0 0 15px #ff0000 !important;
+  color: #ff0000 !important;
+}
+
+/* --- 20F: THE SINGULARITY 修正版 --- */
+
+/* 20Fの背景設定（::beforeへ移動） */
+body.bg-tower-5::before {
+  /* 背景: 全てを飲み込む「白」と「金」 */
+  background: radial-gradient(circle at center, #ffffff 0%, #cccccc 30%, #000000 100%);
+  animation: towerBreath 10s infinite alternate ease-in-out; /* 神々しくゆっくり */
+}
+
+/* 20Fの本体設定（テキスト色反転などはこっちに残す） */
+body.bg-tower-5 .stone,
+body.bg-tower-5 .omega-list-item {
+  border-color: #d4af37 !important;
+  background: rgba(255, 255, 255, 0.9) !important; /* 白い石板 */
+  color: #000 !important; /* 黒い文字 */
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.8) !important;
+}
+
+body.bg-tower-5 .stone-text {
+  color: #000 !important;
+  text-shadow: none !important;
+  font-weight: 900 !important;
+}
+body.bg-tower-5 .stone-title {
+  color: #555 !important;
+}
+
+/* 20FのS&Dリストホバー時 */
+body.bg-tower-5 .omega-list-item:hover {
+  background: #d4af37 !important;
+  color: #fff !important;
+}
+
+/* =========================================
+   Tower Floor Frames (階層別クリア演出)
+   ========================================= */
+
+/* 1F-5F: Cyan Frame */
+.divine-frame.tower-1 {
+  border-color: #00ffff !important;
+  box-shadow: inset 0 0 50px #fff, inset 0 0 100px rgba(0, 255, 255, 0.5) !important;
+  animation: divinePulseCyan 3s infinite alternate !important;
+}
+@keyframes divinePulseCyan {
+  0% { box-shadow: inset 0 0 30px #fff, inset 0 0 80px rgba(0, 255, 255, 0.3); opacity: 0.8; }
+  100% { box-shadow: inset 0 0 60px #fff, inset 0 0 150px rgba(0, 255, 255, 0.8); opacity: 1; }
+}
+
+/* 6F-10F: Purple Frame */
+.divine-frame.tower-2 {
+  border-color: #d2b4de !important;
+  box-shadow: inset 0 0 50px #fff, inset 0 0 100px rgba(155, 89, 182, 0.5) !important;
+  animation: divinePulsePurple 3s infinite alternate !important;
+}
+@keyframes divinePulsePurple {
+  0% { box-shadow: inset 0 0 30px #fff, inset 0 0 80px rgba(155, 89, 182, 0.3); opacity: 0.8; }
+  100% { box-shadow: inset 0 0 60px #fff, inset 0 0 150px rgba(155, 89, 182, 0.8); opacity: 1; }
+}
+
+/* 11F-15F: Green Frame */
+.divine-frame.tower-3 {
+  border-color: #ccffcc !important;
+  box-shadow: inset 0 0 50px #fff, inset 0 0 100px rgba(0, 255, 0, 0.5) !important;
+  animation: divinePulseGreen 3s infinite alternate !important;
+}
+@keyframes divinePulseGreen {
+  0% { box-shadow: inset 0 0 30px #fff, inset 0 0 80px rgba(0, 255, 0, 0.3); opacity: 0.8; }
+  100% { box-shadow: inset 0 0 60px #fff, inset 0 0 150px rgba(0, 255, 0, 0.8); opacity: 1; }
+}
+
+/* 16F-19F: Red Frame (Awakenedと同じ赤) */
+.divine-frame.tower-4 {
+  border-color: #ffcccc !important;
+  box-shadow: inset 0 0 50px #fff, inset 0 0 100px rgba(255, 0, 0, 0.5) !important;
+  animation: divinePulseAwakened 3s infinite alternate !important; /* 定義済みの赤アニメを流用 */
+}
+
+/* 20F: Gold/White Frame (デフォルトのまま、あるいはより神々しく) */
+.divine-frame.tower-5 {
+  /* デフォルトが金なのでそのままでもOKですが、強調するなら */
+  box-shadow: inset 0 0 80px #fff, inset 0 0 200px rgba(212, 175, 55, 0.8) !important;
+}
+
+/* =========================================
+   20F CLEAR: THE BIG BANG
+   ========================================= */
+
+#singularity-ending-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: #000;
+  z-index: 50000; /* 最前面 */
+  display: none;
+  justify-content: center; align-items: center;
+  overflow: hidden;
+}
+
+/* 1. 特異点コア (中心の光) */
+.s-core {
+  width: 10px; height: 10px; background: #fff; border-radius: 50%;
+  box-shadow: 0 0 50px #fff, 0 0 100px #d4af37;
+  position: absolute;
+  z-index: 10;
+  opacity: 0;
+}
+
+/* 2. 衝撃波リング */
+.s-ring {
+  position: absolute; border-radius: 50%;
+  border: 2px solid #fff;
+  opacity: 0;
+  box-shadow: 0 0 20px #d4af37;
+}
+
+/* 3. 神の光条 (回転する光) */
+.s-ray {
+  position: absolute; width: 200%; height: 200%;
+  background: conic-gradient(from 0deg, transparent 0%, rgba(255,255,255,0.1) 10%, transparent 20%, rgba(212,175,55,0.2) 50%, transparent 100%);
+  animation: raySpin 10s linear infinite;
+  opacity: 0;
+}
+
+/* 4. ホワイトアウト用フラッシュ */
+.s-flash {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: #fff;
+  opacity: 0;
+  z-index: 20;
+}
+
+/* --- アニメーション定義 --- */
+
+/* コア：出現 → 収束(吸い込み) → 爆発待機 */
+@keyframes coreSequence {
+  0% { transform: scale(0); opacity: 0; }
+  20% { transform: scale(5); opacity: 1; box-shadow: 0 0 50px #d4af37; } /* 出現 */
+  60% { transform: scale(0.5); opacity: 1; background: #000; border: 2px solid #fff; } /* 収束（黒点化） */
+  70% { transform: scale(0.1); background: #fff; box-shadow: 0 0 200px #fff; } /* 臨界点 */
+  100% { transform: scale(300); opacity: 0; } /* 爆発 */
+}
+
+
+/* リング：収束に合わせて吸い込まれる */
+@keyframes ringImplode {
+  0% { width: 200vw; height: 200vw; opacity: 0; border-width: 1px; }
+  30% { opacity: 0.5; border-width: 5px; }
+  100% { width: 0; height: 0; opacity: 1; border-width: 20px; }
+}
+
+/* フラッシュ：爆発の瞬間に真っ白にする */
+@keyframes whiteoutFlash {
+  0%, 70% { opacity: 0; }
+  75% { opacity: 1; } /* ピカッ！ */
+  100% { opacity: 0; } /* フェードアウトしてリザルトへ */
+}
+
+@keyframes raySpin {
+  0% { transform: rotate(0deg); opacity: 0; }
+  30% { opacity: 1; }
+  70% { opacity: 0; transform: rotate(180deg); } /* 収束時に消える */
+  100% { transform: rotate(360deg); }
+}
+
+/* クラス付与で発火 */
+.s-active .s-core { animation: coreSequence 4s cubic-bezier(0.7, 0, 0.3, 1) forwards; }
+.s-active .ring-1 { animation: ringImplode 2.5s ease-in forwards; animation-delay: 0.5s; }
+.s-active .ring-2 { animation: ringImplode 2.5s ease-in forwards; animation-delay: 1.0s; }
+.s-active .s-ray  { animation: raySpin 4s linear forwards; }
+.s-active .s-flash{ animation: whiteoutFlash 4s linear forwards; }

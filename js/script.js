@@ -172,9 +172,12 @@ function startFromId(mode) {
   
   initGame(mode, seed, isBoosted);
 }
-/* --- script.js の initGame 関数を完全に置換 --- */
 
 function initGame(mode, seed, isBoosted = false, loadData = null) {
+
+  // ★追加: ゲーム開始時は必ずスクロール禁止を解除する！
+  document.body.style.overflow = '';
+
   // 未クリアならブースト解除
   const isUnlocked = localStorage.getItem('omega_awakened_unlocked') === 'true';
   if (seed && seed.endsWith('+')) {
@@ -232,8 +235,8 @@ function initGame(mode, seed, isBoosted = false, loadData = null) {
         // 1F-5F: Awakened Standard (マナ3, R9)
         state.maxMana = 3; state.doomLimit = 9;
       } else if (floor <= 10) {
-        // 6F-10F: Nightmare (マナ2, R8)
-        state.maxMana = 2; state.doomLimit = 8;
+        // 6F-10F: Nightmare (マナ2, R9)
+        state.maxMana = 2; state.doomLimit = 9;
       } else if (floor <= 15) {
         // 11F-15F: Rule Shift (マナ3, R8)
         state.maxMana = 3; state.doomLimit = 8;
@@ -526,7 +529,10 @@ async function executeNightmareIntro() {
     const uiRound = document.getElementById('ui-round');
 
     if(uiMana) uiMana.innerHTML = '<span style="text-decoration:line-through; color:#555;">3</span> 0/2';
-    if(uiRound) uiRound.innerText = "1 / 5";
+    
+    // ★修正1: 固定の "1 / 5" ではなく、その階層の正しい設定値(state.doomLimit)を使う
+    // これでタワーの8ラウンドが勝手に5にされるのを防ぎます
+    if(uiRound) uiRound.innerText = `1 / ${state.doomLimit}`;
     
     // 4. 演出終了、色を禍々しく
     setTimeout(() => {
@@ -537,20 +543,21 @@ async function executeNightmareIntro() {
       }
       if(roundDisplay) roundDisplay.classList.remove('glitch-active');
       
-      // ▼▼▼ ★追加: 警告文をじわっと出す処理 ▼▼▼
-      const nmWarn = document.getElementById('nightmare-warning');
-      if(nmWarn) {
-        nmWarn.style.display = 'block'; // まず枠を作る
-        setTimeout(() => {
-           nmWarn.classList.add('visible'); // じわっと不透明度を上げる
-        }, 100);
+      // ▼▼▼ 修正2: タワーモードなら警告文を出さない ▼▼▼
+      if (state.currentMode !== 'tower') {
+          const nmWarn = document.getElementById('nightmare-warning');
+          if(nmWarn) {
+            nmWarn.style.display = 'block'; // まず枠を作る
+            setTimeout(() => {
+               nmWarn.classList.add('visible'); // じわっと不透明度を上げる
+            }, 100);
+          }
       }
       // ▲▲▲▲▲▲▲▲▲▲
 
     }, 1000);
   }, 500);
 }
-
 
 function executeChaosIntro() {
   const stones = document.querySelectorAll('.stone');
@@ -637,6 +644,12 @@ function renderProphecies() {
     displayRules.forEach((r,idx) => {
       const item = document.createElement('div');
       item.className = 'omega-list-item';
+      
+      // ★追加: Awakenedモードなら専用クラスを付与
+      if (state.currentMode === 'awakened') {
+        item.classList.add('is-awakened');
+      }
+
       item.innerHTML = colorize(r.name);
       
       const delay = 3000 + (idx * 100); 
@@ -680,14 +693,19 @@ function renderProphecies() {
     
     if (state.isOmega) {
       div.className = 'stone is-mystery';
+      
+      // ★追加: Awakenedモードなら専用クラスを付与
+      if (state.currentMode === 'awakened') {
+        div.classList.add('is-awakened');
+      }
+
       div.classList.add('stone-fall'); 
       div.style.animationDelay = `${idx * 0.2}s`; 
       div.style.justifyContent = "space-between"; 
       
-      // ★修正ポイント: 落下が終わったら、落下クラスを消して「光るクラス」をつける！
       div.onanimationend = () => {
         div.classList.remove('stone-fall');
-        div.classList.add('omega-pulsing'); // ← これで光り始めます！
+        div.classList.add('omega-pulsing'); 
         div.style.opacity = 1; 
         div.style.transform = 'translateY(0)';
       };
@@ -717,7 +735,7 @@ function renderProphecies() {
 
     // 判定履歴を表示するミニログエリアを作成
     const miniLog = document.createElement('div');
-    miniLog.id = `mini-log-${idx}`; // IDを付与して後で特定できるようにする
+    miniLog.id = `mini-log-${idx}`; 
     miniLog.className = 'mini-log-container';
     wrapper.appendChild(miniLog);
 
@@ -727,11 +745,16 @@ function renderProphecies() {
       memoBox.className = 'omega-memo-box';
       
       const input = document.createElement('textarea');
-      // input.type = 'text'; // textareaにtype属性は不要なので削除
       input.className = 'omega-memo-input';
       input.placeholder = `予言${names[idx]} のメモ`;
-      input.rows = 2; // デフォルトで2行分くらいの高さを確保
+      input.rows = 2; 
       
+      // ★追加: Awakenedモードならメモ欄のボーダー色なども調整（任意）
+      if (state.currentMode === 'awakened') {
+        input.style.borderColor = "#500";
+        input.style.color = "#ffcccc";
+      }
+
       input.onfocus = () => { activeOmegaInput = input; };
       input.onblur = () => { 
         setTimeout(() => {
@@ -739,33 +762,31 @@ function renderProphecies() {
         }, 200);
       };
       
-            const copyBtn = document.createElement('div');
+      const copyBtn = document.createElement('div');
       copyBtn.className = 'btn-omega-copy';
-          // ▼▼▼ SVGで「青く光るクリスタル風のコピーアイコン」を描画 ▼▼▼
-      // 形状はわかりやすい「重なる四角」ですが、色と発光で魔法っぽくしています
+
+      // コピーボタンの色もモードで分岐
+      const strokeColor = (state.currentMode === 'awakened') ? '#ff4d4d' : '#99ccff';
+      
       copyBtn.innerHTML = `
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" 
-             stroke="#99ccff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-             style="pointer-events: none; filter: drop-shadow(0 0 3px #99ccff);">
+             stroke="${strokeColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             style="pointer-events: none; filter: drop-shadow(0 0 3px ${strokeColor});">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2" style="opacity: 0.6;"></rect>
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
         </svg>
       `;
-      // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
       
       copyBtn.title = "内容をコピー";
       
       copyBtn.onclick = () => {
         if(!input.value) return;
         navigator.clipboard.writeText(input.value).then(() => {
-          // コピー成功時の演出（一瞬チェックマークにする）
-          const originalHTML = copyBtn.innerHTML; // 元の画像を記憶
-          
-          copyBtn.innerHTML = '✔'; // チェックマークは文字でOK、または画像にしてもOK
+          const originalHTML = copyBtn.innerHTML; 
+          copyBtn.innerHTML = '✔'; 
           copyBtn.classList.add('copy-success');
-          
           setTimeout(() => {
-            copyBtn.innerHTML = originalHTML; // 元の画像に戻す
+            copyBtn.innerHTML = originalHTML; 
             copyBtn.classList.remove('copy-success');
           }, 1500);
         });
@@ -999,22 +1020,50 @@ function attemptUnlock() {
   finishGame(isCorrect);
 }
 
-/* --- script.js の finishGame 関数を置換 --- */
 
+// 1. ゲーム終了制御関数
 function finishGame(isWin, titleOverride) {
-// ★追加: ゲーム終了フラグをONにする
+  // --- 即時停止処理 ---
+  window.scrollTo(0, 0); // スクロールリセット
+  document.body.style.overflow = 'hidden'; // スクロール禁止
   state.isGameEnded = true;
 
-  // ★追加: アクションボタンを直ちに無効化（グレーアウト）する
+  // アクションボタンを直ちに無効化
   document.querySelectorAll('.action-btn-item').forEach(btn => btn.classList.add('disabled'));
 
-  // 入力値を取得
+  // Ωルールエリアを隠す
+  const omegaArea = document.getElementById('omega-rule-area');
+  if(omegaArea) omegaArea.style.display = 'none';
+
+  // --- ★★★ 20Fクリア時の特殊演出割り込み ★★★ ---
+  if (isWin && state.currentMode === 'tower' && towerState.floor === 20) {
+      playSingularityEnding(() => {
+          // アニメーションが終わったら、通常のリザルト表示へ進む
+          showResultModal(isWin, titleOverride);
+      });
+      return; // ここで一旦止めて、アニメーション関数に委ねる
+  }
+  // ★★★★★★★★★★★★★★★★★★★★★★★
+
+  // 通常時はそのまま表示
+  showResultModal(isWin, titleOverride);
+}
+
+// 2. リザルト画面表示関数（旧finishGameの後半部分）
+function showResultModal(isWin, titleOverride) {
+  // 入力値を取得 (ここで再取得します)
   const uI = document.getElementById('r1').value;
   const uA = document.getElementById('r2').value;
   const uV = document.getElementById('r3').value;
-  const omegaArea = document.getElementById('omega-rule-area');
-  if(omegaArea) omegaArea.style.display = 'none';
+
   const modal = document.getElementById('result-modal');
+  
+  // JSで強制的に中央配置スタイルを適用
+  modal.style.justifyContent = 'center';
+  modal.style.alignItems = 'center';
+  modal.style.paddingTop = '0';
+  modal.style.paddingBottom = '0';
+
   modal.style.display = 'flex';
   
   // --- モードバッジ表示 (タワー対応) ---
@@ -1048,10 +1097,26 @@ function finishGame(isWin, titleOverride) {
     }
   }
   
-  // 神演出 (Ωモード、またはタワー20階クリア時)
-  if (isWin && (state.isOmega || (state.currentMode === 'tower' && towerState.floor === 20))) {
+  // 神演出 (Ωモード、またはタワー20階クリア時、またはタワークリア時全般)
+  if (isWin && (state.isOmega || state.currentMode === 'tower')) {
     const frame = document.createElement('div');
     frame.className = 'divine-frame';
+    
+    // Awakenedモードなら赤
+    if (state.currentMode === 'awakened') {
+      frame.classList.add('is-awakened');
+    }
+    
+    // タワーモードなら階層に応じて色を変える
+    if (state.currentMode === 'tower') {
+      const f = towerState.floor;
+      if (f <= 5) frame.classList.add('tower-1');      // Cyan
+      else if (f <= 10) frame.classList.add('tower-2'); // Purple
+      else if (f <= 15) frame.classList.add('tower-3'); // Green
+      else if (f <= 19) frame.classList.add('tower-4'); // Red
+      else frame.classList.add('tower-5');              // Gold
+    }
+
     document.body.appendChild(frame);
   }
 
@@ -1075,6 +1140,7 @@ function finishGame(isWin, titleOverride) {
   const checksEl = document.getElementById('final-checks');
   if(checksEl) checksEl.innerText = state.totalChecks;
 
+  // 履歴保存
   saveHistory(isWin, {i:uI, a:uA, v:uV});
 
   const detailBox = document.getElementById('result-details');
@@ -1092,9 +1158,21 @@ function finishGame(isWin, titleOverride) {
   });
   detailBox.innerHTML = html;
 
-  // ボタン要素を取得
+  // ボタン要素を取得と設定
   const btns = document.querySelectorAll('#result-modal .btn');
   const nextBtn = btns[btns.length - 1]; 
+  if (btns.length >= 2) {
+      const reviewBtn = btns[0];
+      reviewBtn.onclick = () => {
+          // ★ここで既存の reviewBoard() を呼び出すのが重要です
+          // これにより「RESULTボタン表示」「石碑のロック」が行われます
+          reviewBoard(); 
+          
+          // ★スクロール復活 (ご提示の要望)
+          document.body.style.overflow = '';
+          document.documentElement.style.overflow = '';
+      };
+  }
 
   // まずデフォルト状態にリセット
   nextBtn.onclick = softResetGame;
@@ -1106,8 +1184,6 @@ function finishGame(isWin, titleOverride) {
   // ★ OMEGA TOWER モードの処理
   if (state.currentMode === 'tower') {
       
-      // 【要望③対応】 ハイスコア更新処理
-      // 勝敗に関わらず、「到達した階層」が自己ベストなら即座に更新する
       const currentBest = parseInt(localStorage.getItem('omega_tower_best') || "0");
       if (towerState.floor > currentBest) {
           localStorage.setItem('omega_tower_best', towerState.floor);
@@ -1120,7 +1196,7 @@ function finishGame(isWin, titleOverride) {
               title.style.color = "#d4af37";
               title.style.textShadow = "0 0 30px #d4af37";
               
-              nextBtn.innerText = "伝説として帰還する";
+              nextBtn.innerText = "伝説として\n帰還";
               nextBtn.onclick = () => {
                   localStorage.removeItem('omega_tower_save'); // クリアしたのでセーブ削除
                   softResetGame();
@@ -1128,7 +1204,7 @@ function finishGame(isWin, titleOverride) {
           } else {
               // 次の階層へ
               const nextF = towerState.floor + 1;
-              nextBtn.innerText = `Floor ${nextF} へ進む`;
+              nextBtn.innerText = `Floor ${nextF} へ`;
               
               // 自動セーブ
               localStorage.setItem('omega_tower_save', JSON.stringify({ 
@@ -1137,19 +1213,18 @@ function finishGame(isWin, titleOverride) {
               }));
 
               nextBtn.onclick = () => {
-                  // モーダルを閉じる
                   modal.style.display = 'none';
                   const frame = document.querySelector('.divine-frame');
                   if(frame) frame.remove();
                   
-                  // ★修正: 階段アニメーションを再生してから次のレベルへ！
+                  // 階段アニメーション
                   playStairsAnim(() => {
                       startTowerLevel(nextF);
                   });
               };
           }
       } else {
-          // 【要望②対応】 敗北時 -> タイトルへ戻る
+          // 敗北時
           title.innerText = "塔からの追放";
           title.style.color = "#9b59b6";
           
@@ -1158,14 +1233,51 @@ function finishGame(isWin, titleOverride) {
           nextBtn.style.color = "#ccc";
           nextBtn.style.borderColor = "#777";
           
-          // セーブデータを消す（パーマデス）
           localStorage.removeItem('omega_tower_save');
           
           nextBtn.onclick = () => {
-              softResetGame(); // タイトルに戻る
+              softResetGame(); 
           };
       }
   }
+
+  // ★重要: 20Fクリア演出後は、リザルト画面自体をフワッと出す
+  if (state.currentMode === 'tower' && towerState.floor === 20 && isWin) {
+      modal.style.opacity = '0';
+      modal.style.transition = 'opacity 2s ease';
+      setTimeout(() => { modal.style.opacity = '1'; }, 100);
+  } else {
+      modal.style.opacity = '1';
+      modal.style.transition = '';
+  }
+}
+
+// 3. エンディングアニメーション実行関数
+function playSingularityEnding(callback) {
+  const overlay = document.getElementById('singularity-ending-overlay');
+  if(!overlay) { if(callback) callback(); return; }
+
+  // 1. オーバーレイ表示
+  overlay.style.display = 'flex';
+  overlay.classList.remove('s-active');
+  void overlay.offsetWidth; // リフロー
+  
+  // 2. アニメーション開始
+  overlay.classList.add('s-active');
+  
+  // スマホバイブレーション（収束...爆発！）
+  if (navigator.vibrate) navigator.vibrate([50, 50, 50, 50, 100, 200, 1000]);
+
+  // 3. 爆発の瞬間（約3秒後）にリザルトを裏で準備する
+  setTimeout(() => {
+      if(callback) callback();
+  }, 3000);
+
+  // 4. 完全終了後（4秒後）にオーバーレイを消す
+  setTimeout(() => {
+      overlay.style.display = 'none';
+      overlay.classList.remove('s-active');
+  }, 4000);
 }
 
 // ブースト状態を管理するオブジェクト
@@ -1176,7 +1288,6 @@ let boostState = {
   omega: false
 };
 
-/* --- script.js の checkAwakenedUnlock 関数を置換 --- */
 
 checkAwakenedUnlock = function() {
   // Awakened 解放チェック
@@ -2168,6 +2279,8 @@ function closeProphecyList() {
 
 
 function softResetGame() {
+  document.body.style.overflow = '';
+
   document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
   const frame = document.querySelector('.divine-frame');
   if(frame) frame.remove();
@@ -2597,13 +2710,33 @@ function confirmTowerStart(type, floor) {
 
 // ■ 4. 階層開始ラッパー
 function startTowerLevel(floor) {
+   // 1. 前の階層のデータを物理的に消去
+   // これで「前の問題」が残る可能性はゼロになります
+   const pContainer = document.getElementById('prophecy-container');
+   if (pContainer) pContainer.innerHTML = '';
+   
+   const lContainer = document.getElementById('log-container');
+   if (lContainer) lContainer.innerHTML = '';
+   
+   // 2. 状態更新
    towerState.active = true;
    towerState.floor = floor;
-   
-   // ランダムシード + 階層番号 で、毎回違うが再現性のあるIDを作る
    const seedPrefix = `T-${towerState.runSeed}-F${floor}`;
    
+   // 3. 次の階層を生成
+   // 階段で隠れている間に実行されるので、ユーザーには見えません
    initGame('tower', seedPrefix); 
+
+   // 4. スクロール位置をリセット
+   // これも裏側でこっそりやっておきます
+   setTimeout(() => {
+       window.scrollTo(0, 0);
+       document.documentElement.scrollTop = 0;
+       document.body.scrollTop = 0;
+   }, 10);
+   
+   // ※画面の透明度操作やフェードイン処理は削除しました。
+   // 階段オーバーレイが消えた瞬間、そこには既に完成した新しい階層があります。
 }
 
 // ■ 5. 中断セーブ実行
@@ -2753,7 +2886,8 @@ function playTowerEntryAnim(callback) {
   }, 2000); // 拡大アニメーションが終わる頃に実行
 }
 
-// 2. 階段昇降演出
+/* script.js の playStairsAnim 関数をこれに置換 */
+
 function playStairsAnim(callback) {
   const overlay = document.getElementById('stairs-anim-overlay');
   
@@ -2762,27 +2896,26 @@ function playStairsAnim(callback) {
     return;
   }
 
-  // 準備
+  // 1. 準備
   overlay.style.display = 'block';
   overlay.classList.remove('stairs-climb-active');
-  
-  // アニメーションのリセット(強制リフロー)
-  void overlay.offsetWidth;
+  void overlay.offsetWidth; // リフロー
 
-  // アニメーション開始
+  // 2. アニメーション開始（2.5秒かけて登る演出）
   overlay.classList.add('stairs-climb-active');
 
-  // アニメーションの途中で次の階層の生成を開始してもいいが、
-  // 完全に登り切ってから切り替えるならこうする
+  // ★変更点: 画面が完全に隠れたタイミング（0.5秒後）で、裏で次の階層を作る！
   setTimeout(() => {
-    // 裏で次の階層をロードさせる
+    // ここで次の階層の生成（startTowerLevel）を実行します。
+    // 画面は階段の画像で隠れているので、裏で何をしてもバレません。
     if(callback) callback();
     
-    // ロードが終わった頃にオーバーレイを消す
-    // (ゲーム生成の時間が一瞬ならこれでOK)
-    setTimeout(() => {
-        overlay.style.display = 'none';
-    }, 500);
+  }, 500); // 0.5秒後に実行
 
-  }, 2400); // アニメーション時間(2.5s)の直前
+  // 3. 終了処理
+  setTimeout(() => {
+    // 階段の演出が終わる頃（2.4秒後）には、裏の準備は完璧に終わっているはずです。
+    // そのままオーバーレイを消せば、新しい階層が「ジャン！」と現れます。
+    overlay.style.display = 'none';
+  }, 2400); 
 }
